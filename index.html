@@ -1,28 +1,30 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#102b3f">
   <title>EL-LITHY GROUP | نظام الموظفين</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      color: #172b3a;
       min-height: 100vh;
+      padding: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      color: #172b3a;
     }
     .container {
       width: 100%;
-      max-width: 430px;
+      max-width: 440px;
       background: white;
-      padding: 35px 25px;
+      padding: 32px 25px;
       border-radius: 20px;
       box-shadow: 0 12px 40px #102b3f14;
     }
@@ -44,7 +46,7 @@
       text-align: center;
       color: #718096;
       font-size: 14px;
-      margin-bottom: 30px;
+      margin-bottom: 28px;
     }
     label { display: block; margin: 15px 0 8px; font-size: 14px; }
     input {
@@ -58,7 +60,7 @@
     input:focus { border-color: #1c7890; }
     button {
       width: 100%;
-      margin-top: 23px;
+      margin-top: 22px;
       padding: 15px;
       border: 0;
       border-radius: 11px;
@@ -68,15 +70,24 @@
       font-weight: bold;
       cursor: pointer;
     }
+    button:disabled { opacity: .6; cursor: wait; }
     .notice {
-      margin-top: 20px;
+      margin-top: 18px;
       padding: 13px;
       background: #f1f7fa;
       border-radius: 10px;
       color: #587080;
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1.8;
       text-align: center;
+    }
+    .hidden { display: none; }
+    .welcome {
+      padding: 18px;
+      background: #f1f7fa;
+      border-radius: 12px;
+      line-height: 2;
+      margin-top: 20px;
     }
     footer {
       text-align: center;
@@ -92,32 +103,170 @@
     <h1>EL-LITHY GROUP</h1>
     <p class="subtitle">نظام الحضور والانصراف وإدارة الموظفين</p>
 
-    <form id="loginForm">
-      <label for="username">كود الموظف</label>
-      <input id="username" type="text" placeholder="مثال: EMP001"
-             autocomplete="username" required>
+    <section id="loginSection">
+      <form id="loginForm">
+        <label for="username">كود الموظف</label>
+        <input id="username" type="text"
+          placeholder="مثال: ADMIN001"
+          autocomplete="username" required>
 
-      <label for="password">كلمة المرور</label>
-      <input id="password" type="password" placeholder="أدخل كلمة المرور"
-             autocomplete="current-password" required>
+        <label for="password">كلمة المرور</label>
+        <input id="password" type="password"
+          placeholder="أدخل كلمة المرور"
+          autocomplete="current-password" required>
 
-      <button type="submit">تسجيل الدخول</button>
-    </form>
+        <button id="loginButton" type="submit">تسجيل الدخول</button>
+      </form>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <h2 style="text-align:center">مرحبًا بك</h2>
+      <div class="welcome">
+        <div>الاسم: <strong id="employeeName"></strong></div>
+        <div>كود الموظف: <strong id="employeeCode"></strong></div>
+        <div>الصلاحية: <strong id="employeeRole"></strong></div>
+      </div>
+      <div class="notice">
+        تم تسجيل الدخول بنجاح.
+        سيتم تفعيل خدمات الحضور والانصراف والإدارة في المراحل التالية.
+      </div>
+      <button id="logoutButton" type="button">تسجيل الخروج</button>
+    </section>
 
     <div class="notice" id="message">
       مرحبًا بك في نظام EL-LITHY GROUP.
-      سيتم تفعيل تسجيل الدخول بعد استكمال ربط الحسابات وقاعدة البيانات.
     </div>
 
     <footer>EL-LITHY GROUP © 2026</footer>
   </main>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      document.getElementById("message").textContent =
-        "لم يتم تفعيل تسجيل الدخول بعد. انتظر استكمال إعداد النظام.";
+    const SUPABASE_URL = "https://xksqddhhnrpmutkxjjaj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_kd5hsMt6TkRExJ-P9Cud6Q_5BCzWopz";
+
+    const db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const loginForm = document.getElementById("loginForm");
+    const loginButton = document.getElementById("loginButton");
+    const message = document.getElementById("message");
+    const loginSection = document.getElementById("loginSection");
+    const dashboard = document.getElementById("dashboard");
+
+    function showMessage(text) {
+      message.textContent = text;
+    }
+
+    async function showDashboard() {
+      const { data: { user }, error: userError } =
+        await db.auth.getUser();
+
+      if (userError || !user) {
+        throw new Error("تعذر التحقق من جلسة الدخول");
+      }
+
+      const { data: profile, error } = await db
+        .from("profiles")
+        .select("full_name, employee_code, role")
+        .eq("id", user.id)
+        .single();
+
+      if (error || !profile) {
+        throw new Error("تعذر تحميل بيانات الموظف");
+      }
+
+      document.getElementById("employeeName").textContent =
+        profile.full_name;
+
+      document.getElementById("employeeCode").textContent =
+        profile.employee_code;
+
+      document.getElementById("employeeRole").textContent =
+        profile.role === "owner" ? "مدير النظام" : "موظف";
+
+      loginSection.classList.add("hidden");
+      dashboard.classList.remove("hidden");
+      showMessage("تم تسجيل الدخول بنجاح");
+    }
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      loginButton.disabled = true;
+      loginButton.textContent = "جارٍ تسجيل الدخول...";
+      showMessage("جارٍ التحقق من البيانات...");
+
+      const employee_code =
+        document.getElementById("username").value.trim().toUpperCase();
+
+      const password =
+        document.getElementById("password").value;
+
+      try {
+        const { data, error } = await db.functions.invoke(
+          "employee-login",
+          {
+            body: { employee_code, password }
+          }
+        );
+
+        if (error || !data?.success || !data?.session) {
+          throw new Error(
+            data?.error || "كود الموظف أو كلمة المرور غير صحيحة"
+          );
+        }
+
+        const { error: sessionError } = await db.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token
+        });
+
+        if (sessionError) {
+          throw new Error("تعذر إنشاء جلسة الدخول");
+        }
+
+        await showDashboard();
+
+      } catch (error) {
+        await db.auth.signOut();
+        showMessage(error.message || "حدث خطأ أثناء تسجيل الدخول");
+      } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = "تسجيل الدخول";
+      }
     });
+
+    document.getElementById("logoutButton")
+      .addEventListener("click", async () => {
+        await db.auth.signOut();
+        dashboard.classList.add("hidden");
+        loginSection.classList.remove("hidden");
+        loginForm.reset();
+        showMessage("تم تسجيل الخروج بنجاح");
+      });
+
+    db.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        try {
+          await showDashboard();
+        } catch {
+          await db.auth.signOut();
+        }
+      }
+    });
+
+    (async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (session) {
+        try {
+          await showDashboard();
+        } catch {
+          await db.auth.signOut();
+        }
+      }
+    })();
   </script>
 </body>
 </html>
