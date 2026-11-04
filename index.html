@@ -527,7 +527,17 @@ async function performAttendanceAction(action, buttonId) {
 
   } catch (error) {
     console.error(error);
-    showMessage(error.message || "حدث خطأ أثناء تسجيل العملية.");
+
+    let message = error.message || "حدث خطأ أثناء تسجيل العملية.";
+
+    if (error.context && typeof error.context.json === "function") {
+      try {
+        const details = await error.context.json();
+        message = details.error || message;
+      } catch (_) {}
+    }
+
+    showMessage(message);
   } finally {
     button.disabled = false;
 
