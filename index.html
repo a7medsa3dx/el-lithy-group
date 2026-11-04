@@ -144,10 +144,15 @@
   <div style="margin-top:25px">
     <h3>إدارة الشركة</h3>
 
-    <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
-      <strong>إدارة الموظفين</strong>
-      <p style="font-size:13px;color:#718096">إضافة الموظفين وتعديل بياناتهم وحساباتهم.</p>
-    </div>
+   <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+  <strong>إدارة الموظفين</strong>
+  <p style="font-size:13px;color:#718096">
+    إضافة الموظفين وتعديل بياناتهم وحساباتهم.
+  </p>
+  <button id="manageEmployeesButton" type="button">
+    فتح إدارة الموظفين
+  </button>
+</div>
 
     <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
       <strong>إدارة الورديات</strong>
@@ -187,7 +192,48 @@
   <button id="logoutButton" type="button">تسجيل الخروج</button>
 
 </section>
+<section id="employeesSection" class="hidden">
 
+  <h2 style="text-align:center">إدارة الموظفين</h2>
+
+  <div class="notice">
+    إضافة ومتابعة بيانات موظفي EL-LITHY GROUP
+  </div>
+
+  <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
+
+    <h3>إضافة موظف جديد</h3>
+
+    <form id="addEmployeeForm">
+
+      <label for="newEmployeeName">اسم الموظف</label>
+      <input id="newEmployeeName" type="text"
+        placeholder="اكتب اسم الموظف" required>
+
+      <label for="newEmployeeCode">كود الموظف</label>
+      <input id="newEmployeeCode" type="text"
+        placeholder="مثال: EMP001" required>
+
+      <label for="newEmployeePassword">كلمة المرور</label>
+      <input id="newEmployeePassword" type="password"
+        minlength="8" placeholder="8 أحرف على الأقل" required>
+
+      <button type="submit">إضافة الموظف</button>
+
+    </form>
+
+  </div>
+
+  <div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
+    <h3>قائمة الموظفين</h3>
+    <p>سيتم عرض الموظفين المسجلين هنا بعد ربط قاعدة البيانات.</p>
+  </div>
+
+  <button id="backToDashboardButton" type="button">
+    العودة إلى لوحة المدير
+  </button>
+
+</section>
 <section id="employeeDashboardSection" class="hidden">
 
   <h2 style="text-align:center">لوحة الموظف</h2>
@@ -256,6 +302,7 @@ function showSection(section) {
     "loginSection",
     "recoverySection",
     "dashboardSection",
+    "employeesSection",
     "employeeDashboardSection"
   ].forEach(id => $(id).classList.add("hidden"));
 
@@ -395,7 +442,13 @@ $("employeeLogoutButton").addEventListener("click", async () => {
   showSection("loginSection");
   showMessage("تم تسجيل الخروج بنجاح.");
 });
+$("manageEmployeesButton").addEventListener("click", () => {
+  showSection("employeesSection");
+});
 
+$("backToDashboardButton").addEventListener("click", () => {
+  showSection("dashboardSection");
+});
     $("passwordChangeForm").addEventListener("submit", async event => {
       event.preventDefault();
 
