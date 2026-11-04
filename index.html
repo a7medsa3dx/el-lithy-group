@@ -125,17 +125,100 @@
       </form>
     </section>
 
-    <section id="dashboardSection" class="hidden">
-      <h2 style="text-align:center">مرحبًا بك</h2>
-      <p>الاسم: <strong id="employeeName"></strong></p>
-      <p>كود الموظف: <strong id="employeeCode"></strong></p>
-      <p>الصلاحية: <strong id="employeeRole"></strong></p>
-      <div class="notice">
-        تم تسجيل الدخول بنجاح.
-        سيتم تفعيل خدمات الحضور والانصراف والإدارة في المراحل التالية.
-      </div>
-      <button id="logoutButton" type="button">تسجيل الخروج</button>
-    </section>
+  
+<section id="dashboardSection" class="hidden">
+
+  <h2 style="text-align:center">لوحة تحكم المدير</h2>
+
+  <div class="notice">
+    مرحبًا بك في نظام EL-LITHY GROUP
+  </div>
+
+  <div style="background:#f1f7fa;padding:18px;border-radius:12px;margin-top:20px">
+    <h3 style="margin-top:0">بيانات المدير</h3>
+    <p>الاسم: <strong id="employeeName"></strong></p>
+    <p>كود الموظف: <strong id="employeeCode"></strong></p>
+    <p>الصلاحية: <strong id="employeeRole"></strong></p>
+  </div>
+
+  <div style="margin-top:25px">
+    <h3>إدارة الشركة</h3>
+
+    <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+      <strong>إدارة الموظفين</strong>
+      <p style="font-size:13px;color:#718096">إضافة الموظفين وتعديل بياناتهم وحساباتهم.</p>
+    </div>
+
+    <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+      <strong>إدارة الورديات</strong>
+      <p style="font-size:13px;color:#718096">تحديد مواعيد العمل والراحة لكل موظف.</p>
+    </div>
+
+    <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+      <strong>الحضور والانصراف</strong>
+      <p style="font-size:13px;color:#718096">متابعة سجلات الحضور والانصراف.</p>
+    </div>
+
+    <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+      <strong>الإجازات والتقارير</strong>
+      <p style="font-size:13px;color:#718096">متابعة طلبات الإجازات والتقارير.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:25px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
+    <h3 style="margin-top:0">إعدادات الحساب</h3>
+    <h4>تغيير كلمة المرور</h4>
+
+    <form id="passwordChangeForm">
+      <label for="newDashboardPassword">كلمة المرور الجديدة</label>
+      <input id="newDashboardPassword" type="password"
+        minlength="8" autocomplete="new-password" required>
+
+      <label for="confirmDashboardPassword">تأكيد كلمة المرور</label>
+      <input id="confirmDashboardPassword" type="password"
+        minlength="8" autocomplete="new-password" required>
+
+      <button id="changePasswordButton" type="submit">
+        حفظ كلمة المرور الجديدة
+      </button>
+    </form>
+  </div>
+
+  <button id="logoutButton" type="button">تسجيل الخروج</button>
+
+</section>
+
+<section id="employeeDashboardSection" class="hidden">
+
+  <h2 style="text-align:center">لوحة الموظف</h2>
+
+  <div class="notice">
+    مرحبًا بك في نظام EL-LITHY GROUP
+  </div>
+
+  <div style="background:#f1f7fa;padding:18px;border-radius:12px;margin-top:20px">
+    <h3>بيانات الموظف</h3>
+    <p>الاسم: <strong id="staffName"></strong></p>
+    <p>كود الموظف: <strong id="staffCode"></strong></p>
+    <p>الصلاحية: <strong>موظف</strong></p>
+  </div>
+
+  <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
+    <h3>الحضور والانصراف</h3>
+    <p>سيتم تفعيل تسجيل الحضور والانصراف في المرحلة التالية.</p>
+  </div>
+
+  <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
+    <h3>الإجازات</h3>
+    <p>سيتم تفعيل طلبات الإجازات ومتابعتها في المرحلة التالية.</p>
+  </div>
+
+  <button id="employeeLogoutButton" type="button">
+    تسجيل الخروج
+  </button>
+
+</section>
+
 
     <div class="notice" id="message">
       مرحبًا بك في نظام EL-LITHY GROUP.
@@ -167,11 +250,19 @@
       $("message").textContent = message;
     }
 
-    function showSection(section) {
-      ["loginSection", "recoverySection", "dashboardSection"]
-        .forEach(id => $(id).classList.add("hidden"));
-      $(section).classList.remove("hidden");
-    }
+    
+function showSection(section) {
+  [
+    "loginSection",
+    "recoverySection",
+    "dashboardSection",
+    "employeeDashboardSection"
+  ].forEach(id => $(id).classList.add("hidden"));
+
+  $(section).classList.remove("hidden");
+}
+
+    
 
     async function showDashboard() {
       const { data: userData, error: userError } =
@@ -196,9 +287,17 @@
       $("employeeRole").textContent =
         profile.role === "owner" ? "مدير النظام" : "موظف";
 
-      showSection("dashboardSection");
+      if (profile.role === "owner") {
+        showSection("dashboardSection");
+      } else {
+        $("staffName").textContent = profile.full_name;
+        $("staffCode").textContent = profile.employee_code;
+        showSection("employeeDashboardSection");
+      }
+
       showMessage("تم تسجيل الدخول بنجاح.");
     }
+
 
     $("loginForm").addEventListener("submit", async event => {
       event.preventDefault();
@@ -288,6 +387,55 @@
       $("loginForm").reset();
       showSection("loginSection");
       showMessage("تم تسجيل الخروج.");
+    });
+
+$("employeeLogoutButton").addEventListener("click", async () => {
+  await db.auth.signOut();
+  $("loginForm").reset();
+  showSection("loginSection");
+  showMessage("تم تسجيل الخروج بنجاح.");
+});
+
+    $("passwordChangeForm").addEventListener("submit", async event => {
+      event.preventDefault();
+
+      const newPassword = $("newDashboardPassword").value;
+      const confirmPassword = $("confirmDashboardPassword").value;
+
+      if (newPassword.length < 8) {
+        showMessage("كلمة المرور يجب ألا تقل عن 8 أحرف.");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        showMessage("كلمتا المرور غير متطابقتين.");
+        return;
+      }
+
+      $("changePasswordButton").disabled = true;
+      showMessage("جارٍ تغيير كلمة المرور...");
+
+      try {
+        const { data: sessionData } = await db.auth.getSession();
+
+        if (!sessionData.session) {
+          throw new Error("يجب تسجيل الدخول أولاً.");
+        }
+
+        const { error } = await db.auth.updateUser({
+          password: newPassword
+        });
+
+        if (error) throw error;
+
+        $("passwordChangeForm").reset();
+        showMessage("تم تغيير كلمة المرور بنجاح.");
+
+      } catch (error) {
+        showMessage(error.message || "تعذر تغيير كلمة المرور.");
+      } finally {
+        $("changePasswordButton").disabled = false;
+      }
     });
 
     async function initializeApp() {
