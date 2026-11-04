@@ -273,9 +273,18 @@
   </div>
 
   <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
-    <h3>الحضور والانصراف</h3>
-    <p>سيتم تفعيل تسجيل الحضور والانصراف في المرحلة التالية.</p>
+  <h3>الحضور والانصراف</h3>
+
+  <p id="attendanceStatus">جاري تحميل حالة الحضور...</p>
+  <p id="attendanceLocationStatus">سيتم تحديد موقعك عند تنفيذ العملية.</p>
+
+  <div style="display:grid;gap:10px;margin-top:15px">
+    <button id="checkInButton" type="button">تسجيل الحضور</button>
+    <button id="breakStartButton" type="button">بدء الراحة</button>
+    <button id="breakEndButton" type="button">إنهاء الراحة</button>
+    <button id="checkOutButton" type="button">تسجيل الانصراف</button>
   </div>
+</div>
 
   <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
     <h3>الإجازات</h3>
@@ -458,7 +467,97 @@ function showSection(section) {
       showSection("loginSection");
       showMessage("تم تسجيل الخروج.");
     });
+// تنفيذ عمليات الحضور والانصراف والراحة
+async function performAttendanceAction(action, buttonId) {
+  const button = $(buttonId);
+  const status = $("attendanceStatus");
+  const locationStatus = $("attendanceLocationStatus");
 
+  button.disabled = true;
+  button.textContent = "جارٍ تحديد الموقع...";
+
+  try {
+    if (!navigator.geolocation) {
+      throw new Error("المتصفح لا يدعم تحديد الموقع.");
+    }
+
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        resolve,
+        error => {
+          reject(new Error(
+            error.code === 1
+              ? "يجب السماح للموقع بالوصول إلى GPS."
+              : "تعذر تحديد موقعك. حاول مرة أخرى."
+          ));
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0
+        }
+      );
+    });
+
+    locationStatus.textContent = "تم تحديد موقعك، جارٍ تنفيذ العملية...";
+    button.textContent = "جارٍ التسجيل...";
+
+    const { data, error } = await db.functions.invoke(
+      "employee-attendance",
+      {
+        body: {
+          action,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        }
+      }
+    );
+
+    if (error) throw error;
+    if (!data?.success) {
+      throw new Error(data?.error || "تعذر تنفيذ العملية.");
+    }
+
+    status.textContent = data.message;
+    locationStatus.textContent =
+      "المسافة من مقر الشركة: " + data.distance_meters + " متر";
+
+    showMessage(data.message);
+
+  } catch (error) {
+    console.error(error);
+    showMessage(error.message || "حدث خطأ أثناء تسجيل العملية.");
+  } finally {
+    button.disabled = false;
+
+    const labels = {
+      check_in: "تسجيل الحضور",
+      break_start: "بدء الراحة",
+      break_end: "إنهاء الراحة",
+      check_out: "تسجيل الانصراف"
+    };
+
+    button.textContent = labels[action];
+  }
+}
+
+// ربط أزرار لوحة الموظف
+$("checkInButton").addEventListener("click", () => {
+  performAttendanceAction("check_in", "checkInButton");
+});
+
+$("breakStartButton").addEventListener("click", () => {
+  performAttendanceAction("break_start", "breakStartButton");
+});
+
+$("breakEndButton").addEventListener("click", () => {
+  performAttendanceAction("break_end", "breakEndButton");
+});
+
+$("checkOutButton").addEventListener("click", () => {
+  performAttendanceAction("check_out", "checkOutButton");
+});
 $("employeeLogoutButton").addEventListener("click", async () => {
   await db.auth.signOut();
   $("loginForm").reset();
