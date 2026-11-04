@@ -19,14 +19,15 @@
       color: #172b3a;
       font-family: Arial, sans-serif;
     }
-    .container {
-      width: 100%;
-      max-width: 430px;
-      padding: 32px 25px;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 12px 40px #102b3f14;
-    }
+ .container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 32px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px #102b3f14;
+  margin: 20px auto;
+}
     .logo {
       width: 76px;
       height: 76px;
@@ -82,12 +83,146 @@
       white-space: pre-wrap;
     }
     .hidden { display: none !important; }
+    /* تصميم لوحة تحكم المدير */
+#dashboardSection {
+  width: 100%;
+}
+
+#dashboardSection h2 {
+  color: #102b3f;
+  font-size: 30px;
+  margin: 10px 0 20px;
+}
+
+#dashboardSection h3 {
+  color: #102b3f;
+  font-size: 21px;
+  margin-bottom: 16px;
+}
+
+#dashboardSection .notice {
+  background: linear-gradient(135deg, #102b3f, #1c7890);
+  color: white;
+  font-size: 15px;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+#dashboardSection button {
+  transition: .2s ease;
+}
+
+#dashboardSection button:hover {
+  background: #1c7890;
+}
+/* شبكة بطاقات إدارة الشركة */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.admin-card {
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid #e1eaf0;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px #102b3f0c;
+  transition: .2s ease;
+}
+
+.admin-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px #102b3f16;
+}
+
+.admin-card strong {
+  display: block;
+  color: #102b3f;
+  font-size: 17px;
+}
+
+.admin-card p {
+  color: #718096;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.admin-card button {
+  margin-top: 12px;
+}
+@media (max-width: 600px) {
+  #dashboardSection h2 {
+    font-size: 23px;
+  }
+
+  #dashboardSection h3 {
+    font-size: 19px;
+  }
+}
     footer {
       text-align: center;
       color: #9aa8b3;
       font-size: 11px;
       margin-top: 25px;
     }
+    @media (max-width: 600px) {
+  body {
+    padding: 10px;
+    align-items: flex-start;
+  }
+
+  .container {
+    padding: 20px 15px;
+    margin: 5px auto;
+    border-radius: 14px;
+  }
+}
+    /* تنسيق إدارة الإجازات */
+#employeeDaysOffSection {
+  background: #ffffff !important;
+  border: 1px solid #e1eaf0 !important;
+  border-radius: 18px !important;
+  padding: 25px !important;
+  box-shadow: 0 5px 20px #102b3f0c;
+}
+
+#employeeDaysOffSection h3 {
+  color: #102b3f;
+  font-size: 22px;
+}
+
+#employeeDaysOffSection label {
+  color: #334e62;
+  font-weight: bold;
+}
+
+#employeeDaysOffSection input,
+#employeeDaysOffSection select {
+  width: 100%;
+  border: 1px solid #d8e2e9;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 9px;
+  font-size: 14px;
+}
+
+#employeeDaysOffSection table {
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+#employeeDaysOffSection th {
+  background: #102b3f;
+  color: white;
+  padding: 13px;
+}
+
+#employeeDaysOffSection td {
+  padding: 12px;
+  border-bottom: 1px solid #e5edf2;
+}
   </style>
 </head>
 <body>
@@ -141,20 +276,20 @@
     <p>الصلاحية: <strong id="employeeRole"></strong></p>
   </div>
 
-  <div style="margin-top:25px">
+  <div style="margin-top:30px">
     <h3>إدارة الشركة</h3>
 
-   <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
-  <strong>إدارة الموظفين</strong>
-  <p style="font-size:13px;color:#718096">
-    إضافة الموظفين وتعديل بياناتهم وحساباتهم.
-  </p>
-  <button id="manageEmployeesButton" type="button">
-    فتح إدارة الموظفين
-  </button>
-</div>
+  <div class="admin-grid">
 
-<div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+  <div class="admin-card">
+    <strong>إدارة الموظفين</strong>
+    <p>إضافة الموظفين وتعديل بياناتهم وحساباتهم.</p>
+    <button id="manageEmployeesButton" type="button">
+      فتح إدارة الموظفين
+    </button>
+  </div>
+
+<div class="admin-card">
   <strong>إعدادات موقع الشركة</strong>
 
   <p style="font-size:13px;color:#718096">
@@ -177,17 +312,17 @@
   </button>
 </div>
 
-    <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+   <div class="admin-card">
       <strong>إدارة الورديات</strong>
       <p style="font-size:13px;color:#718096">تحديد مواعيد العمل والراحة لكل موظف.</p>
     </div>
 
-    <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+    <div class="admin-card">
       <strong>الحضور والانصراف</strong>
       <p style="font-size:13px;color:#718096">متابعة سجلات الحضور والانصراف.</p>
     </div>
 
-    <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+    <div class="admin-card">
       <strong>الإجازات والتقارير</strong>
       <p style="font-size:13px;color:#718096">متابعة طلبات الإجازات والتقارير.</p>
     </div>
