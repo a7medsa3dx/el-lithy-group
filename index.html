@@ -154,6 +154,29 @@
   </button>
 </div>
 
+<div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
+  <strong>إعدادات موقع الشركة</strong>
+
+  <p style="font-size:13px;color:#718096">
+    حدد موقع مقر EL-LITHY GROUP باستخدام GPS.
+  </p>
+
+  <button id="getCompanyLocationButton" type="button">
+    تحديد موقعي الحالي
+  </button>
+
+  <p id="companyLocationStatus" style="font-size:13px">
+    لم يتم تحديد موقع المقر بعد.
+  </p>
+
+  <label for="allowedRadius">نطاق السماح بالحضور بالمتر</label>
+  <input id="allowedRadius" type="number" min="50" max="1000" value="150">
+
+  <button id="saveCompanyLocationButton" type="button">
+    حفظ موقع الشركة
+  </button>
+</div>
+
     <div style="padding:14px;background:#f1f7fa;border-radius:10px;margin-top:12px">
       <strong>إدارة الورديات</strong>
       <p style="font-size:13px;color:#718096">تحديد مواعيد العمل والراحة لكل موظف.</p>
@@ -501,6 +524,91 @@ $("addEmployeeForm").addEventListener("submit", async event => {
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = "إضافة الموظف";
+  }
+});
+
+// تخزين إحداثيات مقر الشركة مؤقتًا
+let selectedCompanyLocation = null;
+
+// تحديد موقع الشركة باستخدام GPS
+$("getCompanyLocationButton").addEventListener("click", () => {
+  const status = $("companyLocationStatus");
+
+  if (!navigator.geolocation) {
+    status.textContent = "المتصفح لا يدعم تحديد الموقع.";
+    return;
+  }
+
+  status.textContent = "جارٍ تحديد موقعك الحالي...";
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      selectedCompanyLocation = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
+      };
+
+      status.textContent =
+        "تم تحديد الموقع بنجاح. خط العرض: " +
+        selectedCompanyLocation.latitude.toFixed(6) +
+        " | خط الطول: " +
+        selectedCompanyLocation.longitude.toFixed(6);
+    },
+    error => {
+      status.textContent =
+        error.code === 1
+          ? "يجب السماح للمتصفح بالوصول إلى الموقع."
+          : "تعذر تحديد الموقع. حاول مرة أخرى.";
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 0
+    }
+  );
+});
+
+// حفظ موقع الشركة في قاعدة البيانات
+$("saveCompanyLocationButton").addEventListener("click", async () => {
+  if (!selectedCompanyLocation) {
+    showMessage("حدد موقع الشركة أولاً.");
+    return;
+  }
+
+  const radius = Number($("allowedRadius").value);
+
+  if (!Number.isInteger(radius) || radius < 50 || radius > 1000) {
+    showMessage("نطاق السماح يجب أن يكون من 50 إلى 1000 متر.");
+    return;
+  }
+
+  const button = $("saveCompanyLocationButton");
+  button.disabled = true;
+  button.textContent = "جارٍ الحفظ...";
+
+  try {
+    const { error } = await db
+      .from("company_settings")
+      .upsert({
+        id: true,
+        latitude: selectedCompanyLocation.latitude,
+        longitude: selectedCompanyLocation.longitude,
+        allowed_radius_m: radius,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: "id"
+      });
+
+    if (error) throw error;
+
+    showMessage("تم حفظ موقع مقر الشركة بنجاح.");
+
+  } catch (error) {
+    console.error(error);
+    showMessage("تعذر حفظ الموقع: " + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "حفظ موقع الشركة";
   }
 });
 
