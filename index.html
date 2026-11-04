@@ -192,7 +192,43 @@
       <p style="font-size:13px;color:#718096">متابعة طلبات الإجازات والتقارير.</p>
     </div>
   </div>
+<!-- تقرير الحضور والانصراف للمدير -->
+<div id="attendanceReportSection"
+     style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
 
+  <h3 style="margin-top:0">تقرير الحضور والانصراف</h3>
+
+  <label for="attendanceReportDate">اختر تاريخ التقرير</label>
+  <input type="date" id="attendanceReportDate">
+
+  <button id="loadAttendanceReportButton" type="button">
+    عرض تقرير الحضور
+  </button>
+
+  <p id="attendanceReportStatus">اختر التاريخ ثم اضغط عرض التقرير.</p>
+
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:650px">
+      <thead>
+        <tr>
+          <th>الموظف</th>
+          <th>الكود</th>
+          <th>الحضور</th>
+          <th>الانصراف</th>
+          <th>التأخير</th>
+          <th>الراحة</th>
+          <th>الحالة</th>
+<th>ساعات العمل</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceReportBody">
+        <tr>
+         <td colspan="8">لم يتم تحميل التقرير بعد.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
   <div style="margin-top:25px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
     <h3 style="margin-top:0">إعدادات الحساب</h3>
     <h4>تغيير كلمة المرور</h4>
@@ -720,7 +756,162 @@ $("saveCompanyLocationButton").addEventListener("click", async () => {
     button.textContent = "حفظ موقع الشركة";
   }
 });
+// تقرير الحضور والانصراف للمدير
 
+function reportFormatTime(value) {
+  if (!value) return "—";
+
+  return new Date(value).toLocaleTimeString("ar-EG", {
+    timeZone: "Africa/Cairo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  });
+}
+
+function reportEscapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+function reportWorkDuration(record) {
+  if (!record.check_in || !record.check_out) return "—";
+
+  let total =
+    new Date(record.check_out).getTime() -
+    new Date(record.check_in).getTime();
+
+  if (record.break_start && record.break_end) {
+    total -=
+      new Date(record.break_end).getTime() -
+      new Date(record.break_start).getTime();
+  }
+
+  if (!Number.isFinite(total) || total < 0) return "—";
+
+  const hours = Math.floor(total / 3600000);
+  const minutes = Math.floor((total % 3600000) / 60000);
+
+  return `${hours} ساعة و${minutes} دقيقة`;
+}
+
+async function loadAttendanceReport() {
+  const button = $("loadAttendanceReportButton");
+  const status = $("attendanceReportStatus");
+  const body = $("attendanceReportBody");
+  const selectedDate = $("attendanceReportDate").value;
+
+  if (!selectedDate) {
+    showMessage("من فضلك اختر تاريخ التقرير.");
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = "جارٍ تحميل التقرير...";
+  body.innerHTML = '<tr><td colspan="8">جارٍ التحميل...</td></tr>';
+
+  try {
+    const { data: employees, error: employeesError } = await db
+      .from("profiles")
+      .select("id, full_name, employee_code")
+      .eq("role", "employee")
+      .eq("active", true)
+      .order("employee_code");
+
+    if (employeesError) throw employeesError;
+
+    const { data: records, error: recordsError } = await db
+      .from("attendance")
+      .select("*")
+      .eq("work_date", selectedDate);
+
+    if (recordsError) throw recordsError;
+
+    const recordsByEmployee = new Map(
+      (records || []).map(record => [record.employee_id, record])
+    );
+
+    if (!employees || employees.length === 0) {
+      body.innerHTML = '<tr><td colspan="8">لا يوجد موظفون نشطون.</td></tr>';
+      status.textContent = "اكتمل تحميل التقرير.";
+      return;
+    }
+
+    body.innerHTML = employees.map(employee => {
+      const record = recordsByEmployee.get(employee.id);
+
+      const checkIn = record
+        ? reportFormatTime(record.check_in)
+        : "—";
+
+      const checkOut = record
+        ? reportFormatTime(record.check_out)
+        : "—";
+
+      const late = record && record.check_in
+        ? `${record.late_minutes || 0} دقيقة`
+        : "—";
+
+      const breakTime = record && (record.break_start || record.break_end)
+        ? `${reportFormatTime(record.break_start)} - ${reportFormatTime(record.break_end)}`
+        : "—";
+
+      let attendanceStatus = "لا يوجد تسجيل";
+
+      if (record?.check_in && record?.check_out) {
+        attendanceStatus = "انصرف";
+      } else if (record?.check_in) {
+        attendanceStatus = "حاضر - لم يسجل الانصراف";
+      }
+
+      const duration = record
+        ? reportWorkDuration(record)
+        : "—";
+
+      return `
+        <tr>
+          <td>${reportEscapeHtml(employee.full_name)}</td>
+          <td>${reportEscapeHtml(employee.employee_code)}</td>
+          <td>${checkIn}</td>
+          <td>${checkOut}</td>
+          <td>${late}</td>
+          <td>${breakTime}</td>
+          <td>${attendanceStatus}</td>
+          <td>${duration}</td>
+        </tr>
+      `;
+    }).join("");
+
+    status.textContent =
+      `تم تحميل التقرير بنجاح لعدد ${employees.length} موظفين بتاريخ ${selectedDate}.`;
+
+  } catch (error) {
+    console.error("Attendance report error:", error);
+    status.textContent = "تعذر تحميل التقرير: " + error.message;
+    body.innerHTML = '<tr><td colspan="8">حدث خطأ أثناء تحميل البيانات.</td></tr>';
+  } finally {
+    button.disabled = false;
+  }
+}
+
+$("loadAttendanceReportButton").addEventListener(
+  "click",
+  loadAttendanceReport
+);
+
+// تحديد تاريخ اليوم بتوقيت القاهرة
+$("attendanceReportDate").value =
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
     $("passwordChangeForm").addEventListener("submit", async event => {
       event.preventDefault();
 
