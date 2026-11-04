@@ -450,19 +450,19 @@ function showSection(section) {
         throw new Error("لم يتم العثور على بيانات الموظف.");
       }
 
-      $("employeeName").textContent = profile.full_name;
-      $("employeeCode").textContent = profile.employee_code;
-      $("employeeRole").textContent =
-        profile.role === "owner" ? "مدير النظام" : "موظف";
+    $("employeeName").textContent = profile.full_name;
+$("employeeCode").textContent = profile.employee_code;
+$("employeeRole").textContent =
+  profile.role === "owner" ? "مدير النظام" : "موظف";
 
-      if (profile.role === "owner") {
-        showSection("dashboardSection");
-      } else {
-        $("staffName").textContent = profile.full_name;
-        $("staffCode").textContent = profile.employee_code;
-        showSection("employeeDashboardSection");
-      }
-
+if (profile.role === "owner") {
+  showSection("dashboardSection");
+  await initializeDayOffSection();
+} else {
+  $("staffName").textContent = profile.full_name;
+  $("staffCode").textContent = profile.employee_code;
+  showSection("employeeDashboardSection");
+}
       showMessage("تم تسجيل الدخول بنجاح.");
     }
 
@@ -1182,7 +1182,7 @@ $("dayOffDate").min = cairoToday;
 $("dayOffDate").value = cairoToday;
 
 // تحميل القسم عند فتح لوحة المدير
-initializeDayOffSection();
+
 
     $("passwordChangeForm").addEventListener("submit", async event => {
       event.preventDefault();
