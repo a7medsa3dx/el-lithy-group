@@ -192,6 +192,59 @@
       <p style="font-size:13px;color:#718096">متابعة طلبات الإجازات والتقارير.</p>
     </div>
   </div>
+  <!-- إدارة إجازات الموظفين -->
+<div id="employeeDaysOffSection"
+     style="margin-top:25px;padding:22px;background:#f1f7fa;border:1px solid #dce4eb;border-radius:14px">
+
+  <h3 style="margin-top:0">إدارة إجازات الموظفين</h3>
+
+  <p>إضافة إجازة يوم كامل لموظف أو إلغاء إجازة سابقة.</p>
+
+  <div style="display:grid;gap:12px;max-width:500px">
+
+    <label for="dayOffEmployee">اختيار الموظف</label>
+    <select id="dayOffEmployee" style="padding:12px;border-radius:8px">
+      <option value="">جارٍ تحميل الموظفين...</option>
+    </select>
+
+    <label for="dayOffDate">تاريخ الإجازة</label>
+    <input type="date" id="dayOffDate"
+           style="padding:12px;border-radius:8px">
+
+    <label for="dayOffReason">سبب الإجازة (اختياري)</label>
+    <input type="text" id="dayOffReason"
+           placeholder="مثلاً: إجازة شخصية"
+           style="padding:12px;border-radius:8px">
+
+    <button id="addDayOffButton" type="button">
+      اعتماد الإجازة
+    </button>
+
+  </div>
+
+  <p id="dayOffStatus">اختر الموظف والتاريخ لإضافة إجازة.</p>
+
+  <h4>الإجازات المسجلة</h4>
+
+  <div style="overflow-x:auto">
+    <table style="width:100%;min-width:550px;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th>الموظف</th>
+          <th>التاريخ</th>
+          <th>السبب</th>
+          <th>الإجراء</th>
+        </tr>
+      </thead>
+      <tbody id="dayOffTableBody">
+        <tr>
+          <td colspan="4">لم يتم تحميل الإجازات بعد.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
 <!-- تقرير الحضور والانصراف للمدير -->
 <div id="attendanceReportSection"
      style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
@@ -825,16 +878,30 @@ async function loadAttendanceReport() {
 
     if (employeesError) throw employeesError;
 
-    const { data: records, error: recordsError } = await db
-      .from("attendance")
-      .select("*")
-      .eq("work_date", selectedDate);
+    
+const { data: records, error: recordsError } = await db
+  .from("attendance")
+  .select("*")
+  .eq("work_date", selectedDate);
 
-    if (recordsError) throw recordsError;
+if (recordsError) throw recordsError;
 
-    const recordsByEmployee = new Map(
-      (records || []).map(record => [record.employee_id, record])
-    );
+// تحميل الإجازات المعتمدة في نفس التاريخ
+const { data: daysOff, error: daysOffError } = await db
+  .from("employee_days_off")
+  .select("employee_id, leave_date")
+  .eq("leave_date", selectedDate);
+
+if (daysOffError) throw daysOffError;
+
+const recordsByEmployee = new Map(
+  (records || []).map(record => [record.employee_id, record])
+);
+
+const daysOffByEmployee = new Set(
+  (daysOff || []).map(dayOff => dayOff.employee_id)
+);
+
 
     if (!employees || employees.length === 0) {
       body.innerHTML = '<tr><td colspan="8">لا يوجد موظفون نشطون.</td></tr>';
@@ -861,13 +928,15 @@ async function loadAttendanceReport() {
         ? `${reportFormatTime(record.break_start)} - ${reportFormatTime(record.break_end)}`
         : "—";
 
-      let attendanceStatus = "لا يوجد تسجيل";
+    let attendanceStatus = "لا يوجد تسجيل";
 
-      if (record?.check_in && record?.check_out) {
-        attendanceStatus = "انصرف";
-      } else if (record?.check_in) {
-        attendanceStatus = "حاضر - لم يسجل الانصراف";
-      }
+if (daysOffByEmployee.has(employee.id)) {
+  attendanceStatus = "إجازة معتمدة";
+} else if (record?.check_in && record?.check_out) {
+  attendanceStatus = "انصرف";
+} else if (record?.check_in) {
+  attendanceStatus = "حاضر - لم يسجل الانصراف";
+}
 
       const duration = record
         ? reportWorkDuration(record)
@@ -912,6 +981,209 @@ $("attendanceReportDate").value =
     month: "2-digit",
     day: "2-digit"
   }).format(new Date());
+    
+// =====================================
+// إدارة إجازات الموظفين - لوحة المدير
+// =====================================
+
+function escapeDayOffText(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+// تحميل الموظفين في قائمة الاختيار
+async function loadDayOffEmployees() {
+  const select = $("dayOffEmployee");
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("id, full_name, employee_code")
+    .eq("role", "employee")
+    .eq("active", true)
+    .order("employee_code");
+
+  if (error) throw error;
+
+  select.innerHTML = '<option value="">اختر الموظف</option>';
+
+  (data || []).forEach(employee => {
+    const option = document.createElement("option");
+    option.value = employee.id;
+    option.textContent =
+      employee.full_name + " - " + employee.employee_code;
+    select.appendChild(option);
+  });
+}
+
+// تحميل الإجازات المسجلة
+async function loadDayOffRecords() {
+  const body = $("dayOffTableBody");
+  body.innerHTML = '<tr><td colspan="4">جارٍ تحميل الإجازات...</td></tr>';
+
+  const { data: daysOff, error } = await db
+    .from("employee_days_off")
+    .select("*")
+    .order("leave_date", { ascending: false });
+
+  if (error) throw error;
+
+  const { data: employees, error: employeesError } = await db
+    .from("profiles")
+    .select("id, full_name, employee_code");
+
+  if (employeesError) throw employeesError;
+
+  const employeesMap = new Map(
+    (employees || []).map(employee => [employee.id, employee])
+  );
+
+  if (!daysOff || daysOff.length === 0) {
+    body.innerHTML =
+      '<tr><td colspan="4">لا توجد إجازات مسجلة.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = daysOff.map(dayOff => {
+    const employee = employeesMap.get(dayOff.employee_id);
+
+    return `
+      <tr>
+        <td>${escapeDayOffText(employee?.full_name || "موظف غير معروف")}</td>
+        <td>${escapeDayOffText(dayOff.leave_date)}</td>
+        <td>${escapeDayOffText(dayOff.reason || "—")}</td>
+        <td>
+          <button type="button"
+            data-day-off-id="${escapeDayOffText(dayOff.id)}">
+            إلغاء الإجازة
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+// اعتماد إجازة جديدة
+$("addDayOffButton").addEventListener("click", async () => {
+  const button = $("addDayOffButton");
+  const employeeId = $("dayOffEmployee").value;
+  const leaveDate = $("dayOffDate").value;
+  const reason = $("dayOffReason").value.trim();
+  const status = $("dayOffStatus");
+
+  if (!employeeId) {
+    showMessage("من فضلك اختر الموظف.");
+    return;
+  }
+
+  if (!leaveDate) {
+    showMessage("من فضلك اختر تاريخ الإجازة.");
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = "جارٍ اعتماد الإجازة...";
+
+  try {
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
+
+    if (userError) throw userError;
+
+    const { error } = await db
+      .from("employee_days_off")
+      .insert({
+        employee_id: employeeId,
+        leave_date: leaveDate,
+        reason: reason || null,
+        created_by: userData.user.id
+      });
+
+    if (error) {
+      if (error.code === "23505") {
+        throw new Error("هذا الموظف لديه إجازة مسجلة في هذا التاريخ بالفعل.");
+      }
+      throw error;
+    }
+
+    $("dayOffReason").value = "";
+    status.textContent = "تم اعتماد الإجازة بنجاح.";
+    showMessage("تم اعتماد الإجازة بنجاح.");
+
+    await loadDayOffRecords();
+
+  } catch (error) {
+    console.error(error);
+    status.textContent = "تعذر اعتماد الإجازة: " + error.message;
+    showMessage(error.message || "حدث خطأ أثناء اعتماد الإجازة.");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+// إلغاء إجازة
+$("dayOffTableBody").addEventListener("click", async event => {
+  const button = event.target.closest("button[data-day-off-id]");
+
+  if (!button) return;
+
+  const dayOffId = button.dataset.dayOffId;
+
+  if (!confirm("هل أنت متأكد من إلغاء هذه الإجازة؟")) {
+    return;
+  }
+
+  button.disabled = true;
+
+  try {
+    const { error } = await db
+      .from("employee_days_off")
+      .delete()
+      .eq("id", dayOffId);
+
+    if (error) throw error;
+
+    showMessage("تم إلغاء الإجازة بنجاح.");
+    await loadDayOffRecords();
+
+  } catch (error) {
+    console.error(error);
+    showMessage("تعذر إلغاء الإجازة: " + error.message);
+    button.disabled = false;
+  }
+});
+
+// تحميل بيانات قسم الإجازات
+async function initializeDayOffSection() {
+  try {
+    await loadDayOffEmployees();
+    await loadDayOffRecords();
+    $("dayOffStatus").textContent = "يمكنك الآن إدارة إجازات الموظفين.";
+  } catch (error) {
+    console.error(error);
+    $("dayOffStatus").textContent =
+      "تعذر تحميل بيانات الإجازات: " + error.message;
+  }
+}
+
+// تاريخ اليوم بتوقيت القاهرة
+const cairoToday = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Africa/Cairo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+}).format(new Date());
+
+$("dayOffDate").min = cairoToday;
+$("dayOffDate").value = cairoToday;
+
+// تحميل القسم عند فتح لوحة المدير
+initializeDayOffSection();
+
     $("passwordChangeForm").addEventListener("submit", async event => {
       event.preventDefault();
 
