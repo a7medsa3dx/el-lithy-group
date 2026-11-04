@@ -597,9 +597,9 @@ if (profile.role === "owner") {
   $("staffName").textContent = profile.full_name;
   $("staffCode").textContent = profile.employee_code;
   showSection("employeeDashboardSection");
+  $("attendanceStatus").textContent = "";
+  $("attendanceLocationStatus").textContent = "";
 }
-      showMessage("تم تسجيل الدخول بنجاح.");
-    }
 
 
     $("loginForm").addEventListener("submit", async event => {
