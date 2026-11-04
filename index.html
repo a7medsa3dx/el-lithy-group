@@ -449,6 +449,61 @@ $("manageEmployeesButton").addEventListener("click", () => {
 $("backToDashboardButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
+    
+$("backToDashboardButton").addEventListener("click", () => {
+  showSection("dashboardSection");
+});
+
+// إضافة موظف جديد إلى قاعدة البيانات
+$("addEmployeeForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const full_name = $("newEmployeeName").value.trim();
+  const employee_code = $("newEmployeeCode").value.trim().toUpperCase();
+  const password = $("newEmployeePassword").value;
+
+  if (!/^EMP00[1-5]$/.test(employee_code)) {
+    showMessage("كود الموظف يجب أن يكون من EMP001 إلى EMP005.");
+    return;
+  }
+
+  if (password.length < 8) {
+    showMessage("كلمة المرور يجب ألا تقل عن 8 أحرف.");
+    return;
+  }
+
+  const submitButton = $("addEmployeeForm").querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  submitButton.textContent = "جارٍ إنشاء الحساب...";
+
+  try {
+    const { data, error } = await db.functions.invoke(
+      "admin-create-employee",
+      {
+        body: { employee_code, full_name, password }
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.success) {
+      throw new Error(data?.error || "تعذر إنشاء حساب الموظف.");
+    }
+
+    $("addEmployeeForm").reset();
+    showMessage("تم إنشاء حساب الموظف بنجاح. كود الدخول: " + employee_code);
+
+  } catch (error) {
+    console.error(error);
+    showMessage(error.message || "حدث خطأ أثناء إنشاء الموظف.");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "إضافة الموظف";
+  }
+});
+
     $("passwordChangeForm").addEventListener("submit", async event => {
       event.preventDefault();
 
