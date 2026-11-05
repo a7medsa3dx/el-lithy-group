@@ -575,7 +575,7 @@ async function loadEmployeeList() {
   try {
     const { data: employees, error } = await db
       .from("profiles")
-      .select("employee_code, full_name, active")
+      .select("id, employee_code, full_name, active")
       .eq("role", "employee")
       .order("employee_code");
 
@@ -589,11 +589,12 @@ async function loadEmployeeList() {
     const table = document.createElement("table");
     const header = document.createElement("tr");
 
-    ["كود الموظف", "اسم الموظف", "حالة الحساب"].forEach(title => {
-      const th = document.createElement("th");
-      th.textContent = title;
-      header.appendChild(th);
-    });
+    ["كود الموظف", "اسم الموظف", "حالة الحساب", "الإجراءات"]
+      .forEach(title => {
+        const th = document.createElement("th");
+        th.textContent = title;
+        header.appendChild(th);
+      });
 
     table.appendChild(header);
 
@@ -610,6 +611,62 @@ async function loadEmployeeList() {
         row.appendChild(cell);
       });
 
+      const actionCell = document.createElement("td");
+      const button = document.createElement("button");
+
+      button.textContent = "تغيير الرمز السري";
+      button.type = "button";
+
+      button.addEventListener("click", async () => {
+        const newPassword = prompt(
+          "أدخل الرمز السري الجديد للموظف " +
+          employee.employee_code
+        );
+
+        if (newPassword === null) return;
+
+        if (newPassword.length < 8) {
+          alert("الرمز السري يجب ألا يقل عن 8 أحرف.");
+          return;
+        }
+
+        if (!confirm("هل تريد تأكيد تغيير الرمز السري؟")) {
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "جارٍ التغيير...";
+
+        try {
+          const { data, error } = await db.functions.invoke(
+            "admin-reset-employee-password",
+            {
+              body: {
+                employee_id: employee.id,
+                new_password: newPassword
+              }
+            }
+          );
+
+          if (error || !data?.success) {
+            throw new Error(
+              data?.error || error?.message || "تعذر تغيير الرمز السري."
+            );
+          }
+
+          alert("تم تغيير الرمز السري بنجاح.");
+
+        } catch (error) {
+          console.error(error);
+          alert(error.message || "حدث خطأ أثناء تغيير الرمز السري.");
+        } finally {
+          button.disabled = false;
+          button.textContent = "تغيير الرمز السري";
+        }
+      });
+
+      actionCell.appendChild(button);
+      row.appendChild(actionCell);
       table.appendChild(row);
     });
 
