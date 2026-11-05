@@ -473,7 +473,9 @@
 
   <div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
     <h3>قائمة الموظفين</h3>
-    <p>سيتم عرض الموظفين المسجلين هنا بعد ربط قاعدة البيانات.</p>
+    <div id="employeeListContainer">
+  <p>جارٍ تحميل قائمة الموظفين...</p>
+</div>
   </div>
 
   <button id="backToDashboardButton" type="button">
@@ -566,7 +568,58 @@ function showSection(section) {
 }
 
     
+async function loadEmployeeList() {
+  const container = $("employeeListContainer");
+  container.textContent = "جارٍ تحميل الموظفين...";
 
+  try {
+    const { data: employees, error } = await db
+      .from("profiles")
+      .select("employee_code, full_name, active")
+      .eq("role", "employee")
+      .order("employee_code");
+
+    if (error) throw error;
+
+    if (!employees || employees.length === 0) {
+      container.textContent = "لا يوجد موظفون مسجلون.";
+      return;
+    }
+
+    const table = document.createElement("table");
+    const header = document.createElement("tr");
+
+    ["كود الموظف", "اسم الموظف", "حالة الحساب"].forEach(title => {
+      const th = document.createElement("th");
+      th.textContent = title;
+      header.appendChild(th);
+    });
+
+    table.appendChild(header);
+
+    employees.forEach(employee => {
+      const row = document.createElement("tr");
+
+      [
+        employee.employee_code,
+        employee.full_name,
+        employee.active ? "نشط" : "غير نشط"
+      ].forEach(value => {
+        const cell = document.createElement("td");
+        cell.textContent = value;
+        row.appendChild(cell);
+      });
+
+      table.appendChild(row);
+    });
+
+    container.replaceChildren(table);
+
+  } catch (error) {
+    console.error(error);
+    container.textContent = "تعذر تحميل قائمة الموظفين.";
+  }
+}
     async function showDashboard() {
       const { data: userData, error: userError } =
         await db.auth.getUser();
@@ -593,6 +646,7 @@ $("employeeRole").textContent =
 if (profile.role === "owner") {
   showSection("dashboardSection");
   await initializeDayOffSection();
+  await loadEmployeeList();
 } else {
   $("staffName").textContent = profile.full_name;
   $("staffCode").textContent = profile.employee_code;
