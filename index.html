@@ -804,13 +804,35 @@ showMessage("تم تسجيل الدخول بنجاح.");
       showMessage("تم تسجيل الخروج.");
     });
 // تنفيذ عمليات الحضور والانصراف والراحة
+
 async function performAttendanceAction(action, buttonId) {
   const button = $(buttonId);
   const status = $("attendanceStatus");
   const locationStatus = $("attendanceLocationStatus");
 
+  const labels = {
+    check_in: "تسجيل الحضور",
+    break_start: "بدء الراحة",
+    break_end: "إنهاء الراحة",
+    check_out: "تسجيل الانصراف"
+  };
+
+  const successLabels = {
+    check_in: "تم تسجيل الحضور بنجاح",
+    break_start: "تم بدء الراحة بنجاح",
+    break_end: "تم إنهاء الراحة بنجاح",
+    check_out: "تم تسجيل الانصراف بنجاح"
+  };
+
+  let succeeded = false;
+
   button.disabled = true;
-  button.textContent = "جارٍ تحديد الموقع...";
+  button.textContent = "⏳ جارٍ تحديد الموقع...";
+  button.style.backgroundColor = "#2563eb";
+  button.style.color = "#ffffff";
+
+  status.textContent = "⏳ جارٍ تنفيذ العملية...";
+  status.style.color = "#2563eb";
 
   try {
     if (!navigator.geolocation) {
@@ -835,8 +857,10 @@ async function performAttendanceAction(action, buttonId) {
       );
     });
 
-    locationStatus.textContent = "تم تحديد موقعك، جارٍ تنفيذ العملية...";
-    button.textContent = "جارٍ التسجيل...";
+    locationStatus.textContent =
+      "📍 تم تحديد موقعك، جارٍ تسجيل العملية...";
+
+    button.textContent = "⏳ جارٍ التسجيل...";
 
     const { data, error } = await db.functions.invoke(
       "employee-attendance",
@@ -851,20 +875,31 @@ async function performAttendanceAction(action, buttonId) {
     );
 
     if (error) throw error;
+
     if (!data?.success) {
       throw new Error(data?.error || "تعذر تنفيذ العملية.");
     }
 
-    status.textContent = data.message;
+    succeeded = true;
+
+    button.textContent = "✓ " + successLabels[action];
+    button.style.backgroundColor = "#15803d";
+    button.style.color = "#ffffff";
+
+    status.textContent = "✅ " + data.message;
+    status.style.color = "#15803d";
+
     locationStatus.textContent =
-      "المسافة من مقر الشركة: " + data.distance_meters + " متر";
+      "📍 المسافة من مقر الشركة: " +
+      data.distance_meters + " متر";
 
     showMessage(data.message);
 
   } catch (error) {
     console.error(error);
 
-    let message = error.message || "حدث خطأ أثناء تسجيل العملية.";
+    let message = error.message ||
+      "حدث خطأ أثناء تسجيل العملية.";
 
     if (error.context && typeof error.context.json === "function") {
       try {
@@ -873,18 +908,21 @@ async function performAttendanceAction(action, buttonId) {
       } catch (_) {}
     }
 
+    button.textContent = "↻ إعادة المحاولة - " + labels[action];
+    button.style.backgroundColor = "#b91c1c";
+    button.style.color = "#ffffff";
+
+    status.textContent = "❌ " + message;
+    status.style.color = "#b91c1c";
+
+    locationStatus.textContent = "لم يتم تأكيد تسجيل العملية.";
+
     showMessage(message);
+
   } finally {
-    button.disabled = false;
-
-    const labels = {
-      check_in: "تسجيل الحضور",
-      break_start: "بدء الراحة",
-      break_end: "إنهاء الراحة",
-      check_out: "تسجيل الانصراف"
-    };
-
-    button.textContent = labels[action];
+    if (!succeeded) {
+      button.disabled = false;
+    }
   }
 }
 
