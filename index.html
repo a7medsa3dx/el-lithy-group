@@ -289,6 +289,14 @@
     </button>
   </div>
 
+      <div class="admin-card">
+    <strong>إدارة المبيعات</strong>
+    <p>تسجيل مبيعات الموظفين ومتابعة التارجت والعمولات والأداء الشهري.</p>
+    <button id="manageSalesButton" type="button">
+      فتح إدارة المبيعات
+    </button>
+  </div>
+    
 <div class="admin-card">
   <strong>إعدادات موقع الشركة</strong>
 
@@ -473,6 +481,20 @@
   </button>
 
 </section>
+    <section id="salesManagementSection" class="hidden">
+
+  <h2 style="text-align:center">إدارة المبيعات</h2>
+
+  <div class="notice">
+    تسجيل ومتابعة مبيعات موظفي EL-LITHY GROUP
+  </div>
+
+  <button id="backFromSalesButton" type="button">
+    العودة إلى لوحة المدير
+  </button>
+
+</section>
+    
 <section id="employeeDashboardSection" class="hidden">
 
   <h2 style="text-align:center">لوحة الموظف</h2>
@@ -551,12 +573,12 @@ function showSection(section) {
     "recoverySection",
     "dashboardSection",
     "employeesSection",
+    "salesManagementSection",
     "employeeDashboardSection"
   ].forEach(id => $(id).classList.add("hidden"));
 
   $(section).classList.remove("hidden");
 }
-
     
 async function loadEmployeeList() {
   const container = $("employeeListContainer");
@@ -945,11 +967,14 @@ $("manageEmployeesButton").addEventListener("click", () => {
 $("backToDashboardButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
-    
-$("backToDashboardButton").addEventListener("click", () => {
-  showSection("dashboardSection");
+
+$("manageSalesButton").addEventListener("click", () => {
+  showSection("salesManagementSection");
 });
 
+$("backFromSalesButton").addEventListener("click", () => {
+  showSection("dashboardSection");
+});
 // إضافة موظف جديد إلى قاعدة البيانات
 $("addEmployeeForm").addEventListener("submit", async event => {
   event.preventDefault();
