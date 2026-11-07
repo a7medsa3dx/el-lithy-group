@@ -533,6 +533,31 @@
   </form>
 </div>
 
+      <div style="margin-top:20px;padding:20px;border:1px solid #dce4eb;border-radius:12px">
+  <h3>سجل المبيعات</h3>
+
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:600px">
+      <thead>
+        <tr style="background:#f1f7fa">
+          <th style="padding:12px">الموظف</th>
+          <th style="padding:12px">العميل</th>
+          <th style="padding:12px">نوع البيع</th>
+          <th style="padding:12px">المبلغ</th>
+          <th style="padding:12px">التاريخ</th>
+        </tr>
+      </thead>
+      <tbody id="salesListBody">
+        <tr>
+          <td colspan="5" style="padding:12px;text-align:center">
+            جارٍ تحميل المبيعات...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+      
 <button id="backFromSalesButton" type="button">
   العودة إلى لوحة المدير
 </button>
@@ -1024,11 +1049,16 @@ $("manageSalesButton").addEventListener("click", () => {
   }).format(today);
 
   $("salesDate").value = cairoDate;
+  loadSalesList();
 });
 
 $("backFromSalesButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
+    $("salesDate").addEventListener("change", () => {
+  loadSalesList();
+});
+    
 // إضافة موظف جديد إلى قاعدة البيانات
 $("addEmployeeForm").addEventListener("submit", async event => {
   event.preventDefault();
@@ -1130,6 +1160,9 @@ $("addSaleForm").addEventListener("submit", async event => {
 
     $("addSaleForm").reset();
     message.textContent = "تم حفظ عملية البيع بنجاح.";
+    if ($("salesDate").value === saleDate) {
+  await loadSalesList();
+}
     message.style.color = "green";
 
   } catch (error) {
@@ -1141,6 +1174,77 @@ $("addSaleForm").addEventListener("submit", async event => {
     submitButton.textContent = "حفظ عملية البيع";
   }
 });
+
+    // تحميل سجل المبيعات حسب التاريخ المختار
+async function loadSalesList() {
+  const body = $("salesListBody");
+  const selectedDate = $("salesDate").value;
+
+  body.innerHTML = `
+    <tr>
+      <td colspan="5" style="padding:12px;text-align:center">
+        جارٍ تحميل المبيعات...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const { data: sales, error } = await db
+      .from("sales_transactions")
+      .select("employee_id, sale_date, customer_name, sale_type, amount, created_at")
+      .eq("sale_date", selectedDate)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const { data: employees, error: employeesError } = await db
+      .from("profiles")
+      .select("id, full_name");
+
+    if (employeesError) throw employeesError;
+
+    body.replaceChildren();
+
+    if (!sales || sales.length === 0) {
+      const row = body.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 5;
+      cell.textContent = "لا توجد مبيعات مسجلة في هذا اليوم.";
+      cell.style.textAlign = "center";
+      cell.style.padding = "12px";
+      return;
+    }
+
+    const employeeNames = {};
+    employees.forEach(employee => {
+      employeeNames[employee.id] = employee.full_name;
+    });
+
+    sales.forEach(sale => {
+      const row = body.insertRow();
+
+      const values = [
+        employeeNames[sale.employee_id] || "غير معروف",
+        sale.customer_name || "—",
+        sale.sale_type === "plus" ? "Plus" : "Triple Zero",
+        Number(sale.amount).toLocaleString("ar-EG") + " جنيه",
+        sale.sale_date
+      ];
+
+      values.forEach(value => {
+        const cell = row.insertCell();
+        cell.textContent = value;
+        cell.style.padding = "12px";
+        cell.style.textAlign = "center";
+        cell.style.borderBottom = "1px solid #dce4eb";
+      });
+    });
+
+  } catch (error) {
+    console.error(error);
+    body.textContent = "حدث خطأ أثناء تحميل سجل المبيعات.";
+  }
+}
     
 // تخزين إحداثيات مقر الشركة مؤقتًا
 let selectedCompanyLocation = null;
