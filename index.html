@@ -485,13 +485,57 @@
 
   <h2 style="text-align:center">إدارة المبيعات</h2>
 
-  <div class="notice">
-    تسجيل ومتابعة مبيعات موظفي EL-LITHY GROUP
-  </div>
+ <div class="notice">
+  تسجيل ومتابعة مبيعات موظفي EL-LITHY GROUP
+</div>
 
-  <button id="backFromSalesButton" type="button">
-    العودة إلى لوحة المدير
-  </button>
+<div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
+  <label for="salesDate"><strong>تاريخ تسجيل ومراجعة المبيعات</strong></label>
+ <input id="salesDate" type="date"
+  style="width:100%;padding:12px;margin-top:10px">
+</div>
+
+<div style="margin-top:20px;padding:20px;border:1px solid #dce4eb;border-radius:12px">
+  <h3>تسجيل عملية بيع جديدة</h3>
+
+  <form id="addSaleForm">
+
+    <label for="saleEmployee">الموظف</label>
+    <select id="saleEmployee" required>
+      <option value="">اختر الموظف</option>
+      <option value="EMP001">أحمد طارق</option>
+      <option value="EMP002">أحمد حجازي</option>
+      <option value="EMP003">شادن</option>
+      <option value="EMP004">چومانه</option>
+      <option value="EMP005">يسرا</option>
+    </select>
+
+    <label for="saleCustomer" style="display:block;margin-top:12px">اسم العميل (اختياري)</label>
+    <input id="saleCustomer" type="text" placeholder="اسم العميل">
+
+    <label for="saleType" style="display:block;margin-top:12px">نوع البيع</label>
+    <select id="saleType" required>
+      <option value="">اختر نوع البيع</option>
+      <option value="plus">Plus</option>
+      <option value="triple_zero">Triple Zero</option>
+    </select>
+
+    <label for="saleAmount" style="display:block;margin-top:12px">مبلغ البيع بالجنيه</label>
+    <input id="saleAmount" type="number" min="0.01" step="0.01"
+      placeholder="مثال: 25000" required>
+
+    <button type="submit" style="margin-top:16px">
+      حفظ عملية البيع
+    </button>
+
+    <p id="saleFormMessage"></p>
+
+  </form>
+</div>
+
+<button id="backFromSalesButton" type="button">
+  العودة إلى لوحة المدير
+</button>
 
 </section>
     
@@ -970,6 +1014,16 @@ $("backToDashboardButton").addEventListener("click", () => {
 
 $("manageSalesButton").addEventListener("click", () => {
   showSection("salesManagementSection");
+
+  const today = new Date();
+  const cairoDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(today);
+
+  $("salesDate").value = cairoDate;
 });
 
 $("backFromSalesButton").addEventListener("click", () => {
@@ -1025,6 +1079,69 @@ $("addEmployeeForm").addEventListener("submit", async event => {
   }
 });
 
+    // تسجيل عملية بيع جديدة
+$("addSaleForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const employeeCode = $("saleEmployee").value;
+  const saleDate = $("salesDate").value;
+  const customerName = $("saleCustomer").value.trim();
+  const saleType = $("saleType").value;
+  const amount = Number($("saleAmount").value);
+  const message = $("saleFormMessage");
+  const submitButton = $("addSaleForm").querySelector('button[type="submit"]');
+
+  if (!employeeCode || !saleDate || !saleType || !Number.isFinite(amount) || amount <= 0) {
+    message.textContent = "يرجى مراجعة البيانات وإدخال مبلغ صحيح.";
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = "جارٍ حفظ البيع...";
+  message.textContent = "";
+
+  try {
+    const { data: employee, error: employeeError } = await db
+      .from("profiles")
+      .select("id")
+      .eq("employee_code", employeeCode)
+      .eq("role", "employee")
+      .single();
+
+    if (employeeError) throw employeeError;
+
+    const { data: authData, error: authError } = await db.auth.getUser();
+
+    if (authError) throw authError;
+    if (!authData.user) throw new Error("يجب تسجيل دخول المدير أولاً.");
+
+    const { error: saleError } = await db
+      .from("sales_transactions")
+      .insert({
+        employee_id: employee.id,
+        sale_date: saleDate,
+        customer_name: customerName || null,
+        sale_type: saleType,
+        amount: amount,
+        created_by: authData.user.id
+      });
+
+    if (saleError) throw saleError;
+
+    $("addSaleForm").reset();
+    message.textContent = "تم حفظ عملية البيع بنجاح.";
+    message.style.color = "green";
+
+  } catch (error) {
+    console.error(error);
+    message.textContent = error.message || "حدث خطأ أثناء حفظ عملية البيع.";
+    message.style.color = "red";
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "حفظ عملية البيع";
+  }
+});
+    
 // تخزين إحداثيات مقر الشركة مؤقتًا
 let selectedCompanyLocation = null;
 
