@@ -534,7 +534,31 @@
 </div>
 
       <div style="margin-top:20px;padding:20px;border:1px solid #dce4eb;border-radius:12px">
-  <h3>سجل المبيعات</h3>
+<h3>ملخص مبيعات اليوم</h3>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:15px 0">
+
+  <div style="background:#e8f3ff;padding:18px;border-radius:12px">
+    <strong>مبيعات Plus</strong>
+    <h2 id="dailyPlusTotal">0 جنيه</h2>
+    <p id="dailyPlusCount">0 عملية</p>
+  </div>
+
+  <div style="background:#e9f8f0;padding:18px;border-radius:12px">
+    <strong>مبيعات Triple Zero</strong>
+    <h2 id="dailyTripleTotal">0 جنيه</h2>
+    <p id="dailyTripleCount">0 عملية</p>
+  </div>
+
+  <div style="background:#fff4e5;padding:18px;border-radius:12px">
+    <strong>إجمالي مبيعات اليوم</strong>
+    <h2 id="dailyTotal">0 جنيه</h2>
+    <p id="dailyCount">0 عملية</p>
+  </div>
+
+</div>
+
+<h3>سجل المبيعات</h3>
 
   <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;min-width:600px">
@@ -1176,9 +1200,21 @@ $("addSaleForm").addEventListener("submit", async event => {
 });
 
     // تحميل سجل المبيعات حسب التاريخ المختار
+
 async function loadSalesList() {
   const body = $("salesListBody");
   const selectedDate = $("salesDate").value;
+
+  const formatMoney = amount =>
+    Number(amount).toLocaleString("ar-EG") + " جنيه";
+
+  // تصفير الملخص أثناء التحميل
+  $("dailyPlusTotal").textContent = "0 جنيه";
+  $("dailyPlusCount").textContent = "0 عملية";
+  $("dailyTripleTotal").textContent = "0 جنيه";
+  $("dailyTripleCount").textContent = "0 عملية";
+  $("dailyTotal").textContent = "0 جنيه";
+  $("dailyCount").textContent = "0 عملية";
 
   body.innerHTML = `
     <tr>
@@ -1203,6 +1239,40 @@ async function loadSalesList() {
 
     if (employeesError) throw employeesError;
 
+    const employeeNames = {};
+    employees.forEach(employee => {
+      employeeNames[employee.id] = employee.full_name;
+    });
+
+    let plusTotal = 0;
+    let plusCount = 0;
+    let tripleTotal = 0;
+    let tripleCount = 0;
+
+    (sales || []).forEach(sale => {
+      const amount = Number(sale.amount) || 0;
+
+      if (sale.sale_type === "plus") {
+        plusTotal += amount;
+        plusCount++;
+      } else if (sale.sale_type === "triple_zero") {
+        tripleTotal += amount;
+        tripleCount++;
+      }
+    });
+
+    const total = plusTotal + tripleTotal;
+    const count = plusCount + tripleCount;
+
+    $("dailyPlusTotal").textContent = formatMoney(plusTotal);
+    $("dailyPlusCount").textContent = `${plusCount} عملية`;
+
+    $("dailyTripleTotal").textContent = formatMoney(tripleTotal);
+    $("dailyTripleCount").textContent = `${tripleCount} عملية`;
+
+    $("dailyTotal").textContent = formatMoney(total);
+    $("dailyCount").textContent = `${count} عملية`;
+
     body.replaceChildren();
 
     if (!sales || sales.length === 0) {
@@ -1215,11 +1285,6 @@ async function loadSalesList() {
       return;
     }
 
-    const employeeNames = {};
-    employees.forEach(employee => {
-      employeeNames[employee.id] = employee.full_name;
-    });
-
     sales.forEach(sale => {
       const row = body.insertRow();
 
@@ -1227,7 +1292,7 @@ async function loadSalesList() {
         employeeNames[sale.employee_id] || "غير معروف",
         sale.customer_name || "—",
         sale.sale_type === "plus" ? "Plus" : "Triple Zero",
-        Number(sale.amount).toLocaleString("ar-EG") + " جنيه",
+        formatMoney(sale.amount),
         sale.sale_date
       ];
 
@@ -1245,6 +1310,7 @@ async function loadSalesList() {
     body.textContent = "حدث خطأ أثناء تحميل سجل المبيعات.";
   }
 }
+
     
 // تخزين إحداثيات مقر الشركة مؤقتًا
 let selectedCompanyLocation = null;
