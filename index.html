@@ -596,6 +596,11 @@
 
   </div>
 
+  <div id="monthlyTargetsWarning"
+  style="margin-top:18px;padding:15px;border-radius:10px;background:#fff4e5;color:#8a5200;font-weight:bold">
+  جارٍ مراجعة تطابق الأهداف...
+</div>
+  
   <h3 style="margin-top:25px">أداء الموظفين الشهري</h3>
 
   <div style="overflow-x:auto">
@@ -1497,9 +1502,38 @@ async function loadMonthlySalesPerformance() {
       cell.textContent = "لا توجد بيانات أهداف لهذا الشهر.";
       cell.style.textAlign = "center";
       cell.style.padding = "12px";
-      return;
+          return;
     }
 
+const employeeTargetsTotal = (employees || [])
+  .filter(employee => employee.employee_code !== "EMP002")
+  .reduce((sum, employee) => sum + Number(employee.target_amount || 0), 0);
+
+const companyTarget = Number(company?.company_target || 0);
+const difference = Math.abs(companyTarget - employeeTargetsTotal);
+
+const warning = $("monthlyTargetsWarning");
+
+if (companyTarget === employeeTargetsTotal) {
+  warning.textContent = "✓ إجمالي أهداف الموظفين مطابق لهدف الشركة.";
+  warning.style.background = "#e9f8f0";
+  warning.style.color = "#176b3a";
+} else {
+  warning.textContent =
+    "⚠ تنبيه: إجمالي أهداف الموظفين " +
+    formatMoney(employeeTargetsTotal) +
+    "، وهدف الشركة " +
+    formatMoney(companyTarget) +
+    "، والفرق " +
+    formatMoney(difference) +
+    (employeeTargetsTotal > companyTarget
+      ? " (أهداف الموظفين أكبر من هدف الشركة)."
+      : " (أهداف الموظفين أقل من هدف الشركة).");
+
+  warning.style.background = "#fff4e5";
+  warning.style.color = "#8a5200";
+}
+    
 employees.forEach(employee => {
   const row = body.insertRow();
 
