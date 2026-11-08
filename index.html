@@ -873,6 +873,22 @@
 
 </div>
 
+  <!-- سجل مبيعات الموظف -->
+<div id="employeeSalesHistory" style="
+  margin-top:18px;
+  padding:18px;
+  background:#fff;
+  border:1px solid #dce6ef;
+  border-radius:16px;
+">
+  <h3 style="color:#173b55;margin:0 0 15px">
+    📋 سجل مبيعاتي
+  </h3>
+
+  <div id="employeeSalesHistoryList">
+    جاري تحميل سجل المبيعات...
+  </div>
+</div>
   
   <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
     <h3>الإجازات</h3>
@@ -1585,7 +1601,7 @@ async function loadSalesList() {
     const total = plusTotal + tripleTotal;
     const count = plusCount + tripleCount;
 
-    $("dailyPlusTotal").textContent = formatMoney(plusTotal);
+     = formatMoney(plusTotal);
     $("dailyPlusCount").textContent = `${plusCount} عملية`;
 
     $("dailyTripleTotal").textContent = formatMoney(tripleTotal);
@@ -2019,9 +2035,54 @@ async function loadEmployeeSalesDashboard(profile) {
         Math.min(100, Math.max(0, achievement)) + "%";
     }
 
-    $("employeeSalesMessage").textContent =
-      data ? "يتم تحديث بيانات المبيعات تلقائيًا عند تسجيل الدخول." :
-      "لا توجد مبيعات مسجلة لك خلال هذا الشهر حتى الآن.";
+   
+      // تحميل سجل مبيعات الموظف
+const [year, month] = cairoDate.slice(0, 7).split("-").map(Number);
+
+const nextMonth = month === 12
+  ? `${year + 1}-01-01`
+  : `${year}-${String(month + 1).padStart(2, "0")}-01`;
+
+const { data: history, error: historyError } = await db
+  .from("sales_transactions")
+  .select("id, sale_date, customer_name, sale_type, amount")
+  .eq("employee_id", profile.id)
+  .gte("sale_date", monthStart)
+  .lt("sale_date", nextMonth)
+  .order("created_at", { ascending: false });
+
+if (historyError) throw historyError;
+
+const historyList = $("employeeSalesHistoryList");
+historyList.replaceChildren();
+
+if (!history || history.length === 0) {
+  historyList.textContent = "لا توجد عمليات بيع مسجلة هذا الشهر.";
+} else {
+  history.forEach(sale => {
+    const item = document.createElement("div");
+
+    item.style.cssText =
+      "padding:13px;margin-bottom:10px;background:#f3f7fb;border-radius:10px;border-right:4px solid #20a675";
+
+    const customer = document.createElement("strong");
+    customer.textContent = sale.customer_name || "بدون اسم عميل";
+
+    const details = document.createElement("p");
+    details.style.cssText = "margin:7px 0 0;color:#64748b";
+
+    details.textContent =
+      `${sale.sale_type === "plus" ? "Plus" : "Triple Zero"} | ` +
+      `${formatMoney(Number(sale.amount))} | ${sale.sale_date}`;
+
+    item.append(customer, details);
+    historyList.appendChild(item);
+  });
+}
+
+$("employeeSalesMessage").textContent =
+  data ? "يتم تحديث بيانات المبيعات تلقائيًا عند تسجيل الدخول." :
+  "لا توجد مبيعات مسجلة لك خلال هذا الشهر حتى الآن.";
 
   } catch (error) {
     console.error("Employee sales dashboard error:", error);
