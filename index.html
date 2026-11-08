@@ -223,6 +223,89 @@
   padding: 12px;
   border-bottom: 1px solid #e5edf2;
 }
+    /* تصميم لوحة المبيعات الاحترافي */
+#salesManagementSection {
+  width: 100%;
+  color: #173449;
+}
+
+#salesManagementSection > h2 {
+  color: #102b3f;
+  font-size: 30px;
+  font-weight: 800;
+  margin: 10px 0 20px;
+}
+
+#salesManagementSection h3 {
+  color: #102b3f;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+#salesManagementSection .notice {
+  background: linear-gradient(135deg, #102b3f, #1c7890);
+  color: white;
+  padding: 22px;
+  border-radius: 16px;
+  font-size: 15px;
+  box-shadow: 0 8px 22px #102b3f20;
+}
+
+#salesManagementSection input,
+#salesManagementSection select {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #dce7ed;
+  border-radius: 10px;
+  background: #f8fbfd;
+  color: #173449;
+}
+
+#salesManagementSection input:focus,
+#salesManagementSection select:focus {
+  border-color: #1c7890;
+  outline: none;
+  box-shadow: 0 0 0 3px #1c789020;
+}
+
+#salesManagementSection button {
+  transition: .2s ease;
+}
+
+#salesManagementSection button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+#salesManagementSection table {
+  border-collapse: separate !important;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+#salesManagementSection th {
+  background: #102b3f;
+  color: white;
+  padding: 14px !important;
+  font-size: 13px;
+}
+
+#salesManagementSection td {
+  padding: 13px !important;
+  border-bottom: 1px solid #e7eef3;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  #salesManagementSection > h2 {
+    font-size: 24px;
+  }
+
+  #salesManagementSection h3 {
+    font-size: 19px;
+  }
+}
   </style>
 </head>
 <body>
@@ -558,66 +641,78 @@
 
 </div>
 
+ <!-- ملخص الأداء الشهري -->
+<div style="margin-top:28px;padding:22px;background:#f7fafc;border:1px solid #e5edf2;border-radius:20px;box-shadow:0 8px 25px #102b3f0b">
 
-<!-- ملخص الأداء الشهري -->
-<div style="margin-top:25px;padding:20px;border:1px solid #dce4eb;border-radius:12px;background:#fff">
+  <h3 style="margin-top:0;font-size:23px">الأداء والمبيعات الشهرية</h3>
 
-  <h3>ملخص الأداء الشهري</h3>
-
-  <label for="salesMonth"><strong>الشهر المطلوب</strong></label>
+  <label for="salesMonth"><strong>اختر الشهر</strong></label>
   <input id="salesMonth" type="month"
-    style="width:100%;padding:12px;margin:10px 0 18px">
+    style="width:100%;padding:13px;margin:10px 0 22px">
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px">
 
-    <div style="background:#e8f3ff;padding:18px;border-radius:12px">
-      <strong>هدف الشركة الشهري</strong>
-<h2 id="companyMonthlyTarget">0 جنيه</h2>
-
-<button type="button" id="editCompanyTargetButton"
-  style="margin-top:10px;padding:9px 16px;background:#173b55;color:white;border:0;border-radius:8px;cursor:pointer">
-  تعديل هدف الشركة
-</button>    </div>
-
-    <div style="background:#e9f8f0;padding:18px;border-radius:12px">
-      <strong>إجمالي مبيعات الشركة</strong>
-      <h2 id="companyMonthlySales">0 جنيه</h2>
+    <!-- هدف الشركة -->
+    <div style="background:linear-gradient(145deg,#102b3f,#1c526b);padding:22px;border-radius:17px;color:white;box-shadow:0 7px 18px #102b3f20">
+      <div style="font-size:14px;opacity:.85">🎯 هدف الشركة الشهري</div>
+      <h2 id="companyMonthlyTarget" style="font-size:25px;margin:15px 0;color:white">0 جنيه</h2>
+      <button type="button" id="editCompanyTargetButton"
+        style="margin-top:8px;padding:10px;background:#ffffff;color:#102b3f;border:0;border-radius:9px;font-weight:bold">
+        تعديل هدف الشركة
+      </button>
     </div>
 
-    <div style="background:#fff4e5;padding:18px;border-radius:12px">
-      <strong>نسبة تحقيق الهدف</strong>
-      <h2 id="companyAchievement">0%</h2>
+    <!-- المبيعات -->
+    <div style="background:white;padding:22px;border-radius:17px;border:1px solid #dceee7;border-bottom:4px solid #20a675;box-shadow:0 7px 18px #102b3f0a">
+      <div style="font-size:14px;color:#648074">💰 إجمالي مبيعات الشركة</div>
+      <h2 id="companyMonthlySales" style="font-size:25px;margin:15px 0;color:#16865f">0 جنيه</h2>
+      <div style="font-size:12px;color:#84949c">إجمالي مبيعات الموظفين أصحاب التارجت</div>
     </div>
 
-    <div style="background:#f3edff;padding:18px;border-radius:12px">
-      <strong>المتبقي من الهدف</strong>
-      <h2 id="companyRemainingTarget">0 جنيه</h2>
+    <!-- نسبة التحقيق -->
+    <div style="background:white;padding:22px;border-radius:17px;border:1px solid #e4eafa;border-bottom:4px solid #4385d8;box-shadow:0 7px 18px #102b3f0a">
+      <div style="font-size:14px;color:#718096">📊 نسبة تحقيق الهدف</div>
+      <h2 id="companyAchievement" style="font-size:30px;margin:15px 0;color:#3478c8">0%</h2>
+
+      <div style="height:11px;background:#e8eef5;border-radius:20px;overflow:hidden">
+        <div id="companyProgressBar"
+          style="height:100%;width:0%;background:linear-gradient(90deg,#4385d8,#20b486);border-radius:20px;transition:width .5s">
+        </div>
+      </div>
+      <div style="font-size:12px;color:#84949c;margin-top:9px">مستوى إنجاز تارجت الشركة</div>
+    </div>
+
+    <!-- المتبقي -->
+    <div style="background:white;padding:22px;border-radius:17px;border:1px solid #eee5fa;border-bottom:4px solid #9b6bd6;box-shadow:0 7px 18px #102b3f0a">
+      <div style="font-size:14px;color:#81718f">🏁 المتبقي من الهدف</div>
+      <h2 id="companyRemainingTarget" style="font-size:23px;margin:15px 0;color:#8954bd">0 جنيه</h2>
+      <div style="font-size:12px;color:#84949c">المبلغ المطلوب للوصول للتارجت</div>
     </div>
 
   </div>
 
   <div id="monthlyTargetsWarning"
-  style="margin-top:18px;padding:15px;border-radius:10px;background:#fff4e5;color:#8a5200;font-weight:bold">
-  جارٍ مراجعة تطابق الأهداف...
-</div>
-  
-  <h3 style="margin-top:25px">أداء الموظفين الشهري</h3>
+    style="margin-top:20px;padding:16px;border-radius:12px;background:#fff4e5;color:#8a5200;font-weight:bold;line-height:1.8">
+    جارٍ مراجعة تطابق الأهداف...
+  </div>
 
-  <div style="overflow-x:auto">
+  <h3 style="margin-top:28px">أداء الموظفين الشهري</h3>
+
+  <div style="overflow-x:auto;background:white;border-radius:14px;border:1px solid #e5edf2">
     <table style="width:100%;border-collapse:collapse;min-width:750px">
-    <thead>
-  <tr style="background:#f1f7fa">
-    <th style="padding:12px">الموظف</th>
-    <th style="padding:12px">إجمالي المبيعات</th>
-    <th style="padding:12px">الهدف</th>
-    <th style="padding:12px">نسبة التحقيق</th>
-    <th style="padding:12px">العمولة</th>
-    <th style="padding:12px">إجراءات</th>
-  </tr>
-</thead>
+      <thead>
+        <tr style="background:#102b3f;color:white">
+          <th style="padding:14px">الموظف</th>
+          <th style="padding:14px">إجمالي المبيعات</th>
+          <th style="padding:14px">الهدف</th>
+          <th style="padding:14px">نسبة التحقيق</th>
+          <th style="padding:14px">العمولة</th>
+          <th style="padding:14px">إجراءات</th>
+        </tr>
+      </thead>
       <tbody id="monthlySalesBody">
         <tr>
-         <td colspan="6" style="padding:12px;text-align:center">
+          <td colspan="6" style="padding:15px;text-align:center">
             جارٍ تحميل الأداء الشهري...
           </td>
         </tr>
@@ -626,7 +721,6 @@
   </div>
 
 </div>
-
 <h3>سجل المبيعات</h3>
 
   <div style="overflow-x:auto">
@@ -1479,6 +1573,13 @@ async function loadMonthlySalesPerformance() {
       $("companyAchievement").textContent =
         Number(company.achievement_percentage || 0).toLocaleString("ar-EG") + "%";
 
+      const companyProgress = Math.max(
+  0,
+  Math.min(100, Number(company.achievement_percentage || 0))
+);
+
+$("companyProgressBar").style.width = companyProgress + "%";
+      
       const remaining = Number(company.remaining_target || 0);
 
       $("companyRemainingTarget").textContent =
@@ -1489,6 +1590,7 @@ async function loadMonthlySalesPerformance() {
       $("companyMonthlyTarget").textContent = "غير محدد";
       $("companyMonthlySales").textContent = formatMoney(0);
       $("companyAchievement").textContent = "0%";
+      $("companyProgressBar").style.width = "0%";
       $("companyRemainingTarget").textContent = "غير محدد";
     }
 
@@ -1549,14 +1651,47 @@ employees.forEach(employee => {
     formatMoney(employee.commission_amount)
   ];
 
-  values.forEach(value => {
+    values.forEach((value, index) => {
     const cell = row.insertCell();
-    cell.textContent = value;
     cell.style.padding = "12px";
     cell.style.textAlign = "center";
     cell.style.borderBottom = "1px solid #dce4eb";
-  });
 
+    if (index !== 3) {
+      cell.textContent = value;
+      return;
+    }
+
+    if (employee.achievement_percentage == null) {
+      cell.textContent = "بدون تارجت";
+      return;
+    }
+
+    const percentage = Number(employee.achievement_percentage);
+    const progress = Math.max(0, Math.min(100, percentage));
+
+    const label = document.createElement("div");
+    label.textContent =
+      percentage.toLocaleString("ar-EG") + "%";
+    label.style.fontWeight = "bold";
+    label.style.marginBottom = "8px";
+    label.style.color = percentage >= 100 ? "#16865f" : "#3478c8";
+
+    const track = document.createElement("div");
+    track.style.cssText =
+      "height:9px;background:#e8eef5;border-radius:20px;overflow:hidden;min-width:90px";
+
+    const bar = document.createElement("div");
+    bar.style.cssText =
+      "height:100%;width:" + progress +
+      "%;background:" +
+      (percentage >= 100 ? "#20a675" : "#4385d8") +
+      ";border-radius:20px;transition:width .5s";
+
+    track.appendChild(bar);
+    cell.appendChild(label);
+    cell.appendChild(track);
+  });
   const actionCell = row.insertCell();
   actionCell.style.textAlign = "center";
   actionCell.style.padding = "12px";
