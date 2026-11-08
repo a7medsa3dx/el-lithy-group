@@ -616,29 +616,33 @@
   </form>
 </div>
 
-      <div style="margin-top:20px;padding:20px;border:1px solid #dce4eb;border-radius:12px">
-<h3>ملخص مبيعات اليوم</h3>
+ <div style="margin-top:25px;padding:22px;background:#f7fafc;border:1px solid #e5edf2;border-radius:20px;box-shadow:0 8px 25px #102b3f0b">
 
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:15px 0">
+  <h3 style="margin-top:0;font-size:23px;color:#102b3f">
+    ملخص مبيعات اليوم
+  </h3>
 
-  <div style="background:#e8f3ff;padding:18px;border-radius:12px">
-    <strong>مبيعات Plus</strong>
-    <h2 id="dailyPlusTotal">0 جنيه</h2>
-    <p id="dailyPlusCount">0 عملية</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-top:20px">
+
+    <div style="background:linear-gradient(145deg,#2463a5,#4385d8);padding:22px;border-radius:17px;color:white;box-shadow:0 7px 18px #4385d820">
+      <div style="font-size:15px;opacity:.9">💳 مبيعات Plus</div>
+      <h2 id="dailyPlusTotal" style="font-size:25px;margin:15px 0;color:white">0 جنيه</h2>
+      <p id="dailyPlusCount" style="margin:0;opacity:.9">0 عملية</p>
+    </div>
+
+    <div style="background:linear-gradient(145deg,#16865f,#20a675);padding:22px;border-radius:17px;color:white;box-shadow:0 7px 18px #20a67520">
+      <div style="font-size:15px;opacity:.9">💰 مبيعات Triple Zero</div>
+      <h2 id="dailyTripleTotal" style="font-size:25px;margin:15px 0;color:white">0 جنيه</h2>
+      <p id="dailyTripleCount" style="margin:0;opacity:.9">0 عملية</p>
+    </div>
+
+    <div style="background:linear-gradient(145deg,#102b3f,#1c526b);padding:22px;border-radius:17px;color:white;box-shadow:0 7px 18px #102b3f20">
+      <div style="font-size:15px;opacity:.9">📊 إجمالي مبيعات اليوم</div>
+      <h2 id="dailyTotal" style="font-size:27px;margin:15px 0;color:white">0 جنيه</h2>
+      <p id="dailyCount" style="margin:0;opacity:.9">0 عملية</p>
+    </div>
+
   </div>
-
-  <div style="background:#e9f8f0;padding:18px;border-radius:12px">
-    <strong>مبيعات Triple Zero</strong>
-    <h2 id="dailyTripleTotal">0 جنيه</h2>
-    <p id="dailyTripleCount">0 عملية</p>
-  </div>
-
-  <div style="background:#fff4e5;padding:18px;border-radius:12px">
-    <strong>إجمالي مبيعات اليوم</strong>
-    <h2 id="dailyTotal">0 جنيه</h2>
-    <p id="dailyCount">0 عملية</p>
-  </div>
-
 </div>
 
  <!-- ملخص الأداء الشهري -->
