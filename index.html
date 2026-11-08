@@ -581,39 +581,58 @@
 <div style="margin-top:20px;padding:20px;border:1px solid #dce4eb;border-radius:12px">
   <h3>تسجيل عملية بيع جديدة</h3>
 
-  <form id="addSaleForm">
 
-    <label for="saleEmployee">الموظف</label>
-    <select id="saleEmployee" required>
-      <option value="">اختر الموظف</option>
-      <option value="EMP001">أحمد طارق</option>
-      <option value="EMP002">أحمد حجازي</option>
-      <option value="EMP003">شادن</option>
-      <option value="EMP004">چومانه</option>
-      <option value="EMP005">يسرا</option>
-    </select>
+<form id="addSaleForm" style="background:#f7fafc;padding:22px;border:1px solid #e5edf2;border-radius:18px;box-shadow:0 6px 20px #102b3f0a">
 
-    <label for="saleCustomer" style="display:block;margin-top:12px">اسم العميل (اختياري)</label>
-    <input id="saleCustomer" type="text" placeholder="اسم العميل">
+  <h3 style="margin-top:0;color:#102b3f;font-size:21px">
+    📝 تسجيل عملية بيع جديدة
+  </h3>
 
-    <label for="saleType" style="display:block;margin-top:12px">نوع البيع</label>
-    <select id="saleType" required>
-      <option value="">اختر نوع البيع</option>
-      <option value="plus">Plus</option>
-      <option value="triple_zero">Triple Zero</option>
-    </select>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
 
-    <label for="saleAmount" style="display:block;margin-top:12px">مبلغ البيع بالجنيه</label>
-    <input id="saleAmount" type="number" min="0.01" step="0.01"
-      placeholder="مثال: 25000" required>
+    <div>
+      <label for="saleEmployee">الموظف</label>
+      <select id="saleEmployee" required>
+        <option value="">اختر الموظف</option>
+        <option value="EMP001">أحمد طارق</option>
+        <option value="EMP002">أحمد حجازي</option>
+        <option value="EMP003">شادن</option>
+        <option value="EMP004">چومانه</option>
+        <option value="EMP005">يسرا</option>
+      </select>
+    </div>
 
-    <button type="submit" style="margin-top:16px">
-      حفظ عملية البيع
-    </button>
+    <div>
+      <label for="saleCustomer">اسم العميل (اختياري)</label>
+      <input id="saleCustomer" type="text" placeholder="اكتب اسم العميل">
+    </div>
 
-    <p id="saleFormMessage"></p>
+    <div>
+      <label for="saleType">نوع البيع</label>
+      <select id="saleType" required>
+        <option value="">اختر نوع البيع</option>
+        <option value="plus">Plus</option>
+        <option value="triple_zero">Triple Zero</option>
+      </select>
+    </div>
 
-  </form>
+    <div>
+      <label for="saleAmount">مبلغ البيع بالجنيه</label>
+      <input id="saleAmount" type="number" min="0.01" step="0.01"
+        placeholder="مثال: 25000" required>
+    </div>
+
+  </div>
+
+  <button type="submit"
+    style="width:100%;margin-top:20px;padding:15px;background:linear-gradient(135deg,#102b3f,#1c7890);color:white;border:0;border-radius:11px;font-size:16px;font-weight:bold;cursor:pointer">
+    حفظ عملية البيع
+  </button>
+
+  <p id="saleFormMessage"></p>
+
+</form>
+
 </div>
 
  <div style="margin-top:25px;padding:22px;background:#f7fafc;border:1px solid #e5edf2;border-radius:20px;box-shadow:0 8px 25px #102b3f0b">
