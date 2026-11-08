@@ -747,7 +747,7 @@
 <h3>سجل المبيعات</h3>
 
   <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;min-width:600px">
+    <table style="width:100%;border-collapse:collapse;min-width:750px">
       <thead>
         <tr style="background:#f1f7fa">
           <th style="padding:12px">الموظف</th>
@@ -755,11 +755,12 @@
           <th style="padding:12px">نوع البيع</th>
           <th style="padding:12px">المبلغ</th>
           <th style="padding:12px">التاريخ</th>
+          <th style="padding:12px">الإجراءات</th>
         </tr>
       </thead>
       <tbody id="salesListBody">
         <tr>
-          <td colspan="5" style="padding:12px;text-align:center">
+          <td colspan="6" style="padding:12px;text-align:center">
             جارٍ تحميل المبيعات...
           </td>
         </tr>
@@ -1475,7 +1476,7 @@ async function loadSalesList() {
   try {
     const { data: sales, error } = await db
       .from("sales_transactions")
-      .select("employee_id, sale_date, customer_name, sale_type, amount, created_at")
+      .select("id, employee_id, sale_date, customer_name, sale_type, amount, created_at")
       .eq("sale_date", selectedDate)
       .order("created_at", { ascending: false });
 
@@ -1544,15 +1545,88 @@ async function loadSalesList() {
         sale.sale_date
       ];
 
-      values.forEach(value => {
-        const cell = row.insertCell();
-        cell.textContent = value;
-        cell.style.padding = "12px";
-        cell.style.textAlign = "center";
-        cell.style.borderBottom = "1px solid #dce4eb";
-      });
-    });
+     values.forEach(value => {
+  const cell = row.insertCell();
+  cell.textContent = value;
+  cell.style.padding = "12px";
+  cell.style.textAlign = "center";
+  cell.style.borderBottom = "1px solid #dce4eb";
+});
 
+// خلية الإجراءات
+const actionsCell = row.insertCell();
+actionsCell.style.padding = "10px";
+actionsCell.style.textAlign = "center";
+actionsCell.style.whiteSpace = "nowrap";
+
+const editButton = document.createElement("button");
+editButton.textContent = "تعديل";
+editButton.style.cssText =
+  "background:#1c7890;color:white;border:0;padding:8px 12px;border-radius:7px;cursor:pointer;margin:3px";
+
+const deleteButton = document.createElement("button");
+deleteButton.textContent = "حذف";
+deleteButton.style.cssText =
+  "background:#c0392b;color:white;border:0;padding:8px 12px;border-radius:7px;cursor:pointer;margin:3px";
+
+actionsCell.append(editButton, deleteButton);
+
+      deleteButton.addEventListener("click", async () => {
+  const confirmed = confirm("هل أنت متأكد من حذف عملية البيع دي؟");
+
+  if (!confirmed) return;
+
+  try {
+    const { error } = await db
+      .from("sales_transactions")
+      .delete()
+      .eq("id", sale.id);
+
+    if (error) throw error;
+
+    alert("تم حذف عملية البيع بنجاح");
+    await loadSalesList();
+    await loadMonthlySalesPerformance();
+
+  } catch (error) {
+    console.error(error);
+    alert("حصل خطأ أثناء حذف عملية البيع");
+  }
+});
+
+      editButton.addEventListener("click", async () => {
+  const newAmount = prompt(
+    "اكتب المبلغ الجديد لعملية البيع:",
+    sale.amount
+  );
+
+  if (newAmount === null) return;
+
+  const amount = Number(newAmount);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    alert("من فضلك أدخل مبلغًا صحيحًا أكبر من صفر");
+    return;
+  }
+
+  try {
+    const { error } = await db
+      .from("sales_transactions")
+      .update({ amount })
+      .eq("id", sale.id);
+
+    if (error) throw error;
+
+    alert("تم تعديل مبلغ البيع بنجاح");
+    await loadSalesList();
+    await loadMonthlySalesPerformance();
+
+  } catch (error) {
+    console.error(error);
+    alert("حدث خطأ أثناء تعديل عملية البيع");
+  }
+});
+      
   } catch (error) {
     console.error(error);
     body.textContent = "حدث خطأ أثناء تحميل سجل المبيعات.";
