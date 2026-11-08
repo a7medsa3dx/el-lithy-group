@@ -558,6 +558,65 @@
 
 </div>
 
+
+<!-- ملخص الأداء الشهري -->
+<div style="margin-top:25px;padding:20px;border:1px solid #dce4eb;border-radius:12px;background:#fff">
+
+  <h3>ملخص الأداء الشهري</h3>
+
+  <label for="salesMonth"><strong>الشهر المطلوب</strong></label>
+  <input id="salesMonth" type="month"
+    style="width:100%;padding:12px;margin:10px 0 18px">
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+
+    <div style="background:#e8f3ff;padding:18px;border-radius:12px">
+      <strong>هدف الشركة الشهري</strong>
+      <h2 id="companyMonthlyTarget">0 جنيه</h2>
+    </div>
+
+    <div style="background:#e9f8f0;padding:18px;border-radius:12px">
+      <strong>إجمالي مبيعات الشركة</strong>
+      <h2 id="companyMonthlySales">0 جنيه</h2>
+    </div>
+
+    <div style="background:#fff4e5;padding:18px;border-radius:12px">
+      <strong>نسبة تحقيق الهدف</strong>
+      <h2 id="companyAchievement">0%</h2>
+    </div>
+
+    <div style="background:#f3edff;padding:18px;border-radius:12px">
+      <strong>المتبقي من الهدف</strong>
+      <h2 id="companyRemainingTarget">0 جنيه</h2>
+    </div>
+
+  </div>
+
+  <h3 style="margin-top:25px">أداء الموظفين الشهري</h3>
+
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:750px">
+      <thead>
+        <tr style="background:#f1f7fa">
+          <th style="padding:12px">الموظف</th>
+          <th style="padding:12px">إجمالي المبيعات</th>
+          <th style="padding:12px">الهدف</th>
+          <th style="padding:12px">نسبة التحقيق</th>
+          <th style="padding:12px">العمولة</th>
+        </tr>
+      </thead>
+      <tbody id="monthlySalesBody">
+        <tr>
+          <td colspan="5" style="padding:12px;text-align:center">
+            جارٍ تحميل الأداء الشهري...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
 <h3>سجل المبيعات</h3>
 
   <div style="overflow-x:auto">
@@ -1061,6 +1120,7 @@ $("backToDashboardButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
 
+
 $("manageSalesButton").addEventListener("click", () => {
   showSection("salesManagementSection");
 
@@ -1068,13 +1128,17 @@ $("manageSalesButton").addEventListener("click", () => {
   const cairoDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Africa/Cairo",
     year: "numeric",
-    month: "2-digit",
+    month: "2-digit", 
     day: "2-digit"
   }).format(today);
 
   $("salesDate").value = cairoDate;
+  $("salesMonth").value = cairoDate.slice(0, 7);
+
   loadSalesList();
+  loadMonthlySalesPerformance();
 });
+
 
 $("backFromSalesButton").addEventListener("click", () => {
   showSection("dashboardSection");
@@ -1082,7 +1146,12 @@ $("backFromSalesButton").addEventListener("click", () => {
     $("salesDate").addEventListener("change", () => {
   loadSalesList();
 });
+
     
+$("salesMonth").addEventListener("change", () => {
+  loadMonthlySalesPerformance();
+});
+
 // إضافة موظف جديد إلى قاعدة البيانات
 $("addEmployeeForm").addEventListener("submit", async event => {
   event.preventDefault();
@@ -1308,6 +1377,100 @@ async function loadSalesList() {
   } catch (error) {
     console.error(error);
     body.textContent = "حدث خطأ أثناء تحميل سجل المبيعات.";
+  }
+}
+
+    
+async function loadMonthlySalesPerformance() {
+  const month = $("salesMonth").value;
+  if (!month) return;
+
+  const monthStart = month + "-01";
+
+  const formatMoney = amount =>
+    Number(amount || 0).toLocaleString("ar-EG") + " جنيه";
+
+  try {
+    const { data: company, error: companyError } = await db
+      .from("monthly_company_sales_performance")
+      .select("*")
+      .eq("month_start", monthStart)
+      .maybeSingle();
+
+    if (companyError) throw companyError;
+
+    const { data: employees, error: employeesError } = await db
+      .from("monthly_employee_sales_performance")
+      .select("*")
+      .eq("month_start", monthStart)
+      .order("employee_code");
+
+    if (employeesError) throw employeesError;
+
+    if (company) {
+      $("companyMonthlyTarget").textContent =
+        formatMoney(company.company_target);
+
+      $("companyMonthlySales").textContent =
+        formatMoney(company.total_sales);
+
+      $("companyAchievement").textContent =
+        Number(company.achievement_percentage || 0).toLocaleString("ar-EG") + "%";
+
+      const remaining = Number(company.remaining_target || 0);
+
+      $("companyRemainingTarget").textContent =
+        remaining >= 0
+          ? formatMoney(remaining)
+          : "تجاوز الهدف بـ " + formatMoney(Math.abs(remaining));
+    } else {
+      $("companyMonthlyTarget").textContent = "غير محدد";
+      $("companyMonthlySales").textContent = formatMoney(0);
+      $("companyAchievement").textContent = "0%";
+      $("companyRemainingTarget").textContent = "غير محدد";
+    }
+
+    const body = $("monthlySalesBody");
+    body.replaceChildren();
+
+    if (!employees || employees.length === 0) {
+      const row = body.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 5;
+      cell.textContent = "لا توجد بيانات أهداف لهذا الشهر.";
+      cell.style.textAlign = "center";
+      cell.style.padding = "12px";
+      return;
+    }
+
+    employees.forEach(employee => {
+      const row = body.insertRow();
+
+      const values = [
+        employee.full_name,
+        formatMoney(employee.total_sales),
+        employee.target_amount
+          ? formatMoney(employee.target_amount)
+          : "بدون هدف",
+        employee.achievement_percentage == null
+          ? "—"
+          : Number(employee.achievement_percentage).toLocaleString("ar-EG") + "%",
+        formatMoney(employee.commission_amount)
+      ];
+
+      values.forEach(value => {
+        const cell = row.insertCell();
+        cell.textContent = value;
+        cell.style.padding = "12px";
+        cell.style.textAlign = "center";
+        cell.style.borderBottom = "1px solid #dce4eb";
+      });
+    });
+
+  } catch (error) {
+    console.error("Monthly sales error:", error);
+    $("monthlySalesBody").textContent =
+      "حدث خطأ أثناء تحميل الأداء الشهري.";
   }
 }
 
