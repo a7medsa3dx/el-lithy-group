@@ -1601,7 +1601,7 @@ async function loadSalesList() {
     const total = plusTotal + tripleTotal;
     const count = plusCount + tripleCount;
 
-     = formatMoney(plusTotal);
+    $("dailyPlusTotal").textContent = formatMoney(plusTotal);
     $("dailyPlusCount").textContent = `${plusCount} عملية`;
 
     $("dailyTripleTotal").textContent = formatMoney(tripleTotal);
