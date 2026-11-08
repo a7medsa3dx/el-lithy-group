@@ -1467,7 +1467,7 @@ async function loadSalesList() {
 
   body.innerHTML = `
     <tr>
-      <td colspan="5" style="padding:12px;text-align:center">
+      <td colspan="6" style="padding:12px;text-align:center">
         جارٍ تحميل المبيعات...
       </td>
     </tr>
@@ -1625,6 +1625,8 @@ actionsCell.append(editButton, deleteButton);
     console.error(error);
     alert("حدث خطأ أثناء تعديل عملية البيع");
   }
+});
+      
 });
       
   } catch (error) {
