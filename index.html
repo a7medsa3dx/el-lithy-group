@@ -600,18 +600,19 @@
 
   <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;min-width:750px">
-      <thead>
-        <tr style="background:#f1f7fa">
-          <th style="padding:12px">الموظف</th>
-          <th style="padding:12px">إجمالي المبيعات</th>
-          <th style="padding:12px">الهدف</th>
-          <th style="padding:12px">نسبة التحقيق</th>
-          <th style="padding:12px">العمولة</th>
-        </tr>
-      </thead>
+    <thead>
+  <tr style="background:#f1f7fa">
+    <th style="padding:12px">الموظف</th>
+    <th style="padding:12px">إجمالي المبيعات</th>
+    <th style="padding:12px">الهدف</th>
+    <th style="padding:12px">نسبة التحقيق</th>
+    <th style="padding:12px">العمولة</th>
+    <th style="padding:12px">إجراءات</th>
+  </tr>
+</thead>
       <tbody id="monthlySalesBody">
         <tr>
-          <td colspan="5" style="padding:12px;text-align:center">
+         <td colspan="6" style="padding:12px;text-align:center">
             جارٍ تحميل الأداء الشهري...
           </td>
         </tr>
@@ -1492,36 +1493,94 @@ async function loadMonthlySalesPerformance() {
     if (!employees || employees.length === 0) {
       const row = body.insertRow();
       const cell = row.insertCell();
-      cell.colSpan = 5;
+      cell.colSpan = 6;
       cell.textContent = "لا توجد بيانات أهداف لهذا الشهر.";
       cell.style.textAlign = "center";
       cell.style.padding = "12px";
       return;
     }
 
-    employees.forEach(employee => {
-      const row = body.insertRow();
+employees.forEach(employee => {
+  const row = body.insertRow();
 
-      const values = [
-        employee.full_name,
-        formatMoney(employee.total_sales),
-        employee.target_amount
-          ? formatMoney(employee.target_amount)
-          : "بدون هدف",
-        employee.achievement_percentage == null
-          ? "—"
-          : Number(employee.achievement_percentage).toLocaleString("ar-EG") + "%",
-        formatMoney(employee.commission_amount)
-      ];
+  const values = [
+    employee.full_name,
+    formatMoney(employee.total_sales),
+    employee.target_amount
+      ? formatMoney(employee.target_amount)
+      : "بدون هدف",
+    employee.achievement_percentage == null
+      ? "—"
+      : Number(employee.achievement_percentage).toLocaleString("ar-EG") + "%",
+    formatMoney(employee.commission_amount)
+  ];
 
-      values.forEach(value => {
-        const cell = row.insertCell();
-        cell.textContent = value;
-        cell.style.padding = "12px";
-        cell.style.textAlign = "center";
-        cell.style.borderBottom = "1px solid #dce4eb";
-      });
+  values.forEach(value => {
+    const cell = row.insertCell();
+    cell.textContent = value;
+    cell.style.padding = "12px";
+    cell.style.textAlign = "center";
+    cell.style.borderBottom = "1px solid #dce4eb";
+  });
+
+  const actionCell = row.insertCell();
+  actionCell.style.textAlign = "center";
+  actionCell.style.padding = "12px";
+
+  if (employee.employee_code !== "EMP002") {
+    const editButton = document.createElement("button");
+    editButton.textContent = "تعديل الهدف";
+    editButton.style.cssText =
+      "padding:8px 12px;background:#173b55;color:white;border:0;border-radius:7px;cursor:pointer";
+
+    editButton.addEventListener("click", async () => {
+      const newTarget = prompt(
+        "أدخل الهدف الشهري الجديد للموظف " + employee.full_name,
+        employee.target_amount || ""
+      );
+
+      if (newTarget === null) return;
+
+      const amount = Number(newTarget.replace(/,/g, ""));
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showMessage("أدخل مبلغًا صحيحًا أكبر من صفر.");
+        return;
+      }
+
+      editButton.disabled = true;
+
+      try {
+        const { error } = await db
+          .from("monthly_employee_targets")
+          .upsert(
+            {
+              employee_id: employee.employee_id,
+              month_start: monthStart,
+              target_amount: amount
+            },
+            { onConflict: "employee_id,month_start" }
+          );
+
+        if (error) throw error;
+
+        await loadMonthlySalesPerformance();
+        showMessage("تم تحديث هدف الموظف بنجاح.");
+
+      } catch (error) {
+        console.error("Employee target update error:", error);
+        showMessage(error.message || "تعذر تحديث هدف الموظف.");
+      } finally {
+        editButton.disabled = false;
+      }
     });
+
+    actionCell.appendChild(editButton);
+  } else {
+    actionCell.textContent = "بدون هدف";
+  }
+});
+
 
   } catch (error) {
     console.error("Monthly sales error:", error);
