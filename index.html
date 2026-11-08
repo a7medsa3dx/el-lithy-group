@@ -890,17 +890,21 @@
   </div>
 </div>
   
-  <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
-    <h3>الإجازات</h3>
-    <p>سيتم تفعيل طلبات الإجازات ومتابعتها في المرحلة التالية.</p>
+<div id="employeeLeavesSection" style="
+  margin-top:20px;
+  padding:18px;
+  background:#fff;
+  border:1px solid #dce4eb;
+  border-radius:12px;
+">
+  <h3 style="color:#173b55;margin:0 0 15px">
+    📅 إجازاتي المعتمدة
+  </h3>
+
+  <div id="employeeLeavesList">
+    جاري تحميل الإجازات...
   </div>
-
-  <button id="employeeLogoutButton" type="button">
-    تسجيل الخروج
-  </button>
-
-</section>
-
+</div>
 
     <div class="notice" id="message">
       مرحبًا بك في نظام EL-LITHY GROUP.
@@ -2065,7 +2069,8 @@ if (!history || history.length === 0) {
     item.style.cssText =
       "padding:13px;margin-bottom:10px;background:#f3f7fb;border-radius:10px;border-right:4px solid #20a675";
 
-    const customer = document.createElement("strong");
+  
+const customer = document.createElement("strong");
     customer.textContent = sale.customer_name || "بدون اسم عميل";
 
     const details = document.createElement("p");
@@ -2080,6 +2085,39 @@ if (!history || history.length === 0) {
   });
 }
 
+// تحميل الإجازات المعتمدة للموظف
+const { data: leaves, error: leavesError } = await db
+  .from("employee_days_off")
+  .select("id, leave_date, reason")
+  .eq("employee_id", profile.id)
+  .order("leave_date", { ascending: true });
+
+if (leavesError) throw leavesError;
+
+const leavesList = $("employeeLeavesList");
+leavesList.replaceChildren();
+
+if (!leaves || leaves.length === 0) {
+  leavesList.textContent = "لا توجد إجازات مسجلة لك حاليًا.";
+} else {
+  leaves.forEach(leave => {
+    const item = document.createElement("div");
+
+    item.style.cssText =
+      "padding:13px;margin-bottom:10px;background:#f3f7fb;border-radius:10px;border-right:4px solid #20a675";
+
+    const date = document.createElement("strong");
+    date.textContent = "📅 " + leave.leave_date;
+
+    const reason = document.createElement("p");
+    reason.style.cssText = "margin:7px 0 0;color:#64748b";
+    reason.textContent = leave.reason || "إجازة معتمدة";
+
+    item.append(date, reason);
+    leavesList.appendChild(item);
+  });
+}
+
 $("employeeSalesMessage").textContent =
   data ? "يتم تحديث بيانات المبيعات تلقائيًا عند تسجيل الدخول." :
   "لا توجد مبيعات مسجلة لك خلال هذا الشهر حتى الآن.";
@@ -2091,8 +2129,8 @@ $("employeeSalesMessage").textContent =
       "تعذر تحميل ملخص المبيعات. حاول تسجيل الدخول مرة أخرى.";
   }
 }
-    
-    
+
+
 // تخزين إحداثيات مقر الشركة مؤقتًا
 let selectedCompanyLocation = null;
 
@@ -2133,6 +2171,7 @@ $("getCompanyLocationButton").addEventListener("click", () => {
     }
   );
 });
+
 
 // حفظ موقع الشركة في قاعدة البيانات
 $("saveCompanyLocationButton").addEventListener("click", async () => {
