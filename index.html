@@ -380,6 +380,14 @@
       فتح إدارة المبيعات
     </button>
   </div>
+
+    <div class="admin-card">
+  <strong>تغيير كلمة المرور</strong>
+  <p>تحديث كلمة المرور الخاصة بحساب مدير النظام.</p>
+  <button id="openPasswordSectionButton" type="button">
+    فتح تغيير كلمة المرور
+  </button>
+</div>
     
 <div class="admin-card">
   <strong>إعدادات موقع الشركة</strong>
@@ -404,10 +412,7 @@
   </button>
 </div>
 
-<div class="admin-card">
-  <strong>الإجازات والتقارير</strong>
-  <p style="font-size:13px;color:#718096">متابعة طلبات الإجازات والتقارير.</p>
-</div>
+
 </div>
   <!-- إدارة إجازات الموظفين -->
 <div id="employeeDaysOffSection"
@@ -499,24 +504,7 @@
     </table>
   </div>
 </div>
-  <div style="margin-top:25px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
-    <h3 style="margin-top:0">إعدادات الحساب</h3>
-    <h4>تغيير كلمة المرور</h4>
-
-    <form id="passwordChangeForm">
-      <label for="newDashboardPassword">كلمة المرور الجديدة</label>
-      <input id="newDashboardPassword" type="password"
-        minlength="8" autocomplete="new-password" required>
-
-      <label for="confirmDashboardPassword">تأكيد كلمة المرور</label>
-      <input id="confirmDashboardPassword" type="password"
-        minlength="8" autocomplete="new-password" required>
-
-      <button id="changePasswordButton" type="submit">
-        حفظ كلمة المرور الجديدة
-      </button>
-    </form>
-  </div>
+ 
 
   <button id="logoutButton" type="button">تسجيل الخروج</button>
 
@@ -561,6 +549,37 @@
   </div>
 
   <button id="backToDashboardButton" type="button">
+    العودة إلى لوحة المدير
+  </button>
+
+</section>
+    <section id="passwordChangeSection" class="hidden">
+
+  <h2 style="text-align:center">تغيير كلمة المرور</h2>
+
+  <div style="margin-top:20px;padding:22px;background:#fff;border:1px solid #dce4eb;border-radius:16px">
+
+    <h3>تحديث كلمة مرور مدير النظام</h3>
+    <p>أدخل كلمة المرور الجديدة ثم أكدها.</p>
+
+    <form id="passwordChangeForm">
+
+      <label for="newDashboardPassword">كلمة المرور الجديدة</label>
+      <input id="newDashboardPassword" type="password"
+        minlength="8" autocomplete="new-password" required>
+
+      <label for="confirmDashboardPassword">تأكيد كلمة المرور</label>
+      <input id="confirmDashboardPassword" type="password"
+        minlength="8" autocomplete="new-password" required>
+
+      <button id="changePasswordButton" type="submit">
+        حفظ كلمة المرور الجديدة
+      </button>
+
+    </form>
+  </div>
+
+  <button id="backFromPasswordButton" type="button">
     العودة إلى لوحة المدير
   </button>
 
@@ -958,7 +977,8 @@ function showSection(section) {
     "dashboardSection",
     "employeesSection",
     "salesManagementSection",
-    "employeeDashboardSection"
+    "employeeDashboardSection",
+    "passwordChangeSection"
   ].forEach(id => $(id).classList.add("hidden"));
 
   $(section).classList.remove("hidden");
@@ -1351,6 +1371,14 @@ $("manageEmployeesButton").addEventListener("click", () => {
 });
 
 $("backToDashboardButton").addEventListener("click", () => {
+  showSection("dashboardSection");
+});
+
+    $("openPasswordSectionButton").addEventListener("click", () => {
+  showSection("passwordChangeSection");
+});
+
+$("backFromPasswordButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
 
