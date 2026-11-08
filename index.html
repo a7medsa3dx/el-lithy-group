@@ -572,8 +572,12 @@
 
     <div style="background:#e8f3ff;padding:18px;border-radius:12px">
       <strong>هدف الشركة الشهري</strong>
-      <h2 id="companyMonthlyTarget">0 جنيه</h2>
-    </div>
+<h2 id="companyMonthlyTarget">0 جنيه</h2>
+
+<button type="button" id="editCompanyTargetButton"
+  style="margin-top:10px;padding:9px 16px;background:#173b55;color:white;border:0;border-radius:8px;cursor:pointer">
+  تعديل هدف الشركة
+</button>    </div>
 
     <div style="background:#e9f8f0;padding:18px;border-radius:12px">
       <strong>إجمالي مبيعات الشركة</strong>
@@ -1152,6 +1156,58 @@ $("salesMonth").addEventListener("change", () => {
   loadMonthlySalesPerformance();
 });
 
+    // تعديل الهدف الشهري للشركة
+$("editCompanyTargetButton").addEventListener("click", async () => {
+  const month = $("salesMonth").value;
+
+  if (!month) {
+    showMessage("اختر الشهر المطلوب أولاً.");
+    return;
+  }
+
+  const currentTarget = prompt(
+    "اكتب هدف الشركة الجديد بالجنيه:",
+    ""
+  );
+
+  if (currentTarget === null) return;
+
+  const targetAmount = Number(currentTarget.replace(/,/g, ""));
+
+  if (!Number.isFinite(targetAmount) || targetAmount <= 0) {
+    showMessage("من فضلك أدخل مبلغًا صحيحًا أكبر من صفر.");
+    return;
+  }
+
+  const button = $("editCompanyTargetButton");
+  button.disabled = true;
+  button.textContent = "جارٍ الحفظ...";
+
+  try {
+    const { error } = await db
+      .from("monthly_company_targets")
+      .upsert(
+        {
+          month_start: month + "-01",
+          target_amount: targetAmount
+        },
+        { onConflict: "month_start" }
+      );
+
+    if (error) throw error;
+
+    await loadMonthlySalesPerformance();
+    showMessage("تم تحديث هدف الشركة بنجاح.");
+
+  } catch (error) {
+    console.error("Company target update error:", error);
+    showMessage(error.message || "تعذر تحديث هدف الشركة.");
+  } finally {
+    button.disabled = false;
+    button.textContent = "تعديل هدف الشركة";
+  }
+});
+    
 // إضافة موظف جديد إلى قاعدة البيانات
 $("addEmployeeForm").addEventListener("submit", async event => {
   event.preventDefault();
