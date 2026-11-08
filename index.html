@@ -2089,8 +2089,9 @@ const customer = document.createElement("strong");
 const { data: leaves, error: leavesError } = await db
   .from("employee_days_off")
   .select("id, leave_date, reason")
-  .eq("employee_id", profile.id)
-  .order("leave_date", { ascending: true });
+ .eq("employee_id", profile.id)
+.gte("leave_date", cairoDate)
+.order("leave_date", { ascending: true });
 
 if (leavesError) throw leavesError;
 
