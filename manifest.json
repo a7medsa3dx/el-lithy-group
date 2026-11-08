@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "EL-LITHY GROUP",
+  "short_name": "EL-LITHY",
+  "description": "EL-LITHY GROUP",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#102b3f",
+  "theme_color": "#102b3f"
+}
