@@ -734,8 +734,8 @@
 
   </div>
 
-  <div id="monthlyTargetsWarning"
-    style="margin-top:20px;padding:16px;border-radius:12px;background:#fff4e5;color:#8a5200;font-weight:bold;line-height:1.8">
+ <div id="monthlyTargetsWarning"
+    style="display:none;margin-top:20px;padding:16px;border-radius:12px;background:#fff4e5;color:#8a5200;font-weight:bold;line-height:1.8">
     جارٍ مراجعة تطابق الأهداف...
   </div>
 
@@ -1849,11 +1849,23 @@ const difference = Math.abs(companyTarget - employeeTargetsTotal);
 
 const warning = $("monthlyTargetsWarning");
 
-if (companyTarget === employeeTargetsTotal) {
-  warning.textContent = "✓ إجمالي أهداف الموظفين مطابق لهدف الشركة.";
+if (employeeTargetsTotal === companyTarget) {
+  clearTimeout(warning.hideTimer);
+
+  warning.textContent =
+    "✓ إجمالي أهداف الموظفين مطابق لهدف الشركة.";
+
   warning.style.background = "#e9f8f0";
   warning.style.color = "#176b3a";
+  warning.style.display = "block";
+
+  warning.hideTimer = setTimeout(() => {
+    warning.style.display = "none";
+  }, 4000);
+
 } else {
+  clearTimeout(warning.hideTimer);
+
   warning.textContent =
     "⚠ تنبيه: إجمالي أهداف الموظفين " +
     formatMoney(employeeTargetsTotal) +
@@ -1867,6 +1879,7 @@ if (companyTarget === employeeTargetsTotal) {
 
   warning.style.background = "#fff4e5";
   warning.style.color = "#8a5200";
+  warning.style.display = "block";
 }
     
 employees.forEach(employee => {
