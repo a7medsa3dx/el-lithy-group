@@ -622,11 +622,12 @@
       </select>
     </div>
 
+  
     <div>
-      <label for="saleCustomer">اسم العميل (اختياري)</label>
-      <input id="saleCustomer" type="text" placeholder="اكتب اسم العميل">
-    </div>
-
+  <label for="saleDate">تاريخ البيع</label>
+  <input id="saleDate" type="date" required>
+</div> 
+    
     <div>
       <label for="saleType">نوع البيع</label>
       <select id="saleType" required>
@@ -1529,7 +1530,6 @@ $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
 
   const employeeCode = $("saleEmployee").value;
   const saleDate = $("saleDate").value;
-  const customerName = $("saleCustomer").value.trim();
   const saleType = $("saleType").value;
   const amount = Number($("saleAmount").value);
   const message = $("saleFormMessage");
@@ -1564,7 +1564,6 @@ $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
       .insert({
         employee_id: employee.id,
         sale_date: saleDate,
-        customer_name: customerName || null,
         sale_type: saleType,
         amount: amount,
         created_by: authData.user.id
