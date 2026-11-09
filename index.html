@@ -392,6 +392,44 @@
 
 </div>
 
+    <!-- تقرير الحضور والانصراف للمدير -->
+    <div id="attendanceReportSection"
+     style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
+
+  <h3 style="margin-top:0">تقرير الحضور والانصراف</h3>
+
+  <label for="attendanceReportDate">اختر تاريخ التقرير</label>
+  <input type="date" id="attendanceReportDate">
+
+  <button id="loadAttendanceReportButton" type="button">
+    عرض تقرير الحضور
+  </button>
+
+  <p id="attendanceReportStatus">اختر التاريخ ثم اضغط عرض التقرير.</p>
+
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:650px">
+      <thead>
+        <tr>
+          <th>الموظف</th>
+          <th>الكود</th>
+          <th>الحضور</th>
+          <th>الانصراف</th>
+          <th>التأخير</th>
+          <th>الراحة</th>
+          <th>الحالة</th>
+<th>ساعات العمل</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceReportBody">
+        <tr>
+         <td colspan="8">لم يتم تحميل التقرير بعد.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+      </div>
     
   <!-- إدارة إجازات الموظفين -->
 <div id="employeeDaysOffSection"
@@ -446,45 +484,8 @@
   </div>
 
 </div>
-<!-- تقرير الحضور والانصراف للمدير -->
-<div id="attendanceReportSection"
-     style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
 
-  <h3 style="margin-top:0">تقرير الحضور والانصراف</h3>
-
-  <label for="attendanceReportDate">اختر تاريخ التقرير</label>
-  <input type="date" id="attendanceReportDate">
-
-  <button id="loadAttendanceReportButton" type="button">
-    عرض تقرير الحضور
-  </button>
-
-  <p id="attendanceReportStatus">اختر التاريخ ثم اضغط عرض التقرير.</p>
-
-  <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;min-width:650px">
-      <thead>
-        <tr>
-          <th>الموظف</th>
-          <th>الكود</th>
-          <th>الحضور</th>
-          <th>الانصراف</th>
-          <th>التأخير</th>
-          <th>الراحة</th>
-          <th>الحالة</th>
-<th>ساعات العمل</th>
-        </tr>
-      </thead>
-      <tbody id="attendanceReportBody">
-        <tr>
-         <td colspan="8">لم يتم تحميل التقرير بعد.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
  
-
   <button id="logoutButton" type="button">تسجيل الخروج</button>
 
 </section>
@@ -1098,8 +1099,12 @@ $("employeeRole").textContent =
 
 if (profile.role === "owner") {
   showSection("dashboardSection");
+
+  await loadAttendanceReport();
+
   await initializeDayOffSection();
   await loadEmployeeList();
+
 } else {
   $("staffName").textContent = profile.full_name;
   $("staffCode").textContent = profile.employee_code;
@@ -1109,7 +1114,7 @@ if (profile.role === "owner") {
 
   await loadEmployeeSalesDashboard(profile);
 }
-
+      
 showMessage("تم تسجيل الدخول بنجاح.");
 }
     $("loginForm").addEventListener("submit", async event => {
@@ -2225,6 +2230,15 @@ function reportWorkDuration(record) {
   return `${hours} ساعة و${minutes} دقيقة`;
 }
 
+    // تحديد تاريخ اليوم بتوقيت القاهرة
+$("attendanceReportDate").value =
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+    
 async function loadAttendanceReport() {
   const button = $("loadAttendanceReportButton");
   const status = $("attendanceReportStatus");
