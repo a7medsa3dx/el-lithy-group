@@ -404,8 +404,7 @@
     لم يتم تحديد موقع المقر بعد.
   </p>
 
-  <label for="allowedRadius">نطاق السماح بالحضور بالمتر</label>
-  <input id="allowedRadius" type="number" min="50" max="1000" value="150">
+ 
 
   <button id="saveCompanyLocationButton" type="button">
     حفظ موقع الشركة
@@ -2250,12 +2249,7 @@ $("saveCompanyLocationButton").addEventListener("click", async () => {
     return;
   }
 
-  const radius = Number($("allowedRadius").value);
-
-  if (!Number.isInteger(radius) || radius < 50 || radius > 1000) {
-    showMessage("نطاق السماح يجب أن يكون من 50 إلى 1000 متر.");
-    return;
-  }
+ const radius = 70;
 
   const button = $("saveCompanyLocationButton");
   button.disabled = true;
