@@ -1517,11 +1517,18 @@ $("addEmployeeForm").addEventListener("submit", async event => {
 });
 
     // تسجيل عملية بيع جديدة
-$("addSaleForm").addEventListener("submit", async event => {
+$("saleDate").value = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Africa/Cairo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+}).format(new Date());
+    
+    $("addSaleForm").addEventListener("submit", async event => {
   event.preventDefault();
 
   const employeeCode = $("saleEmployee").value;
-  const saleDate = $("salesDate").value;
+  const saleDate = $("saleDate").value;
   const customerName = $("saleCustomer").value.trim();
   const saleType = $("saleType").value;
   const amount = Number($("saleAmount").value);
@@ -1565,8 +1572,16 @@ $("addSaleForm").addEventListener("submit", async event => {
 
     if (saleError) throw saleError;
 
-    $("addSaleForm").reset();
-    message.textContent = "تم حفظ عملية البيع بنجاح.";
+ $("addSaleForm").reset();
+
+$("saleDate").value = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Africa/Cairo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+}).format(new Date());
+
+message.textContent = "تم حفظ عملية البيع بنجاح.";
     if ($("salesDate").value === saleDate) {
   await loadSalesList();
 }
