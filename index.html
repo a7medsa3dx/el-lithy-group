@@ -389,25 +389,6 @@
   </button>
 </div>
     
-<div class="admin-card">
-  <strong>إعدادات موقع الشركة</strong>
-
- <p style="font-size:13px;color:#718096">
-  حدد موقع مقر EL-LITHY GROUP باستخدام GPS.
-</p>
-
-  <button id="getCompanyLocationButton" type="button">
-    تحديد موقعي الحالي
-  </button>
-
-  <p id="companyLocationStatus" style="font-size:13px">
-    لم يتم تحديد موقع المقر بعد.
-  </p>
-
-    <button id="saveCompanyLocationButton" type="button">
-    حفظ موقع الشركة
-  </button>
-</div>
 
 </div>
 
@@ -2199,86 +2180,7 @@ $("employeeSalesMessage").textContent =
 }
 
 
-// تخزين إحداثيات مقر الشركة مؤقتًا
-let selectedCompanyLocation = null;
 
-// تحديد موقع الشركة باستخدام GPS
-$("getCompanyLocationButton").addEventListener("click", () => {
-  const status = $("companyLocationStatus");
-
-  if (!navigator.geolocation) {
-    status.textContent = "المتصفح لا يدعم تحديد الموقع.";
-    return;
-  }
-
-  status.textContent = "جارٍ تحديد موقعك الحالي...";
-
-  navigator.geolocation.getCurrentPosition(
-    position => {
-      selectedCompanyLocation = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude
-      };
-
-      status.textContent =
-        "تم تحديد الموقع بنجاح. خط العرض: " +
-        selectedCompanyLocation.latitude.toFixed(6) +
-        " | خط الطول: " +
-        selectedCompanyLocation.longitude.toFixed(6);
-    },
-    error => {
-      status.textContent =
-        error.code === 1
-          ? "يجب السماح للمتصفح بالوصول إلى الموقع."
-          : "تعذر تحديد الموقع. حاول مرة أخرى.";
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 20000,
-      maximumAge: 0
-    }
-  );
-});
-
-
-// حفظ موقع الشركة في قاعدة البيانات
-$("saveCompanyLocationButton").addEventListener("click", async () => {
-  if (!selectedCompanyLocation) {
-    showMessage("حدد موقع الشركة أولاً.");
-    return;
-  }
-
- const radius = 70;
-
-  const button = $("saveCompanyLocationButton");
-  button.disabled = true;
-  button.textContent = "جارٍ الحفظ...";
-
-  try {
-    const { error } = await db
-      .from("company_settings")
-      .upsert({
-        id: true,
-        latitude: selectedCompanyLocation.latitude,
-        longitude: selectedCompanyLocation.longitude,
-        allowed_radius_m: radius,
-        updated_at: new Date().toISOString()
-      }, {
-        onConflict: "id"
-      });
-
-    if (error) throw error;
-
-    showMessage("تم حفظ موقع مقر الشركة بنجاح.");
-
-  } catch (error) {
-    console.error(error);
-    showMessage("تعذر حفظ الموقع: " + error.message);
-  } finally {
-    button.disabled = false;
-    button.textContent = "حفظ موقع الشركة";
-  }
-});
 // تقرير الحضور والانصراف للمدير
 
 function reportFormatTime(value) {
