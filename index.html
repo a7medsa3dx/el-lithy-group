@@ -382,6 +382,14 @@
   </div>
 
     <div class="admin-card">
+  <strong>إدارة الإجازات</strong>
+  <p>إضافة إجازات الموظفين ومراجعة الإجازات المسجلة وإلغاؤها.</p>
+  <button id="openEmployeeDaysOffButton" type="button">
+    فتح إدارة الإجازات
+  </button>
+</div>
+
+    <div class="admin-card">
   <strong>تغيير كلمة المرور</strong>
   <p>تحديث كلمة المرور الخاصة بحساب مدير النظام.</p>
   <button id="openPasswordSectionButton" type="button">
@@ -431,63 +439,8 @@
 
       </div>
     
-  <!-- إدارة إجازات الموظفين -->
-<div id="employeeDaysOffSection"
-     style="margin-top:25px;padding:22px;background:#f1f7fa;border:1px solid #dce4eb;border-radius:14px">
 
-  <h3 style="margin-top:0">إدارة إجازات الموظفين</h3>
-
-  <p>إضافة إجازة يوم كامل لموظف أو إلغاء إجازة سابقة.</p>
-
-  <div style="display:grid;gap:12px;max-width:500px">
-
-    <label for="dayOffEmployee">اختيار الموظف</label>
-    <select id="dayOffEmployee" style="padding:12px;border-radius:8px">
-      <option value="">جارٍ تحميل الموظفين...</option>
-    </select>
-
-    <label for="dayOffDate">تاريخ الإجازة</label>
-    <input type="date" id="dayOffDate"
-           style="padding:12px;border-radius:8px">
-
-    <label for="dayOffReason">سبب الإجازة (اختياري)</label>
-    <input type="text" id="dayOffReason"
-           placeholder="مثلاً: إجازة شخصية"
-           style="padding:12px;border-radius:8px">
-
-    <button id="addDayOffButton" type="button">
-      اعتماد الإجازة
-    </button>
-
-  </div>
-
-  <p id="dayOffStatus">اختر الموظف والتاريخ لإضافة إجازة.</p>
-
-  <h4>الإجازات المسجلة</h4>
-
-  <div style="overflow-x:auto">
-    <table style="width:100%;min-width:550px;border-collapse:collapse">
-      <thead>
-        <tr>
-          <th>الموظف</th>
-          <th>التاريخ</th>
-          <th>السبب</th>
-          <th>الإجراء</th>
-        </tr>
-      </thead>
-      <tbody id="dayOffTableBody">
-        <tr>
-          <td colspan="4">لم يتم تحميل الإجازات بعد.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-</div>
-
- 
-  <button id="logoutButton" type="button">تسجيل الخروج</button>
-
+<button id="logoutButton" type="button">تسجيل الخروج</button>
 </section>
 <section id="employeesSection" class="hidden">
 
@@ -533,6 +486,66 @@
   </button>
 
 </section>
+
+<!-- إدارة إجازات الموظفين -->
+<section id="employeeDaysOffSection" class="hidden">
+
+  <div style="margin-top:25px;padding:22px;background:#f1f7fa;border:1px solid #dce4eb;border-radius:14px">
+
+    <h3 style="margin-top:0">إدارة إجازات الموظفين</h3>
+
+    <p>إضافة إجازة يوم كامل لموظف أو إلغاء إجازة سابقة.</p>
+
+    <div style="display:grid;gap:12px;max-width:500px">
+
+      <label for="dayOffEmployee">اختيار الموظف</label>
+      <select id="dayOffEmployee" style="padding:12px;border-radius:8px">
+        <option value="">جارٍ تحميل الموظفين...</option>
+      </select>
+
+      <label for="dayOffDate">تاريخ الإجازة</label>
+      <input type="date" id="dayOffDate" style="padding:12px;border-radius:8px">
+
+      <label for="dayOffReason">سبب الإجازة (اختياري)</label>
+      <input type="text" id="dayOffReason" placeholder="مثلاً: إجازة شخصية" style="padding:12px;border-radius:8px">
+
+      <button id="addDayOffButton" type="button">
+        اعتماد الإجازة
+      </button>
+
+    </div>
+
+    <p id="dayOffStatus">اختر الموظف والتاريخ لإضافة إجازة.</p>
+
+    <h4>الإجازات المسجلة</h4>
+
+    <div style="overflow-x:auto">
+      <table style="width:100%;min-width:550px;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th>الموظف</th>
+            <th>التاريخ</th>
+            <th>السبب</th>
+            <th>الإجراء</th>
+          </tr>
+        </thead>
+        <tbody id="dayOffTableBody">
+          <tr>
+            <td colspan="4">لم يتم تحميل الإجازات بعد.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button id="backFromEmployeeDaysOffButton" type="button"
+      style="margin-top:20px">
+      العودة إلى لوحة المدير
+    </button>
+
+  </div>
+
+</section>
+
     <section id="passwordChangeSection" class="hidden">
 
   <h2 style="text-align:center">تغيير كلمة المرور</h2>
@@ -959,7 +972,8 @@ function showSection(section) {
     "employeesSection",
     "salesManagementSection",
     "employeeDashboardSection",
-    "passwordChangeSection"
+    "passwordChangeSection",
+    "employeeDaysOffSection"
   ].forEach(id => $(id).classList.add("hidden"));
 
   $(section).classList.remove("hidden");
@@ -1367,7 +1381,15 @@ $("backFromPasswordButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
 
+$("openEmployeeDaysOffButton").addEventListener("click", async () => {
+  showSection("employeeDaysOffSection");
+  await initializeDayOffSection();
+});
 
+$("backFromEmployeeDaysOffButton").addEventListener("click", () => {
+  showSection("dashboardSection");
+});
+    
 $("manageSalesButton").addEventListener("click", () => {
   showSection("salesManagementSection");
 
