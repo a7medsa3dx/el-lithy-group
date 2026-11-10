@@ -14,9 +14,9 @@
   "theme_color": "#102b3f",
   "icons": [
     {
-      "src": "/EL-LITHY%20HR%20Attendance%20Logo.png",
-      "sizes": "any",
-      "type": "image/png",
+     "src": "/logo-new.jpg",
+"sizes": "any",
+"type": "image/jpeg",
       "purpose": "any"
     }
   ]
