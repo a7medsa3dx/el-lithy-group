@@ -29,19 +29,26 @@
   box-shadow: 0 12px 40px #102b3f14;
   margin: 20px auto;
 }
-    .logo {
-      width: 76px;
-      height: 76px;
-      margin: 0 auto 18px;
-      border-radius: 20px;
-      background: #102b3f;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: bold;
-    }
+ 
+.logo {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 18px;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
     h1 { text-align: center; font-size: 23px; margin: 0 0 8px; }
     .subtitle {
       text-align: center;
@@ -311,7 +318,10 @@
 </head>
 <body>
   <main class="container">
-    <div class="logo">EL</div>
+    <div class="logo">
+  <img src="./EL-LITHY%20HR%20Attendance%20Logo.png"
+       alt="EL-LITHY GROUP Logo">
+</div>
     <h1>EL-LITHY GROUP</h1>
     <p class="subtitle">نظام الحضور والانصراف وإدارة الموظفين</p>
 
