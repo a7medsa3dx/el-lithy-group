@@ -1,11 +1,11 @@
 
-const CACHE_NAME = "el-lithy-group-v2";
+const CACHE_NAME = "el-lithy-group-v3";
 
 const FILES_TO_CACHE = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/EL-LITHY%20HR%20Attendance%20Logo.png"
+  "/logo-new.jpg"
 ];
 
 self.addEventListener("install", (event) => {
