@@ -5,7 +5,7 @@ const FILES_TO_CACHE = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/logo-new.jpg"
+  "/WhatsApp%20Image%202026-11-10%20at%205.46.12%20PM.jpeg"
 ];
 
 self.addEventListener("install", (event) => {
