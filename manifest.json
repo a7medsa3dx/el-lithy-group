@@ -3,7 +3,7 @@
   "id": "/",
   "name": "EL-LITHY GROUP",
   "short_name": "EL-LITHY",
-  "description": "EL-LITHY GROUP",
+  "description": "EL-LITHY GROUP Attendance System",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
@@ -14,10 +14,22 @@
   "theme_color": "#102b3f",
   "icons": [
     {
-  "src": "/WhatsApp%20Image%202026-11-10%20at%205.46.12%20PM.jpeg",
-"sizes": "any",
-"type": "image/jpeg",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
