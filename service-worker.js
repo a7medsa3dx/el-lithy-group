@@ -1,11 +1,15 @@
 
-const CACHE_NAME = "el-lithy-group-v3";
+const CACHE_NAME = "el-lithy-group-v4";
 
 const FILES_TO_CACHE = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/WhatsApp%20Image%202026-11-10%20at%205.46.12%20PM.jpeg"
+  "/apple-touch-icon.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/icon-maskable-512.png",
+  "/EL-LITHY%20HR%20Attendance%20Logo.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -23,7 +27,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
+          .filter((name) => name.startsWith("el-lithy-group-") && name !== CACHE_NAME)
           .map((name) => caches.delete(name))
       );
     })
