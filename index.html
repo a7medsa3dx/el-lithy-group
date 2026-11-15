@@ -662,34 +662,6 @@
 
 </div>
 
- <div style="margin-top:25px;padding:22px;background:#f7fafc;border:1px solid #e5edf2;border-radius:20px;box-shadow:0 8px 25px #102b3f0b">
-
-  <h3 style="margin-top:0;font-size:23px;color:#102b3f">
-    ملخص مبيعات اليوم
-  </h3>
-
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-top:20px">
-
-    <div style="background:linear-gradient(145deg,#2463a5,#4385d8);padding:22px;border-radius:17px;color:white;box-shadow:0 7px 18px #4385d820">
-      <div style="font-size:15px;opacity:.9">💳 مبيعات Plus</div>
-      <h2 id="dailyPlusTotal" style="font-size:25px;margin:15px 0;color:white">0 جنيه</h2>
-      <p id="dailyPlusCount" style="margin:0;opacity:.9">0 عملية</p>
-    </div>
-
-    <div style="background:linear-gradient(145deg,#16865f,#20a675);padding:22px;border-radius:17px;color:white;box-shadow:0 7px 18px #20a67520">
-      <div style="font-size:15px;opacity:.9">💰 مبيعات Triple Zero</div>
-      <h2 id="dailyTripleTotal" style="font-size:25px;margin:15px 0;color:white">0 جنيه</h2>
-      <p id="dailyTripleCount" style="margin:0;opacity:.9">0 عملية</p>
-    </div>
-
-    <div style="background:linear-gradient(145deg,#102b3f,#1c526b);padding:22px;border-radius:17px;color:white;box-shadow:0 7px 18px #102b3f20">
-      <div style="font-size:15px;opacity:.9">📊 إجمالي مبيعات اليوم</div>
-      <h2 id="dailyTotal" style="font-size:27px;margin:15px 0;color:white">0 جنيه</h2>
-      <p id="dailyCount" style="margin:0;opacity:.9">0 عملية</p>
-    </div>
-
-  </div>
-</div>
 
  <!-- ملخص الأداء الشهري -->
 <div style="margin-top:28px;padding:22px;background:#f7fafc;border:1px solid #e5edf2;border-radius:20px;box-shadow:0 8px 25px #102b3f0b">
@@ -718,6 +690,20 @@
       <h2 id="companyMonthlySales" style="font-size:25px;margin:15px 0;color:#16865f">0 جنيه</h2>
       <div style="font-size:12px;color:#84949c">إجمالي مبيعات الموظفين أصحاب التارجت</div>
     </div>
+    
+<!-- إجمالي مبيعات Plus الشهرية -->
+<div style="background:white;padding:22px;border-radius:17px;border:1px solid #dceee7;border-bottom:4px solid #4385d8;box-shadow:0 7px 18px #102b3f0a">
+  <div style="font-size:14px;color:#648074">💳 إجمالي مبيعات Plus الشهرية</div>
+  <h2 id="monthlyPlusTotal" style="font-size:25px;margin:15px 0;color:#3478c8">0 جنيه</h2>
+  <div id="monthlyPlusCount" style="font-size:13px;color:#84949c">0 عملية</div>
+</div>
+
+<!-- إجمالي مبيعات Triple Zero الشهرية -->
+<div style="background:white;padding:22px;border-radius:17px;border:1px solid #dceee7;border-bottom:4px solid #20a675;box-shadow:0 7px 18px #102b3f0a">
+  <div style="font-size:14px;color:#648074">💰 إجمالي مبيعات Triple Zero الشهرية</div>
+  <h2 id="monthlyTripleTotal" style="font-size:25px;margin:15px 0;color:#16865f">0 جنيه</h2>
+  <div id="monthlyTripleCount" style="font-size:13px;color:#84949c">0 عملية</div>
+</div>
 
     <!-- نسبة التحقيق -->
     <div style="background:white;padding:22px;border-radius:17px;border:1px solid #e4eafa;border-bottom:4px solid #4385d8;box-shadow:0 7px 18px #102b3f0a">
@@ -1624,13 +1610,6 @@ async function loadSalesList() {
   const formatMoney = amount =>
     Number(amount).toLocaleString("ar-EG") + " جنيه";
 
-  // تصفير الملخص أثناء التحميل
-  $("dailyPlusTotal").textContent = "0 جنيه";
-  $("dailyPlusCount").textContent = "0 عملية";
-  $("dailyTripleTotal").textContent = "0 جنيه";
-  $("dailyTripleCount").textContent = "0 عملية";
-  $("dailyTotal").textContent = "0 جنيه";
-  $("dailyCount").textContent = "0 عملية";
 
   body.innerHTML = `
     <tr>
@@ -1660,34 +1639,6 @@ async function loadSalesList() {
       employeeNames[employee.id] = employee.full_name;
     });
 
-    let plusTotal = 0;
-    let plusCount = 0;
-    let tripleTotal = 0;
-    let tripleCount = 0;
-
-    (sales || []).forEach(sale => {
-      const amount = Number(sale.amount) || 0;
-
-      if (sale.sale_type === "plus") {
-        plusTotal += amount;
-        plusCount++;
-      } else if (sale.sale_type === "triple_zero") {
-        tripleTotal += amount;
-        tripleCount++;
-      }
-    });
-
-    const total = plusTotal + tripleTotal;
-    const count = plusCount + tripleCount;
-
-    $("dailyPlusTotal").textContent = formatMoney(plusTotal);
-    $("dailyPlusCount").textContent = `${plusCount} عملية`;
-
-    $("dailyTripleTotal").textContent = formatMoney(tripleTotal);
-    $("dailyTripleCount").textContent = `${tripleCount} عملية`;
-
-    $("dailyTotal").textContent = formatMoney(total);
-    $("dailyCount").textContent = `${count} عملية`;
 
     body.replaceChildren();
 
@@ -1828,6 +1779,46 @@ async function loadMonthlySalesPerformance() {
       .order("employee_code");
 
     if (employeesError) throw employeesError;
+
+    // حساب مبيعات Plus وTriple Zero للشهر المختار
+    const [year, monthNumber] = month.split("-").map(Number);
+
+    const nextMonthStart = monthNumber === 12
+      ? `${year + 1}-01-01`
+      : `${year}-${String(monthNumber + 1).padStart(2, "0")}-01`;
+
+    const { data: monthlyTransactions, error: transactionsError } = await db
+      .from("sales_transactions")
+      .select("sale_type, amount")
+      .gte("sale_date", monthStart)
+      .lt("sale_date", nextMonthStart);
+
+    if (transactionsError) throw transactionsError;
+
+    let monthlyPlusTotal = 0;
+    let monthlyPlusCount = 0;
+    let monthlyTripleTotal = 0;
+    let monthlyTripleCount = 0;
+
+    (monthlyTransactions || []).forEach(sale => {
+      const amount = Number(sale.amount) || 0;
+
+      if (sale.sale_type === "plus") {
+        monthlyPlusTotal += amount;
+        monthlyPlusCount++;
+      } else if (sale.sale_type === "triple_zero") {
+        monthlyTripleTotal += amount;
+        monthlyTripleCount++;
+      }
+    });
+
+    $("monthlyPlusTotal").textContent = formatMoney(monthlyPlusTotal);
+    $("monthlyPlusCount").textContent =
+      `${monthlyPlusCount.toLocaleString("ar-EG")} عملية`;
+
+    $("monthlyTripleTotal").textContent = formatMoney(monthlyTripleTotal);
+    $("monthlyTripleCount").textContent =
+      `${monthlyTripleCount.toLocaleString("ar-EG")} عملية`;
 
     if (company) {
       $("companyMonthlyTarget").textContent =
