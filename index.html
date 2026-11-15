@@ -986,7 +986,7 @@ async function loadEmployeeList() {
   try {
     const { data: employees, error } = await db
       .from("profiles")
-      .select("id, employee_code, full_name, active")
+      .select("id, employee_code, full_name, active, job_title")
       .eq("role", "employee")
       .order("employee_code");
 
@@ -1012,15 +1012,32 @@ async function loadEmployeeList() {
     employees.forEach(employee => {
       const row = document.createElement("tr");
 
-      [
-        employee.employee_code,
-        employee.full_name,
-        employee.active ? "نشط" : "غير نشط"
-      ].forEach(value => {
-        const cell = document.createElement("td");
-        cell.textContent = value;
-        row.appendChild(cell);
-      });
+// كود الموظف
+const codeCell = document.createElement("td");
+codeCell.textContent = employee.employee_code;
+row.appendChild(codeCell);
+
+// اسم الموظف والمسمى الوظيفي
+const nameCell = document.createElement("td");
+
+const name = document.createElement("div");
+name.textContent = employee.full_name;
+name.style.fontWeight = "bold";
+
+const title = document.createElement("div");
+title.textContent = employee.job_title || "";
+title.style.fontSize = "12px";
+title.style.color = "#718096";
+title.style.marginTop = "4px";
+
+nameCell.appendChild(name);
+nameCell.appendChild(title);
+row.appendChild(nameCell);
+
+// حالة الموظف
+const statusCell = document.createElement("td");
+statusCell.textContent = employee.active ? "نشط" : "غير نشط";
+row.appendChild(statusCell);
 
       const actionCell = document.createElement("td");
       const button = document.createElement("button");
