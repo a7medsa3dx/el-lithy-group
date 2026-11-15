@@ -1655,8 +1655,8 @@
   <div class="employment-page-header">
     <div class="employment-header-icon">💼</div>
     <div>
-      <h2>إدارة الملفات الوظيفية</h2>
-      <p>الرواتب والعمولات والاتفاقات الوظيفية لكل موظف</p>
+      <h2>العقود والاتفاقات الوظيفية</h2>
+      <p>إدارة عقود الموظفين ومراجعة التعديلات والاعتمادات</p>
     </div>
     <span class="employment-header-tag">EL-LITHY GROUP</span>
   </div>
@@ -1792,11 +1792,7 @@
 
   <div style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
 
-    <h3>سجل الملفات الوظيفية السابقة</h3>
-
-    <div id="employmentTermsHistory">
-      <p>اختر موظفًا لعرض ملفاته الوظيفية وإقراراته السابقة.</p>
-    </div>
+<!-- سجل الإصدارات محفوظ في قاعدة البيانات ولا يظهر في واجهة المدير -->
 
 <div id="employmentTermsPreviewModal" class="hidden">
   <div class="terms-preview-overlay"
@@ -2154,6 +2150,118 @@
 </div>
 
   <!-- سجل مبيعات الموظف -->
+  
+<!-- العقد والاتفاق الوظيفي للموظف -->
+<div id="employeeEmploymentTermsPanel" style="
+  display:none;
+  margin-top:20px;
+  padding:22px;
+  background:#fff;
+  border:1px solid #dce6ef;
+  border-radius:18px;
+  box-shadow:0 5px 18px rgba(23,59,85,.06);
+">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <h3 style="margin:0;color:#173b55">💼 العقد والاتفاق الوظيفي</h3>
+    <span id="employeeTermsStatusBadge" style="
+      padding:7px 13px;
+      border-radius:20px;
+      background:#fff4df;
+      color:#9a6200;
+      font-size:13px;
+      font-weight:bold;
+    ">جارٍ التحميل</span>
+  </div>
+
+  <p id="employeeTermsIntro" style="color:#64748b;line-height:1.8">
+    تفاصيل الاتفاق الوظيفي المعتمد من إدارة الشركة.
+  </p>
+
+  <div id="employeeTermsDetails" style="
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin-top:18px;
+  "></div>
+
+  <div id="employeeTermsAdditional" style="
+    margin-top:15px;
+    padding:14px;
+    background:#f3f7fb;
+    border-radius:12px;
+    line-height:1.8;
+    display:none;
+  "></div>
+
+  <div id="employeeTermsActions" style="display:none;margin-top:22px">
+
+    <div style="padding:15px;background:#f3f7fb;border-radius:12px">
+      <strong style="color:#173b55">تأكيد مراجعة الاتفاق</strong>
+      <p style="font-size:13px;color:#64748b;line-height:1.8">
+        يمكنك قبول الاتفاق والتوقيع إلكترونيًا، أو تقديم اعتراض أو رفض مع توضيح السبب.
+      </p>
+    </div>
+
+    <div id="employeeSignatureArea" style="margin-top:18px">
+      <label style="display:block;margin-bottom:8px;font-weight:bold;color:#173b55">
+        التوقيع الإلكتروني عند القبول
+      </label>
+
+      <canvas id="employeeSignatureCanvas" width="600" height="180"
+        style="
+          display:block;
+          width:100%;
+          height:180px;
+          border:1px solid #cbd5e1;
+          border-radius:12px;
+          background:#fff;
+          touch-action:none;
+        "></canvas>
+
+      <button id="clearEmployeeSignature" type="button"
+        style="margin-top:8px;padding:8px 14px;border:0;border-radius:8px;background:#e8eef5;color:#173b55">
+        مسح التوقيع
+      </button>
+    </div>
+
+    <div id="employeeTermsResponseArea" style="display:none;margin-top:18px">
+      <label for="employeeTermsResponseNote" style="display:block;margin-bottom:8px;font-weight:bold;color:#173b55">
+        وضّح سبب الاعتراض أو الرفض
+      </label>
+      <textarea id="employeeTermsResponseNote" rows="4"
+        placeholder="اكتب ملاحظاتك أو سبب الرفض بالتفصيل..."
+        style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:10px;resize:vertical"></textarea>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:18px">
+      <button id="acceptEmployeeTermsButton" type="button"
+        style="padding:12px 5px;background:#16865f;color:white;border:0;border-radius:10px;font-weight:bold">
+        قبول وتوقيع
+      </button>
+
+      <button id="objectEmployeeTermsButton" type="button"
+        style="padding:12px 5px;background:#d99a28;color:white;border:0;border-radius:10px;font-weight:bold">
+        اعتراض
+      </button>
+
+      <button id="rejectEmployeeTermsButton" type="button"
+        style="padding:12px 5px;background:#dc3545;color:white;border:0;border-radius:10px;font-weight:bold">
+        رفض
+      </button>
+    </div>
+
+    <button id="submitEmployeeTermsResponse" type="button"
+      style="display:none;width:100%;margin-top:12px;padding:13px;background:#173b55;color:white;border:0;border-radius:10px;font-weight:bold">
+      إرسال الرد للإدارة
+    </button>
+
+  </div>
+
+  <p id="employeeTermsMessage" style="margin-top:15px;color:#64748b;line-height:1.8"></p>
+</div>
+<!-- نهاية العقد والاتفاق الوظيفي -->
+
 <div id="employeeSalesHistory" style="
   margin-top:18px;
   padding:18px;
@@ -2226,6 +2334,81 @@ const db = window.supabase.createClient(
 
 let employeePreviewMode = false;
     const $ = id => document.getElementById(id);
+
+// إعداد التوقيع الإلكتروني للموظف
+let employeeSignatureDrawn = false;
+
+const employeeSignatureCanvas = $("employeeSignatureCanvas");
+const employeeSignatureContext =
+  employeeSignatureCanvas.getContext("2d");
+
+employeeSignatureContext.strokeStyle = "#173b55";
+employeeSignatureContext.lineWidth = 3;
+employeeSignatureContext.lineCap = "round";
+employeeSignatureContext.lineJoin = "round";
+
+let employeeSignatureIsDrawing = false;
+
+function getEmployeeSignaturePosition(event) {
+  const rect = employeeSignatureCanvas.getBoundingClientRect();
+
+  return {
+    x: (event.clientX - rect.left) *
+       (employeeSignatureCanvas.width / rect.width),
+    y: (event.clientY - rect.top) *
+       (employeeSignatureCanvas.height / rect.height)
+  };
+}
+
+employeeSignatureCanvas.addEventListener("pointerdown", event => {
+  event.preventDefault();
+
+  employeeSignatureIsDrawing = true;
+  employeeSignatureCanvas.setPointerCapture(event.pointerId);
+
+  const position = getEmployeeSignaturePosition(event);
+
+  employeeSignatureContext.beginPath();
+  employeeSignatureContext.moveTo(position.x, position.y);
+});
+
+employeeSignatureCanvas.addEventListener("pointermove", event => {
+  if (!employeeSignatureIsDrawing) return;
+
+  event.preventDefault();
+
+  const position = getEmployeeSignaturePosition(event);
+
+  employeeSignatureContext.lineTo(position.x, position.y);
+  employeeSignatureContext.stroke();
+
+  employeeSignatureDrawn = true;
+});
+
+function stopEmployeeSignatureDrawing() {
+  employeeSignatureIsDrawing = false;
+}
+
+employeeSignatureCanvas.addEventListener(
+  "pointerup",
+  stopEmployeeSignatureDrawing
+);
+
+employeeSignatureCanvas.addEventListener(
+  "pointercancel",
+  stopEmployeeSignatureDrawing
+);
+
+$("clearEmployeeSignature").addEventListener("click", () => {
+  employeeSignatureContext.clearRect(
+    0,
+    0,
+    employeeSignatureCanvas.width,
+    employeeSignatureCanvas.height
+  );
+
+  employeeSignatureDrawn = false;
+});
 
     function showMessage(message) {
       $("message").textContent = message;
@@ -2533,7 +2716,6 @@ $("previewEmploymentTermsButton").removeAttribute("disabled");
       $("employmentTermsStatus").textContent =
         "تم اختيار الموظف. جارٍ تجهيز ملفه الوظيفي.";
       await loadEmployeeTerms(employee.id);
-await loadEmploymentTermsHistory(employee.id);
     };
 
     $("employmentTermsStatus").textContent =
@@ -3304,6 +3486,146 @@ async function loadEmploymentTermsHistory(employeeId) {
 }
 
     
+let employeeContractTermsRecord = null;
+let employeeContractProfileRecord = null;
+
+async function loadEmployeeEmploymentTerms(profile) {
+  const panel = $("employeeEmploymentTermsPanel");
+  const statusBadge = $("employeeTermsStatusBadge");
+  const intro = $("employeeTermsIntro");
+  const details = $("employeeTermsDetails");
+  const additional = $("employeeTermsAdditional");
+  const actions = $("employeeTermsActions");
+  const message = $("employeeTermsMessage");
+
+  try {
+    employeeContractProfileRecord = profile;
+    employeeContractTermsRecord = null;
+
+    panel.style.display = "block";
+    details.replaceChildren();
+    additional.style.display = "none";
+    actions.style.display = "none";
+    message.textContent = "";
+    statusBadge.textContent = "جارٍ التحميل";
+
+    const { data: terms, error } = await db
+      .from("employee_employment_terms")
+      .select("*")
+      .eq("employee_id", profile.id)
+      .eq("status", "published")
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!terms) {
+      statusBadge.textContent = "لا يوجد عقد منشور";
+      intro.textContent =
+        "لم تقم الإدارة بنشر اتفاق وظيفي لك حتى الآن.";
+      message.textContent =
+        "سيظهر عقدك هنا بمجرد اعتماده ونشره من الإدارة.";
+      return;
+    }
+
+    employeeContractTermsRecord = terms;
+
+    const { data: acknowledgement, error: ackError } = await db
+      .from("employee_employment_acknowledgements")
+      .select("id, signer_name, acknowledged_at")
+      .eq("terms_id", terms.id)
+      .eq("employee_id", profile.id)
+      .maybeSingle();
+
+    if (ackError) throw ackError;
+
+    const { data: response, error: responseError } = await db
+      .from("employee_employment_responses")
+      .select("response_type, response_note, responded_at")
+      .eq("terms_id", terms.id)
+      .eq("employee_id", profile.id)
+      .maybeSingle();
+
+    if (responseError) throw responseError;
+
+    const formatMoney = value =>
+      value == null
+        ? "غير محدد"
+        : new Intl.NumberFormat("ar-EG").format(Number(value)) + " جنيه";
+
+    const addDetail = (label, value) => {
+      const item = document.createElement("div");
+      item.style.cssText =
+        "padding:13px;background:#f3f7fb;border-radius:10px;";
+
+      const heading = document.createElement("div");
+      heading.style.cssText =
+        "font-size:12px;color:#64748b;margin-bottom:6px;";
+      heading.textContent = label;
+
+      const content = document.createElement("strong");
+      content.style.cssText =
+        "color:#173b55;font-size:14px;";
+      content.textContent = value || "غير محدد";
+
+      item.append(heading, content);
+      details.appendChild(item);
+    };
+
+    intro.textContent =
+      "راجع تفاصيل اتفاقك الوظيفي المنشور من إدارة الشركة.";
+
+    addDetail("المسمى الوظيفي", terms.job_title);
+    addDetail("الراتب الشهري", formatMoney(terms.monthly_salary));
+    addDetail("بداية الشريحة الأولى", terms.tier1_min_target_percent + "%");
+    addDetail("عمولة الشريحة الأولى", terms.tier1_total_sales_rate + "%");
+    addDetail("بداية الشريحة الثانية", terms.tier2_min_target_percent + "%");
+    addDetail("عمولة Triple Zero", terms.tier2_triple_zero_rate + "%");
+    addDetail("عمولة Plus", terms.tier2_plus_rate + "%");
+    addDetail("بداية الدوام", terms.work_start);
+    addDetail("نهاية الدوام", terms.work_end);
+    addDetail("مدة الاستراحة", terms.break_minutes + " دقيقة");
+    addDetail("الإجازة الأسبوعية", terms.weekly_day_off);
+    addDetail("تاريخ سريان الاتفاق", terms.effective_from);
+
+    if (terms.additional_terms) {
+      additional.textContent = terms.additional_terms;
+      additional.style.display = "block";
+    }
+
+    if (acknowledgement) {
+      statusBadge.textContent = "تم القبول والتوقيع";
+      intro.textContent =
+        "لقد قمت بقبول هذا الاتفاق الوظيفي وتوقيعه.";
+      message.textContent =
+        "تاريخ القبول: " +
+        new Date(acknowledgement.acknowledged_at).toLocaleDateString("ar-EG");
+    } else if (response) {
+      statusBadge.textContent =
+        response.response_type === "objection" ? "تم إرسال اعتراض" : "تم الرفض";
+
+      intro.textContent =
+        response.response_type === "objection"
+          ? "تم إرسال اعتراضك على الاتفاق إلى الإدارة."
+          : "تم إرسال رفضك للاتفاق إلى الإدارة.";
+
+      message.textContent = "ملاحظاتك: " + response.response_note;
+    } else {
+      statusBadge.textContent = "بانتظار ردك";
+      intro.textContent =
+        "يرجى مراجعة تفاصيل الاتفاق الوظيفي والرد عليه.";
+    }
+
+  } catch (error) {
+    console.error("Employee employment terms error:", error);
+    statusBadge.textContent = "تعذر التحميل";
+    message.textContent =
+      "تعذر تحميل الاتفاق الوظيفي: " + error.message;
+  }
+}
+
+    
     async function showDashboard() {
       const { data: userData, error: userError } =
         await db.auth.getUser();
@@ -3343,6 +3665,7 @@ if (profile.role === "owner") {
   $("attendanceLocationStatus").textContent = "";
 
   await loadEmployeeSalesDashboard(profile);
+  await loadEmployeeEmploymentTerms(profile);
 }
       
 showMessage("تم تسجيل الدخول بنجاح.");
