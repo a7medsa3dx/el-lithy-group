@@ -370,7 +370,7 @@
     <h3 style="margin-top:0">بيانات المدير</h3>
     <p>الاسم: <strong id="employeeName"></strong></p>
     <p>كود الموظف: <strong id="employeeCode"></strong></p>
-    <p>الصلاحية: <strong id="employeeRole"></strong></p>
+    <p>المسمى الوظيفي: <strong id="employeeRole"></strong></p>
   </div>
 
   <div style="margin-top:30px">
@@ -834,7 +834,7 @@
     <h3>بيانات الموظف</h3>
     <p>الاسم: <strong id="staffName"></strong></p>
     <p>كود الموظف: <strong id="staffCode"></strong></p>
-    <p>الصلاحية: <strong>موظف</strong></p>
+    <p>المسمى الوظيفي: <strong id="staffJobTitle"></strong></p>
   </div>
 
   <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
@@ -1168,7 +1168,7 @@ async function loadEmployeeList() {
 
       const { data: profile, error } = await db
         .from("profiles")
-        .select("id, full_name, employee_code, role")
+        .select("id, full_name, employee_code, role, job_title")
         .eq("id", userData.user.id)
         .single();
 
@@ -1178,8 +1178,7 @@ async function loadEmployeeList() {
 
     $("employeeName").textContent = profile.full_name;
 $("employeeCode").textContent = profile.employee_code;
-$("employeeRole").textContent =
-  profile.role === "owner" ? "مدير النظام" : "موظف";
+$("employeeRole").textContent = profile.job_title || "غير محدد";
 
 if (profile.role === "owner") {
   showSection("dashboardSection");
@@ -1192,6 +1191,7 @@ if (profile.role === "owner") {
 } else {
   $("staffName").textContent = profile.full_name;
   $("staffCode").textContent = profile.employee_code;
+  $("staffJobTitle").textContent = profile.job_title || "غير محدد";
   showSection("employeeDashboardSection");
   $("attendanceStatus").textContent = "";
   $("attendanceLocationStatus").textContent = "";
@@ -2330,6 +2330,7 @@ async function previewEmployeeDashboard(profile) {
   // عرض بيانات الموظف المختار
   $("staffName").textContent = profile.full_name;
   $("staffCode").textContent = profile.employee_code;
+  $("staffJobTitle").textContent = profile.job_title || "غير محدد";
 
   // إظهار لوحة الموظف
   showSection("employeeDashboardSection");
