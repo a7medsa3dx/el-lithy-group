@@ -931,6 +931,146 @@
   }
 }
 
+/* ===== Modern Employment Form ===== */
+
+#employmentTermsFormContainer {
+  margin-top: 24px !important;
+}
+
+#employmentTermsForm {
+  padding: 25px !important;
+  border: 1px solid #e0eaf0 !important;
+  border-radius: 20px !important;
+  background: linear-gradient(145deg,#ffffff,#f8fbfd) !important;
+  box-shadow: 0 8px 28px rgba(16,43,63,.07);
+}
+
+#employmentTermsForm h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 25px 0 18px !important;
+  padding: 13px 16px;
+  border-right: 4px solid #168397;
+  border-radius: 10px;
+  background: linear-gradient(90deg,#edf6f9,#e5f2f5);
+  color: #173f53;
+  font-size: 16px;
+}
+
+#employmentTermsForm h3:first-child {
+  margin-top: 0 !important;
+}
+
+#employmentTermsForm label {
+  display: block;
+  margin: 15px 0 8px;
+  color: #405b6b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#employmentTermsForm input,
+#employmentTermsForm textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d5e2e9;
+  border-radius: 11px;
+  background: #f9fbfd;
+  color: #183d51;
+  font-size: 14px;
+  transition: .2s;
+}
+
+#employmentTermsForm input:focus,
+#employmentTermsForm textarea:focus {
+  outline: none;
+  border-color: #21869a;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(33,134,154,.11);
+}
+
+#employmentTermsForm textarea {
+  resize: vertical;
+  line-height: 1.8;
+}
+
+#employmentTermsForm button {
+  min-height: 44px;
+  padding: 11px 20px;
+  margin: 10px 7px 0 0;
+  border: 0;
+  border-radius: 11px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s;
+}
+
+#saveEmploymentTermsButton {
+  background: linear-gradient(120deg,#176477,#218da0);
+}
+
+#previewEmploymentTermsButton {
+  background: linear-gradient(120deg,#586b9c,#788bc1);
+}
+
+#publishEmploymentTermsButton {
+  background: linear-gradient(120deg,#16805d,#22a477);
+}
+
+#employmentTermsForm button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: 0 5px 13px rgba(16,43,63,.15);
+}
+
+#employmentTermsForm button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+#employmentTermsForm > div[style*="fff8e8"] {
+  border: 1px solid #f1dfb8;
+  border-right: 4px solid #d49b39;
+  border-radius: 12px !important;
+  background: #fff9ec !important;
+  color: #775b2d;
+  line-height: 1.8;
+}
+
+#employmentTermsStatus {
+  margin-top: 16px;
+  padding: 12px 15px;
+  border-radius: 10px;
+  background: #eef5f8;
+  color: #31576a;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* ===== Employment History ===== */
+
+#employmentTermsHistory {
+  margin-top: 16px;
+}
+
+#employmentTermsHistory > div {
+  border-radius: 14px;
+}
+
+@media(max-width:600px) {
+  #employmentTermsForm {
+    padding: 16px !important;
+  }
+
+  #employmentTermsForm button {
+    width: 100%;
+    margin: 8px 0 0;
+  }
+}
+
 </style>
 </head>
 <body>
