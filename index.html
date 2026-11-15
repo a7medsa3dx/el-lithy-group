@@ -496,6 +496,235 @@
   }
 }
 
+    
+/* Modern EL-LITHY Employment Document */
+.terms-preview-window {
+  background: #edf2f7;
+  padding: 24px;
+  border-radius: 20px;
+}
+
+.terms-preview-actions {
+  border: 0;
+  padding: 0 0 18px;
+}
+
+.terms-preview-actions button {
+  border-radius: 10px;
+  padding: 11px 22px;
+  background: linear-gradient(135deg, #102b3f, #176477);
+  box-shadow: 0 5px 14px rgba(16,43,63,.15);
+  transition: .2s ease;
+}
+
+.terms-preview-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(16,43,63,.2);
+}
+
+.terms-preview-actions button:last-child {
+  background: #64748b;
+}
+
+.terms-document {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  color: #263746;
+  box-shadow: 0 8px 30px rgba(16,43,63,.07);
+  line-height: 2;
+}
+
+.terms-document-header {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(125deg, #102b3f, #176477);
+  color: #fff;
+  border: 0;
+  border-radius: 15px;
+  padding: 30px 20px;
+  margin-bottom: 25px;
+}
+
+.terms-document-header h2 {
+  color: #fff;
+  font-size: 29px;
+  letter-spacing: 1px;
+}
+
+.terms-document-header p {
+  color: #d6e9ed;
+}
+
+.terms-document-header p:last-child {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 3px 14px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 30px;
+  font-size: 12px;
+}
+
+.terms-document-section {
+  background: #f8fafc;
+  border: 1px solid #e7edf2;
+  border-radius: 13px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 3px 10px rgba(16,43,63,.025);
+}
+
+.terms-document-section h3 {
+  color: #14566a;
+  font-size: 17px;
+  border-bottom: 1px solid #dce8ec;
+  padding-bottom: 11px;
+  margin-bottom: 12px;
+}
+
+.terms-document-row {
+  padding: 9px 3px;
+  border-bottom: 1px solid #e9eff3;
+  align-items: center;
+}
+
+.terms-document-row:last-child {
+  border-bottom: 0;
+}
+
+.terms-document-row strong {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.terms-document-value {
+  color: #102b3f;
+  font-weight: 700;
+  background: #edf5f7;
+  padding: 3px 10px;
+  border-radius: 7px;
+}
+
+.terms-document-section p {
+  color: #475569;
+}
+
+.terms-document-footer {
+  background: #f8fafc;
+  border: 1px solid #e2eaf0;
+  border-radius: 13px;
+  padding: 22px;
+  margin-top: 25px;
+}
+
+.terms-document-footer h3 {
+  color: #14566a;
+}
+
+.terms-signature-line {
+  border-top: 1px solid #9aabb8;
+  color: #475569;
+  font-weight: 600;
+  padding-top: 12px;
+}
+
+@media (max-width: 600px) {
+  .terms-preview-window {
+    padding: 12px;
+  }
+
+  .terms-document {
+    padding: 15px;
+  }
+
+  .terms-document-header h2 {
+    font-size: 23px;
+  }
+
+  .terms-document-section {
+    padding: 14px;
+  }
+}
+
+@media print {
+  .terms-preview-window {
+    background: #fff !important;
+    padding: 0 !important;
+  }
+
+  .terms-document {
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .terms-document-header {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .terms-document-section,
+  .terms-document-footer,
+  .terms-document-row,
+  .terms-document-value {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* جدول شرائح العمولات */
+.terms-commission-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  margin: 15px 0;
+  font-size: 14px;
+}
+
+.terms-commission-table th {
+  background: #102b3f;
+  color: #fff;
+  padding: 13px 10px;
+  text-align: center;
+}
+
+.terms-commission-table td {
+  padding: 14px 10px;
+  text-align: center;
+  border-bottom: 1px solid #e5edf1;
+  background: #fff;
+}
+
+.terms-commission-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.terms-commission-table td:first-child {
+  color: #14566a;
+  font-weight: 700;
+}
+
+.terms-commission-rate {
+  display: inline-block;
+  background: #e3f3ef;
+  color: #08745e;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.terms-commission-note {
+  background: #edf5f7;
+  border-right: 4px solid #176477;
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-top: 15px;
+  color: #405565;
+  font-size: 13px;
+}
+
 </style>
 </head>
 <body>
@@ -1857,7 +2086,9 @@ function previewEmploymentTerms() {
     $("termsEmployeeName").textContent || "غير محدد";
 
   const employeeCode =
-    $("termsEmployeeCode").textContent || "غير محدد";
+  $("termsEmployeeCode").textContent
+    .replace("كود الموظف:", "")
+    .trim() || "غير محدد";
 
   const jobTitle =
     $("termsEmployeeJob").textContent
@@ -1950,34 +2181,57 @@ function previewEmploymentTerms() {
         )}
       </div>
 
-      <div class="terms-document-section">
-        <h3>ثالثاً: نظام العمولات</h3>
-        ${row(
-          "الشريحة الأولى",
-          "من " + formatNumber(tier1Min) +
-          "% من التارجت إلى أقل من " +
-          formatNumber(tier2Min) +
-          "% - عمولة " + formatNumber(tier1Rate) + "%"
-        )}
-        ${row(
-          "الشريحة الثانية",
-          "من " + formatNumber(tier2Min) +
-          "% من التارجت فأكثر"
-        )}
-        ${row(
-          "عمولة Triple Zero",
-          formatNumber(tripleRate) + "%"
-        )}
-        ${row(
-          "عمولة Plus",
-          formatNumber(plusRate) + "%"
-        )}
-        <p>
-          لا تُجمع عمولة الشريحة الأولى مع عمولة الشريحة الثانية.
-          عند الوصول إلى الشريحة الثانية تُطبق نسبها على المبيعات
-          حسب نوع العملية.
-        </p>
-      </div>
+     
+<div class="terms-document-section">
+  <h3>ثالثاً: نظام العمولات</h3>
+
+  <table class="terms-commission-table">
+    <thead>
+      <tr>
+        <th>الشريحة</th>
+        <th>نسبة تحقيق التارجت</th>
+        <th>Triple Zero</th>
+        <th>Plus</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>الشريحة الأولى</td>
+        <td>
+          من ${formatNumber(tier1Min)}% إلى أقل من
+          ${formatNumber(tier2Min)}%
+        </td>
+        <td colspan="2">
+          <span class="terms-commission-rate">
+            ${formatNumber(tier1Rate)}% على إجمالي المبيعات
+          </span>
+        </td>
+      </tr>
+      <tr>
+        <td>الشريحة الثانية</td>
+        <td>
+          ${formatNumber(tier2Min)}% فأكثر
+        </td>
+        <td>
+          <span class="terms-commission-rate">
+            ${formatNumber(tripleRate)}%
+          </span>
+        </td>
+        <td>
+          <span class="terms-commission-rate">
+            ${formatNumber(plusRate)}%
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="terms-commission-note">
+    لا تُجمع عمولة الشريحة الأولى مع الشريحة الثانية.
+    عند تحقيق الشريحة الثانية تُطبق النسب المحددة لكل نوع
+    من المبيعات على حدة.
+  </div>
+</div>
 
       <div class="terms-document-section">
         <h3>رابعاً: مواعيد العمل</h3>
