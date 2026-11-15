@@ -1465,6 +1465,7 @@ async function loadTermsEmployees() {
       $("employmentTermsStatus").textContent =
         "تم اختيار الموظف. جارٍ تجهيز ملفه الوظيفي.";
       await loadEmployeeTerms(employee.id);
+await loadEmploymentTermsHistory(employee.id);
     };
 
     $("employmentTermsStatus").textContent =
@@ -1632,6 +1633,158 @@ $("saveEmploymentTermsButton").addEventListener(
   "click",
   saveEmploymentTermsDraft
 );
+
+    
+async function loadEmploymentTermsHistory(employeeId) {
+  const container = $("employmentTermsHistory");
+
+  container.replaceChildren();
+
+  const loading = document.createElement("p");
+  loading.textContent = "جارٍ تحميل سجل الملفات الوظيفية...";
+  container.appendChild(loading);
+
+  try {
+    const { data: termsList, error } = await db
+      .from("employee_employment_terms")
+      .select("*")
+      .eq("employee_id", employeeId)
+      .order("version_number", { ascending: false });
+
+    if (error) throw error;
+
+    container.replaceChildren();
+
+    if (!termsList || termsList.length === 0) {
+      const message = document.createElement("p");
+      message.textContent = "لا توجد ملفات وظيفية سابقة لهذا الموظف.";
+      container.appendChild(message);
+      return;
+    }
+
+    const termIds = termsList.map(term => term.id);
+
+    const { data: acknowledgements, error: ackError } = await db
+      .from("employee_employment_acknowledgements")
+      .select("*")
+      .in("terms_id", termIds);
+
+    if (ackError) throw ackError;
+
+    const ackMap = new Map(
+      (acknowledgements || []).map(item => [item.terms_id, item])
+    );
+
+    const formatDate = value => {
+      if (!value) return "غير محدد";
+
+      return new Date(value).toLocaleDateString("ar-EG", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    };
+
+    const formatTime = value => {
+      if (!value) return "غير محدد";
+      return String(value).slice(0, 5);
+    };
+
+    const addRow = (parent, label, value) => {
+      const row = document.createElement("p");
+      const strong = document.createElement("strong");
+
+      strong.textContent = label + ": ";
+
+      row.appendChild(strong);
+      row.appendChild(
+        document.createTextNode(
+          value === null || value === undefined || value === ""
+            ? "غير محدد"
+            : String(value)
+        )
+      );
+
+      parent.appendChild(row);
+    };
+
+    const statusLabels = {
+      draft: "مسودة",
+      published: "منشور",
+      archived: "مؤرشف"
+    };
+
+    termsList.forEach(term => {
+      const card = document.createElement("div");
+
+      card.style.cssText =
+        "background:#fff;border:1px solid #dce4eb;" +
+        "border-radius:12px;padding:16px;margin-bottom:14px;";
+
+      const heading = document.createElement("h4");
+
+      heading.textContent =
+        "الإصدار رقم " + term.version_number +
+        " — " + (statusLabels[term.status] || term.status);
+
+      card.appendChild(heading);
+
+      addRow(card, "الراتب الشهري", term.monthly_salary);
+      addRow(card, "بداية الشريحة الأولى", term.tier1_min_target_percent + "%");
+      addRow(card, "عمولة الشريحة الأولى", term.tier1_total_sales_rate + "%");
+      addRow(card, "بداية الشريحة الثانية", term.tier2_min_target_percent + "%");
+      addRow(card, "عمولة Triple Zero", term.tier2_triple_zero_rate + "%");
+      addRow(card, "عمولة Plus", term.tier2_plus_rate + "%");
+
+      addRow(card, "بداية العمل", formatTime(term.work_start));
+      addRow(card, "نهاية العمل", formatTime(term.work_end));
+      addRow(card, "مدة الاستراحة بالدقائق", term.break_minutes);
+      addRow(card, "الإجازة الأسبوعية", term.weekly_day_off);
+      addRow(card, "تاريخ السريان", formatDate(term.effective_from));
+      addRow(card, "الشروط الإضافية", term.additional_terms);
+
+      const ack = ackMap.get(term.id);
+
+      const divider = document.createElement("hr");
+      card.appendChild(divider);
+
+      const ackHeading = document.createElement("strong");
+      ackHeading.textContent = "إقرار الموظف";
+      card.appendChild(ackHeading);
+
+      if (ack) {
+        addRow(card, "اسم صاحب الإقرار", ack.signer_name);
+
+        addRow(
+          card,
+          "تاريخ ووقت الإقرار",
+          new Date(ack.acknowledged_at).toLocaleString("ar-EG")
+        );
+
+        addRow(
+          card,
+          "التوقيع",
+          ack.signature_path ? "تم حفظ التوقيع" : "غير متوفر"
+        );
+      } else {
+        addRow(card, "حالة الإقرار", "لم يتم الإقرار بعد");
+      }
+
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    container.replaceChildren();
+
+    const message = document.createElement("p");
+    message.textContent =
+      "تعذر تحميل سجل الملفات الوظيفية: " + error.message;
+
+    container.appendChild(message);
+  }
+}
 
     
     async function showDashboard() {
