@@ -1019,7 +1019,7 @@ let employeePreviewMode = false;
       $("message").textContent = message;
     }
 
-    
+
 function showSection(section) {
   [
     "loginSection",
@@ -1029,12 +1029,13 @@ function showSection(section) {
     "salesManagementSection",
     "employeeDashboardSection",
     "passwordChangeSection",
-    "employeeDaysOffSection"
+    "employeeDaysOffSection",
+    "accountSettingsSection"
   ].forEach(id => $(id).classList.add("hidden"));
 
   $(section).classList.remove("hidden");
 }
-    
+
 
 async function loadEmployeeList() {
   const select = $("selectedEmployee");
