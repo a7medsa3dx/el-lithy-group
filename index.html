@@ -1292,7 +1292,13 @@ showMessage("تم تسجيل الدخول بنجاح.");
     });
 // تنفيذ عمليات الحضور والانصراف والراحة
 
+
 async function performAttendanceAction(action, buttonId) {
+  if (employeePreviewMode) {
+    showMessage("المعاينة للعرض فقط. لا يمكن تنفيذ عمليات الحضور أو الانصراف.");
+    return;
+  }
+
   const button = $(buttonId);
   const status = $("attendanceStatus");
   const locationStatus = $("attendanceLocationStatus");
