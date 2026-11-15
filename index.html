@@ -2360,25 +2360,31 @@ async function previewEmployeeDashboard(profile) {
   backButton.style.cssText =
     "background:#102b3f;color:white;padding:10px 16px;border:0;border-radius:8px;cursor:pointer";
 
-  backButton.addEventListener("click", async () => {
-    employeePreviewMode = false;
 
-    previewBar.remove();
+backButton.addEventListener("click", async () => {
+  employeePreviewMode = false;
+section.inert = false;
+  previewBar.remove();
 
-    savedButtonStates.forEach(item => {
-      $(item.id).disabled = item.disabled;
-      $(item.id).style.opacity = "";
-      $(item.id).style.cursor = "";
-    });
-
-    logoutButton.style.display = oldLogoutDisplay;
-
-    showSection("employeesSection");
-    await loadEmployeeList();
+  savedButtonStates.forEach(item => {
+    $(item.id).disabled = item.disabled;
+    $(item.id).style.opacity = "";
+    $(item.id).style.cursor = "";
   });
 
-  previewBar.append(message, backButton);
-  section.prepend(previewBar);
+  logoutButton.style.display = oldLogoutDisplay;
+
+  showSection("employeesSection");
+  await loadEmployeeList();
+});
+
+previewBar.append(message, backButton);
+
+// وضع شريط الرجوع خارج لوحة الموظف
+section.before(previewBar);
+
+// منع التفاعل مع لوحة الموظف بالكامل
+section.inert = true;
 
 
   // تحميل ملخص المبيعات والسجل والإجازات
