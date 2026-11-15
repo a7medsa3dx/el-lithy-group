@@ -2508,6 +2508,103 @@ $("acceptEmployeeTermsButton").onclick = async () => {
 };
 
 
+let employeePendingTermsResponseType = null;
+
+function prepareEmployeeTermsResponse(type) {
+  if (employeePreviewMode) {
+    alert("لا يمكن إرسال رد أثناء وضع المعاينة.");
+    return;
+  }
+
+  if (!employeeContractTermsRecord || !employeeContractProfileRecord) {
+    alert("بيانات العقد غير متاحة. أعد تسجيل الدخول.");
+    return;
+  }
+
+  employeePendingTermsResponseType = type;
+
+  $("employeeSignatureArea").style.display = "none";
+  $("employeeTermsResponseArea").style.display = "block";
+  $("employeeTermsResponseNote").value = "";
+
+  $("employeeTermsResponseNote").placeholder =
+    type === "objection"
+      ? "اكتب البنود التي تعترض عليها ووضح السبب..."
+      : "اكتب سبب رفضك للاتفاق...";
+
+  $("acceptEmployeeTermsButton").style.display = "none";
+  $("objectEmployeeTermsButton").style.display = "none";
+  $("rejectEmployeeTermsButton").style.display = "none";
+
+  $("submitEmployeeTermsResponse").style.display = "block";
+}
+
+$("objectEmployeeTermsButton").onclick = () => {
+  prepareEmployeeTermsResponse("objection");
+};
+
+$("rejectEmployeeTermsButton").onclick = () => {
+  prepareEmployeeTermsResponse("rejected");
+};
+
+$("submitEmployeeTermsResponse").onclick = async () => {
+  if (employeePreviewMode) return;
+
+  const note = $("employeeTermsResponseNote").value.trim();
+
+  if (!employeePendingTermsResponseType) {
+    alert("اختر الاعتراض أو الرفض أولاً.");
+    return;
+  }
+
+  if (!note) {
+    alert("من فضلك اكتب سبب الاعتراض أو الرفض.");
+    return;
+  }
+
+  const button = $("submitEmployeeTermsResponse");
+  button.disabled = true;
+  button.textContent = "جارٍ إرسال الرد...";
+
+  try {
+    const profile = employeeContractProfileRecord;
+    const terms = employeeContractTermsRecord;
+
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
+
+    if (userError || !userData.user ||
+        userData.user.id !== profile.id) {
+      throw new Error("تعذر التحقق من حساب الموظف.");
+    }
+
+    const { error } = await db
+      .from("employee_employment_responses")
+      .insert({
+        terms_id: terms.id,
+        employee_id: profile.id,
+        response_type: employeePendingTermsResponseType,
+        response_note: note
+      });
+
+    if (error) throw error;
+
+    employeePendingTermsResponseType = null;
+
+    await loadEmployeeEmploymentTerms(profile);
+
+    alert("تم إرسال ردك إلى إدارة الشركة بنجاح.");
+
+  } catch (error) {
+    console.error("Employment response error:", error);
+    alert("تعذر إرسال الرد: " + error.message);
+
+  } finally {
+    button.disabled = false;
+    button.textContent = "إرسال الرد للإدارة";
+  }
+};
+
 
 function showSection(section) {
   [
