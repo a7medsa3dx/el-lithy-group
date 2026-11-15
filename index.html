@@ -2300,6 +2300,177 @@ $("employeeSalesMessage").textContent =
 }
 
 
+async function previewEmployeeDashboard(profile) {
+  if (!profile || employeePreviewMode) return;
+
+  if (profile.active === false) {
+    alert("لا يمكن معاينة لوحة موظف حسابه غير نشط.");
+    return;
+  }
+
+  employeePreviewMode = true;
+
+  const section = $("employeeDashboardSection");
+
+  const attendanceButtons = [
+    "checkInButton",
+    "breakStartButton",
+    "breakEndButton",
+    "checkOutButton"
+  ];
+
+  const savedButtonStates = attendanceButtons.map(id => ({
+    id,
+    disabled: $(id).disabled
+  }));
+
+  const logoutButton = $("employeeLogoutButton");
+  const oldLogoutDisplay = logoutButton.style.display;
+
+  // عرض بيانات الموظف المختار
+  $("staffName").textContent = profile.full_name;
+  $("staffCode").textContent = profile.employee_code;
+
+  // إظهار لوحة الموظف
+  showSection("employeeDashboardSection");
+
+  // تعطيل جميع عمليات الحضور والراحة والانصراف
+  attendanceButtons.forEach(id => {
+    $(id).disabled = true;
+    $(id).style.opacity = "0.5";
+    $(id).style.cursor = "not-allowed";
+  });
+
+  // إخفاء زر تسجيل الخروج الأصلي
+  logoutButton.style.display = "none";
+
+  // إنشاء شريط المعاينة وزر العودة
+
+  const previewBar = document.createElement("div");
+  previewBar.id = "employeePreviewBar";
+  previewBar.style.cssText =
+    "background:#e8f2ff;padding:15px;border-radius:12px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap";
+
+  const message = document.createElement("strong");
+  message.textContent = "👁 معاينة المدير - عرض فقط";
+
+  const backButton = document.createElement("button");
+  backButton.type = "button";
+  backButton.textContent = "العودة لإدارة الموظفين";
+  backButton.style.cssText =
+    "background:#102b3f;color:white;padding:10px 16px;border:0;border-radius:8px;cursor:pointer";
+
+  backButton.addEventListener("click", async () => {
+    employeePreviewMode = false;
+
+    previewBar.remove();
+
+    savedButtonStates.forEach(item => {
+      $(item.id).disabled = item.disabled;
+      $(item.id).style.opacity = "";
+      $(item.id).style.cursor = "";
+    });
+
+    logoutButton.style.display = oldLogoutDisplay;
+
+    showSection("employeesSection");
+    await loadEmployeeList();
+  });
+
+  previewBar.append(message, backButton);
+  section.prepend(previewBar);
+
+
+  // تحميل ملخص المبيعات والسجل والإجازات
+  await loadEmployeeSalesDashboard(profile);
+
+  // تحميل حالة حضور الموظف في اليوم الحالي
+  try {
+    const cairoDate = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Africa/Cairo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date());
+
+    const { data: attendance, error } = await db
+      .from("attendance")
+      .select("*")
+      .eq("employee_id", profile.id)
+      .eq("work_date", cairoDate)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!attendance) {
+      $("attendanceStatus").textContent =
+        "لم يسجل الحضور اليوم.";
+
+      $("attendanceLocationStatus").textContent =
+        "لا توجد عمليات حضور مسجلة لهذا اليوم.";
+
+    } else {
+      const formatTime = value => {
+        if (!value) return "";
+
+        return new Date(value).toLocaleTimeString("ar-EG", {
+          timeZone: "Africa/Cairo",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      };
+
+      let currentStatus = "لم يسجل الحضور";
+
+      if (attendance.check_out) {
+        currentStatus = "انصرف";
+      } else if (attendance.break_end) {
+        currentStatus = "أنهى الراحة";
+      } else if (attendance.break_start) {
+        currentStatus = "بدأ الراحة";
+      } else if (attendance.check_in) {
+        currentStatus = "حضر";
+      }
+
+      $("attendanceStatus").textContent =
+        "حالة الموظف اليوم: " + currentStatus;
+
+      const times = [
+        attendance.check_in
+          ? "الحضور: " + formatTime(attendance.check_in)
+          : null,
+        attendance.break_start
+          ? "بداية الراحة: " + formatTime(attendance.break_start)
+          : null,
+        attendance.break_end
+          ? "نهاية الراحة: " + formatTime(attendance.break_end)
+          : null,
+        attendance.check_out
+          ? "الانصراف: " + formatTime(attendance.check_out)
+          : null
+      ].filter(Boolean);
+
+      $("attendanceLocationStatus").textContent =
+        times.length ? times.join(" | ") : "لا توجد أوقات مسجلة.";
+    }
+
+  } catch (error) {
+    console.error("Preview attendance error:", error);
+
+    $("attendanceStatus").textContent =
+      "تعذر تحميل سجل الحضور.";
+
+    $("attendanceLocationStatus").textContent =
+      "حدث خطأ أثناء قراءة بيانات الحضور.";
+  }
+
+  showMessage(
+    "أنت الآن تعاين لوحة الموظف " +
+    profile.full_name +
+    " بوضع القراءة فقط."
+  );
+}
+
 
 // تقرير الحضور والانصراف للمدير
 
