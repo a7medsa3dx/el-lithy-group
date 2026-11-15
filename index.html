@@ -1665,7 +1665,8 @@ async function loadTermsEmployees() {
       info.style.display = "block";
       formContainer.style.display = "block";
 
-      $("previewEmploymentTermsButton").disabled = false;
+     $("previewEmploymentTermsButton").disabled = false;
+$("previewEmploymentTermsButton").removeAttribute("disabled");
 
       $("employmentTermsStatus").textContent =
         "تم اختيار الموظف. جارٍ تجهيز ملفه الوظيفي.";
