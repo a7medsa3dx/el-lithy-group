@@ -637,7 +637,7 @@
   <h2 style="text-align:center">الملفات الوظيفية والعمولات</h2>
 
   <div class="notice">
-    إدارة الراتب والتارجت والعمولات وشروط العمل لكل موظف بصورة مستقلة.
+    إدارة الراتب والعمولات وشروط العمل لكل موظف بصورة مستقلة.
   </div>
 
   <div class="admin-card" style="margin-top:20px">
@@ -1478,6 +1478,162 @@ async function loadTermsEmployees() {
   }
 }
 
+    
+async function saveEmploymentTermsDraft() {
+  const employeeId = $("termsEmployeeSelect").value;
+  const status = $("employmentTermsStatus");
+
+  if (!employeeId) {
+    status.textContent = "من فضلك اختر الموظف أولاً.";
+    return;
+  }
+
+  const numberValue = (id, fallback = null) => {
+    const value = $(id).value.trim();
+    if (value === "") return fallback;
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  };
+
+  try {
+    status.textContent = "جارٍ حفظ المسودة...";
+
+    const { data: authData, error: authError } =
+      await db.auth.getUser();
+
+    if (authError) throw authError;
+
+    const user = authData.user;
+
+    if (!user) {
+      throw new Error("يجب تسجيل دخول المدير أولاً.");
+    }
+
+    const { data: employee, error: employeeError } = await db
+      .from("profiles")
+      .select("job_title")
+      .eq("id", employeeId)
+      .single();
+
+    if (employeeError) throw employeeError;
+
+    const payload = {
+      employee_id: employeeId,
+      job_title: employee.job_title || null,
+      monthly_salary: numberValue("termsSalary"),
+      monthly_target: null,
+
+      tier1_min_target_percent:
+        numberValue("termsTier1Min", 70),
+
+      tier1_total_sales_rate:
+        numberValue("termsTier1Rate", 0.5),
+
+      tier2_min_target_percent:
+        numberValue("termsTier2Min", 100),
+
+      tier2_triple_zero_rate:
+        numberValue("termsTripleZeroRate", 0.5),
+
+      tier2_plus_rate:
+        numberValue("termsPlusRate", 1),
+
+      work_start: $("termsWorkStart").value || null,
+      work_end: $("termsWorkEnd").value || null,
+
+      break_minutes:
+        numberValue("termsBreakMinutes", 60),
+
+      weekly_day_off:
+        $("termsWeeklyDayOff").value.trim() || null,
+
+      effective_from:
+        $("termsEffectiveFrom").value || null,
+
+      additional_terms:
+        $("termsAdditionalTerms").value.trim() || null,
+
+      status: "draft"
+    };
+
+    // البحث عن مسودة موجودة للموظف
+    const { data: existingDraft, error: draftError } = await db
+      .from("employee_employment_terms")
+      .select("id, version_number")
+      .eq("employee_id", employeeId)
+      .eq("status", "draft")
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (draftError) throw draftError;
+
+    let savedTerms;
+
+    if (existingDraft) {
+      // تحديث المسودة الحالية
+      const { data, error } = await db
+        .from("employee_employment_terms")
+        .update(payload)
+        .eq("id", existingDraft.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      savedTerms = data;
+
+    } else {
+      // تحديد رقم الإصدار التالي
+      const { data: latestTerms, error: latestError } = await db
+        .from("employee_employment_terms")
+        .select("version_number")
+        .eq("employee_id", employeeId)
+        .order("version_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latestError) throw latestError;
+
+      const nextVersion = latestTerms
+        ? latestTerms.version_number + 1
+        : 1;
+
+      const { data, error } = await db
+        .from("employee_employment_terms")
+        .insert({
+          ...payload,
+          version_number: nextVersion,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      savedTerms = data;
+    }
+
+    $("previewEmploymentTermsButton").disabled = false;
+    $("publishEmploymentTermsButton").disabled = true;
+
+    status.textContent =
+      "تم حفظ المسودة بنجاح. رقم الإصدار: " +
+      savedTerms.version_number +
+      ". لم يتم نشر العقد.";
+
+  } catch (error) {
+    console.error(error);
+    status.textContent =
+      "تعذر حفظ المسودة: " + error.message;
+  }
+}
+
+$("saveEmploymentTermsButton").addEventListener(
+  "click",
+  saveEmploymentTermsDraft
+);
+
+    
     async function showDashboard() {
       const { data: userData, error: userError } =
         await db.auth.getUser();
