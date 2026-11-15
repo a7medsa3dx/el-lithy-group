@@ -487,8 +487,41 @@
 
   </div>
 
-  <div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
-    <h3>قائمة الموظفين</h3>
+
+<div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
+
+  <h3>إدارة حسابات الموظفين</h3>
+  <p>اختر الموظف لإدارة حسابه أو معاينة لوحة العمل الخاصة به.</p>
+
+  <label for="selectedEmployee">اختيار الموظف</label>
+  <select id="selectedEmployee" style="width:100%;padding:12px;border:1px solid #dce4eb;border-radius:8px;margin:10px 0">
+    <option value="">اختر الموظف...</option>
+  </select>
+
+  <div id="selectedEmployeeDetails"
+       style="display:none;background:white;padding:15px;border-radius:10px;margin:12px 0">
+
+    <strong id="selectedEmployeeName"></strong>
+    <p id="selectedEmployeeCode"></p>
+    <p id="selectedEmployeeTitle"></p>
+    <p id="selectedEmployeeStatus"></p>
+
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px">
+
+    <button id="changeSelectedEmployeePassword" type="button">
+      تغيير الرمز السري
+    </button>
+
+    <button id="previewSelectedEmployee" type="button">
+      معاينة لوحة الموظف
+    </button>
+
+  </div>
+
+</div>
+
     <div id="employeeListContainer">
   <p>جارٍ تحميل قائمة الموظفين...</p>
 </div>
@@ -945,18 +978,19 @@
     const SUPABASE_URL = "https://xksqddhhnrpmutkxjjaj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_kd5hsMt6TkRExJ-P9Cud6Q_5BCzWopz";
 
-    const db = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      }
-    );
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
+);
 
+let employeePreviewMode = false;
     const $ = id => document.getElementById(id);
 
     function showMessage(message) {
@@ -979,9 +1013,22 @@ function showSection(section) {
   $(section).classList.remove("hidden");
 }
     
+
 async function loadEmployeeList() {
-  const container = $("employeeListContainer");
-  container.textContent = "جارٍ تحميل الموظفين...";
+  const select = $("selectedEmployee");
+  const details = $("selectedEmployeeDetails");
+  const nameElement = $("selectedEmployeeName");
+  const codeElement = $("selectedEmployeeCode");
+  const titleElement = $("selectedEmployeeTitle");
+  const statusElement = $("selectedEmployeeStatus");
+  const passwordButton = $("changeSelectedEmployeePassword");
+  const previewButton = $("previewSelectedEmployee");
+
+  let selectedEmployee = null;
+
+  details.style.display = "none";
+  passwordButton.disabled = true;
+  previewButton.disabled = true;
 
   try {
     const { data: employees, error } = await db
@@ -992,119 +1039,125 @@ async function loadEmployeeList() {
 
     if (error) throw error;
 
+    select.replaceChildren();
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "اختر الموظف...";
+    select.appendChild(placeholder);
+
     if (!employees || employees.length === 0) {
-      container.textContent = "لا يوجد موظفون مسجلون.";
+      details.style.display = "none";
+      showMessage("لا يوجد موظفون مسجلون.");
       return;
     }
 
-    const table = document.createElement("table");
-    const header = document.createElement("tr");
-
-    ["كود الموظف", "اسم الموظف", "حالة الحساب", "الإجراءات"]
-      .forEach(title => {
-        const th = document.createElement("th");
-        th.textContent = title;
-        header.appendChild(th);
-      });
-
-    table.appendChild(header);
-
     employees.forEach(employee => {
-      const row = document.createElement("tr");
-
-// كود الموظف
-const codeCell = document.createElement("td");
-codeCell.textContent = employee.employee_code;
-row.appendChild(codeCell);
-
-// اسم الموظف والمسمى الوظيفي
-const nameCell = document.createElement("td");
-
-const name = document.createElement("div");
-name.textContent = employee.full_name;
-name.style.fontWeight = "bold";
-
-const title = document.createElement("div");
-title.textContent = employee.job_title || "";
-title.style.fontSize = "12px";
-title.style.color = "#718096";
-title.style.marginTop = "4px";
-
-nameCell.appendChild(name);
-nameCell.appendChild(title);
-row.appendChild(nameCell);
-
-// حالة الموظف
-const statusCell = document.createElement("td");
-statusCell.textContent = employee.active ? "نشط" : "غير نشط";
-row.appendChild(statusCell);
-
-      const actionCell = document.createElement("td");
-      const button = document.createElement("button");
-
-      button.textContent = "تغيير الرمز السري";
-      button.type = "button";
-
-      button.addEventListener("click", async () => {
-        const newPassword = prompt(
-          "أدخل الرمز السري الجديد للموظف " +
-          employee.employee_code
-        );
-
-        if (newPassword === null) return;
-
-        if (newPassword.length < 8) {
-          alert("الرمز السري يجب ألا يقل عن 8 أحرف.");
-          return;
-        }
-
-        if (!confirm("هل تريد تأكيد تغيير الرمز السري؟")) {
-          return;
-        }
-
-        button.disabled = true;
-        button.textContent = "جارٍ التغيير...";
-
-        try {
-          const { data, error } = await db.functions.invoke(
-            "admin-reset-employee-password",
-            {
-              body: {
-                employee_id: employee.id,
-                new_password: newPassword
-              }
-            }
-          );
-
-          if (error || !data?.success) {
-            throw new Error(
-              data?.error || error?.message || "تعذر تغيير الرمز السري."
-            );
-          }
-
-          alert("تم تغيير الرمز السري بنجاح.");
-
-        } catch (error) {
-          console.error(error);
-          alert(error.message || "حدث خطأ أثناء تغيير الرمز السري.");
-        } finally {
-          button.disabled = false;
-          button.textContent = "تغيير الرمز السري";
-        }
-      });
-
-      actionCell.appendChild(button);
-      row.appendChild(actionCell);
-      table.appendChild(row);
+      const option = document.createElement("option");
+      option.value = employee.id;
+      option.textContent =
+        employee.employee_code + " - " + employee.full_name;
+      select.appendChild(option);
     });
 
-    container.replaceChildren(table);
+    select.onchange = () => {
+      selectedEmployee =
+        employees.find(employee => employee.id === select.value) || null;
+
+      if (!selectedEmployee) {
+        details.style.display = "none";
+        passwordButton.disabled = true;
+        previewButton.disabled = true;
+        return;
+      }
+
+      nameElement.textContent = selectedEmployee.full_name;
+      codeElement.textContent =
+        "كود الموظف: " + selectedEmployee.employee_code;
+
+      titleElement.textContent =
+        "المسمى الوظيفي: " +
+        (selectedEmployee.job_title || "غير محدد");
+
+      statusElement.textContent =
+        "حالة الحساب: " +
+        (selectedEmployee.active ? "نشط" : "غير نشط");
+
+      details.style.display = "block";
+      passwordButton.disabled = false;
+      previewButton.disabled = false;
+    };
+
+    passwordButton.onclick = async () => {
+      if (!selectedEmployee) return;
+
+      const newPassword = prompt(
+        "أدخل الرمز السري الجديد للموظف " +
+        selectedEmployee.employee_code
+      );
+
+      if (newPassword === null) return;
+
+      if (newPassword.length < 8) {
+        alert("الرمز السري يجب ألا يقل عن 8 أحرف.");
+        return;
+      }
+
+      if (!confirm("هل تريد تأكيد تغيير الرمز السري؟")) {
+        return;
+      }
+
+      passwordButton.disabled = true;
+      passwordButton.textContent = "جارٍ التغيير...";
+
+      try {
+        const { data, error } = await db.functions.invoke(
+          "admin-reset-employee-password",
+          {
+            body: {
+              employee_id: selectedEmployee.id,
+              new_password: newPassword
+            }
+          }
+        );
+
+        if (error || !data?.success) {
+          throw new Error(
+            data?.error ||
+            error?.message ||
+            "تعذر تغيير الرمز السري."
+          );
+        }
+
+        alert("تم تغيير الرمز السري بنجاح.");
+
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "حدث خطأ أثناء تغيير الرمز السري.");
+
+      } finally {
+        passwordButton.disabled = !selectedEmployee;
+        passwordButton.textContent = "تغيير الرمز السري";
+      }
+    };
+
+    previewButton.onclick = () => {
+      if (!selectedEmployee) return;
+
+      if (typeof previewEmployeeDashboard !== "function") {
+        alert("المعاينة لم يتم تجهيزها بعد. أكمل الخطوة التالية أولاً.");
+        return;
+      }
+
+      previewEmployeeDashboard(selectedEmployee);
+    };
 
   } catch (error) {
     console.error(error);
-    container.textContent = "تعذر تحميل قائمة الموظفين.";
+    showMessage("تعذر تحميل قائمة الموظفين: " + error.message);
   }
 }
+
     async function showDashboard() {
       const { data: userData, error: userError } =
         await db.auth.getUser();
