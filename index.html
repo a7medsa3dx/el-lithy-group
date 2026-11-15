@@ -1436,6 +1436,11 @@ $("checkOutButton").addEventListener("click", () => {
   performAttendanceAction("check_out", "checkOutButton");
 });
 $("employeeLogoutButton").addEventListener("click", async () => {
+  if (employeePreviewMode) {
+    showMessage("أنت في وضع معاينة المدير. استخدم زر العودة لإدارة الموظفين.");
+    return;
+  }
+
   await db.auth.signOut();
   $("loginForm").reset();
   showSection("loginSection");
