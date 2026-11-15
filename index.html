@@ -1790,6 +1790,36 @@
 
   </div>
 
+  
+<!-- متابعة رد الموظف على الاتفاق -->
+<div id="managerEmploymentResponsePanel" style="
+  display:none;
+  margin-top:20px;
+  padding:20px;
+  background:#fff;
+  border:1px solid #dce4eb;
+  border-radius:14px;
+  box-shadow:0 4px 15px rgba(23,59,85,.05);
+">
+  <h3 style="margin:0 0 15px;color:#173b55">
+    📋 متابعة رد الموظف على الاتفاق
+  </h3>
+
+  <div id="managerEmploymentResponseStatus"
+       style="padding:13px;background:#f3f7fb;border-radius:10px;font-weight:bold">
+    جارٍ تحميل حالة الاتفاق...
+  </div>
+
+  <div id="managerEmploymentResponseDetails"
+       style="margin-top:14px;line-height:1.9;color:#475569">
+  </div>
+
+  <div id="managerEmploymentSignatureLink"
+       style="margin-top:15px">
+  </div>
+</div>
+<!-- نهاية متابعة رد الموظف -->
+
   <div style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
 
 <!-- سجل الإصدارات محفوظ في قاعدة البيانات ولا يظهر في واجهة المدير -->
@@ -2843,6 +2873,124 @@ async function loadEmployeeTerms(employeeId) {
 }
 
     
+// تحميل حالة رد الموظف على آخر عقد منشور
+async function loadManagerEmploymentResponse(employeeId) {
+  const panel = $("managerEmploymentResponsePanel");
+  const status = $("managerEmploymentResponseStatus");
+  const details = $("managerEmploymentResponseDetails");
+  const signatureArea = $("managerEmploymentSignatureLink");
+
+  panel.style.display = "block";
+  status.textContent = "جارٍ تحميل حالة الاتفاق...";
+  details.textContent = "";
+  signatureArea.replaceChildren();
+
+  try {
+    // جلب آخر عقد منشور للموظف
+    const { data: terms, error: termsError } = await db
+      .from("employee_employment_terms")
+      .select("id, version_number, effective_from")
+      .eq("employee_id", employeeId)
+      .eq("status", "published")
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (termsError) throw termsError;
+
+    if (!terms) {
+      status.textContent = "لا يوجد عقد منشور";
+      details.textContent =
+        "لم يتم نشر أي اتفاق وظيفي لهذا الموظف حتى الآن.";
+      return;
+    }
+
+    // التحقق من وجود قبول وتوقيع
+    const { data: acknowledgement, error: ackError } = await db
+      .from("employee_employment_acknowledgements")
+      .select("signer_name, signature_path, acknowledged_at")
+      .eq("terms_id", terms.id)
+      .eq("employee_id", employeeId)
+      .maybeSingle();
+
+    if (ackError) throw ackError;
+
+    // التحقق من وجود اعتراض أو رفض
+    const { data: response, error: responseError } = await db
+      .from("employee_employment_responses")
+      .select("response_type, response_note, responded_at")
+      .eq("terms_id", terms.id)
+      .eq("employee_id", employeeId)
+      .maybeSingle();
+
+    if (responseError) throw responseError;
+
+    const formatDate = value =>
+      value
+        ? new Date(value).toLocaleString("ar-EG")
+        : "غير متاح";
+
+    details.textContent =
+      "رقم الاتفاق المنشور: " + terms.version_number +
+      " — تاريخ السريان: " + (terms.effective_from || "غير محدد");
+
+    if (acknowledgement) {
+      status.textContent = "تم قبول الاتفاق وتوقيعه";
+
+      details.textContent +=
+        "\nاسم الموظف: " + acknowledgement.signer_name +
+        "\nتاريخ القبول: " +
+        formatDate(acknowledgement.acknowledged_at);
+
+      if (acknowledgement.signature_path) {
+        const { data: signedFile, error: signedError } =
+          await db.storage
+            .from("employee-signatures")
+            .createSignedUrl(
+              acknowledgement.signature_path,
+              3600
+            );
+
+        if (signedError) throw signedError;
+
+        if (signedFile?.signedUrl) {
+          const image = document.createElement("img");
+          image.src = signedFile.signedUrl;
+          image.alt = "توقيع الموظف";
+          image.style.cssText =
+            "display:block;max-width:100%;width:320px;margin-top:10px;border:1px solid #dce4eb;border-radius:10px;background:#fff;padding:8px;";
+
+          const caption = document.createElement("p");
+          caption.textContent = "صورة التوقيع الإلكتروني:";
+          signatureArea.append(caption, image);
+        }
+      }
+
+    } else if (response) {
+      if (response.response_type === "objection") {
+        status.textContent = "تم إرسال اعتراض من الموظف";
+      } else {
+        status.textContent = "تم رفض الاتفاق من الموظف";
+      }
+
+      details.textContent +=
+        "\nتاريخ الرد: " + formatDate(response.responded_at) +
+        "\nملاحظات الموظف: " + response.response_note;
+
+    } else {
+      status.textContent = "بانتظار رد الموظف";
+      details.textContent +=
+        "\nلم يرسل الموظف قبولًا أو اعتراضًا أو رفضًا حتى الآن.";
+    }
+
+  } catch (error) {
+    console.error("Manager employment response error:", error);
+    status.textContent = "تعذر تحميل حالة الاتفاق";
+    details.textContent = error.message;
+  }
+}
+
+    
 async function loadTermsEmployees() {
   const select = $("termsEmployeeSelect");
   const info = $("termsEmployeeInfo");
@@ -2906,6 +3054,7 @@ $("previewEmploymentTermsButton").removeAttribute("disabled");
       $("employmentTermsStatus").textContent =
         "تم اختيار الموظف. جارٍ تجهيز ملفه الوظيفي.";
       await loadEmployeeTerms(employee.id);
+      await loadManagerEmploymentResponse(employee.id);
     };
 
     $("employmentTermsStatus").textContent =
