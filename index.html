@@ -1810,6 +1810,13 @@
     جارٍ تحميل حالة الاتفاق...
   </div>
 
+  
+<button id="refreshManagerEmploymentResponse"
+        type="button"
+        style="margin-top:12px;padding:10px 18px;border:0;border-radius:9px;background:#173b55;color:#fff;cursor:pointer">
+  ↻ تحديث حالة رد الموظف
+</button>
+
   <div id="managerEmploymentResponseDetails"
        style="margin-top:14px;line-height:1.9;color:#475569">
   </div>
@@ -2989,6 +2996,28 @@ async function loadManagerEmploymentResponse(employeeId) {
     details.textContent = error.message;
   }
 }
+
+    
+$("refreshManagerEmploymentResponse").onclick = async () => {
+  const employeeId = $("termsEmployeeSelect").value;
+
+  if (!employeeId) {
+    alert("من فضلك اختر الموظف أولاً.");
+    return;
+  }
+
+  const button = $("refreshManagerEmploymentResponse");
+
+  button.disabled = true;
+  button.textContent = "جارٍ تحديث الحالة...";
+
+  try {
+    await loadManagerEmploymentResponse(employeeId);
+  } finally {
+    button.disabled = false;
+    button.textContent = "↻ تحديث حالة رد الموظف";
+  }
+};
 
     
 async function loadTermsEmployees() {
