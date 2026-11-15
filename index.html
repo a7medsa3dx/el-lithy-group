@@ -385,13 +385,23 @@
     </button>
   </div>
 
-      <div class="admin-card">
-    <strong>إدارة المبيعات</strong>
-    <p>تسجيل مبيعات الموظفين ومتابعة التارجت والعمولات والأداء الشهري.</p>
-    <button id="manageSalesButton" type="button">
-      فتح إدارة المبيعات
-    </button>
-  </div>
+
+<div class="admin-card">
+  <strong>إدارة الإجازات</strong>
+  <p>إضافة إجازات الموظفين ومراجعة الإجازات المسجلة وإلغاؤها.</p>
+  <button id="openEmployeeDaysOffButton" type="button">
+    فتح إدارة الإجازات
+  </button>
+</div>
+
+<div class="admin-card">
+  <strong>الملفات الوظيفية والعمولات</strong>
+  <p>إدارة الرواتب والتارجت ونسب العمولات وشروط العمل والإقرارات والتوقيعات.</p>
+  <button id="openEmploymentTermsButton" type="button">
+    فتح الملفات الوظيفية
+  </button>
+</div>
+
 
 <div class="admin-card">
   <strong>إدارة الإجازات</strong>
@@ -615,6 +625,144 @@
     </button>
 
   </div>
+
+</section>
+
+    
+<!-- إدارة الملفات الوظيفية والعمولات -->
+<section id="employmentTermsSection" class="hidden">
+
+  <h2 style="text-align:center">الملفات الوظيفية والعمولات</h2>
+
+  <div class="notice">
+    إدارة الراتب والتارجت والعمولات وشروط العمل لكل موظف بصورة مستقلة.
+  </div>
+
+  <div class="admin-card" style="margin-top:20px">
+
+    <h3>اختيار الموظف</h3>
+
+    <label for="termsEmployeeSelect">الموظف</label>
+    <select id="termsEmployeeSelect" style="width:100%">
+      <option value="">اختر الموظف...</option>
+    </select>
+
+    <div id="termsEmployeeInfo"
+         style="display:none;margin-top:15px;padding:15px;background:#f1f7fa;border-radius:10px">
+
+      <strong id="termsEmployeeName"></strong>
+      <p id="termsEmployeeCode"></p>
+      <p id="termsEmployeeJob"></p>
+
+    </div>
+
+  </div>
+
+  <div id="employmentTermsFormContainer"
+       style="display:none;margin-top:20px">
+
+    <form id="employmentTermsForm"
+          style="padding:20px;background:#fff;border:1px solid #dce4eb;border-radius:14px">
+
+      <h3>البيانات المالية</h3>
+
+      <label for="termsSalary">الراتب الشهري بالجنيه</label>
+      <input id="termsSalary" type="number" min="0" step="0.01"
+             placeholder="أدخل الراتب الشهري">
+
+      <label for="termsTarget">التارجت الشهري بالجنيه</label>
+      <input id="termsTarget" type="number" min="0" step="0.01"
+             placeholder="أدخل التارجت الشهري">
+
+      <h3 style="margin-top:25px">شرائح العمولة</h3>
+
+      <label for="termsTier1Min">بداية الشريحة الأولى (% من التارجت)</label>
+      <input id="termsTier1Min" type="number" min="0" max="100"
+             step="0.01" value="70">
+
+      <label for="termsTier1Rate">عمولة الشريحة الأولى (% من إجمالي المبيعات)</label>
+      <input id="termsTier1Rate" type="number" min="0"
+             step="0.001" value="0.5">
+
+      <label for="termsTier2Min">بداية الشريحة الثانية (% من التارجت)</label>
+      <input id="termsTier2Min" type="number" min="0"
+             step="0.01" value="100">
+
+      <label for="termsTripleZeroRate">عمولة Triple Zero (%)</label>
+      <input id="termsTripleZeroRate" type="number" min="0"
+             step="0.001" value="0.5">
+
+      <label for="termsPlusRate">عمولة Plus (%)</label>
+      <input id="termsPlusRate" type="number" min="0"
+             step="0.001" value="1">
+
+      <h3 style="margin-top:25px">مواعيد العمل</h3>
+
+      <label for="termsWorkStart">بداية العمل</label>
+      <input id="termsWorkStart" type="time">
+
+      <label for="termsWorkEnd">نهاية العمل</label>
+      <input id="termsWorkEnd" type="time">
+
+      <label for="termsBreakMinutes">مدة الاستراحة بالدقائق</label>
+      <input id="termsBreakMinutes" type="number" min="0" value="60">
+
+      <label for="termsWeeklyDayOff">الإجازة الأسبوعية</label>
+      <input id="termsWeeklyDayOff" type="text"
+             placeholder="مثلاً: الجمعة أو حسب جدول العمل">
+
+      <h3 style="margin-top:25px">شروط إضافية</h3>
+
+      <label for="termsAdditionalTerms">الشروط الخاصة بالموظف</label>
+      <textarea id="termsAdditionalTerms" rows="5"
+                placeholder="اكتب أي شروط أو اتفاقات إضافية..."></textarea>
+
+      <label for="termsEffectiveFrom">تاريخ سريان الاتفاق</label>
+      <input id="termsEffectiveFrom" type="date">
+
+      <div style="margin-top:20px;padding:14px;background:#fff8e8;border-radius:10px">
+        <strong>تنبيه</strong>
+        <p style="margin-bottom:0">
+          حفظ البيانات كمسودة لا يجعلها اتفاقًا رسميًا.
+          يجب مراجعة الملف ومعاينته قبل نشره للموظف.
+        </p>
+      </div>
+
+      <button id="saveEmploymentTermsButton"
+              type="button" style="margin-top:20px">
+        حفظ كمسودة
+      </button>
+
+      <button id="previewEmploymentTermsButton"
+              type="button" disabled>
+        معاينة الملف
+      </button>
+
+      <button id="publishEmploymentTermsButton"
+              type="button" disabled>
+        نشر الملف للموظف
+      </button>
+
+      <p id="employmentTermsStatus"></p>
+
+    </form>
+
+  </div>
+
+  <div style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
+
+    <h3>سجل الملفات الوظيفية السابقة</h3>
+
+    <div id="employmentTermsHistory">
+      <p>اختر موظفًا لعرض ملفاته الوظيفية وإقراراته السابقة.</p>
+    </div>
+
+  </div>
+
+  <button id="backFromEmploymentTermsButton"
+          type="button" style="margin-top:20px">
+    العودة إلى لوحة المدير
+  </button>
 
 </section>
 
@@ -1020,6 +1168,7 @@ let employeePreviewMode = false;
     }
 
 
+
 function showSection(section) {
   [
     "loginSection",
@@ -1030,11 +1179,13 @@ function showSection(section) {
     "employeeDashboardSection",
     "passwordChangeSection",
     "employeeDaysOffSection",
-    "accountSettingsSection"
+    "accountSettingsSection",
+    "employmentTermsSection"
   ].forEach(id => $(id).classList.add("hidden"));
 
   $(section).classList.remove("hidden");
 }
+
 
 
 async function loadEmployeeList() {
@@ -1178,6 +1329,153 @@ async function loadEmployeeList() {
   } catch (error) {
     console.error(error);
     showMessage("تعذر تحميل قائمة الموظفين: " + error.message);
+  }
+}
+
+    
+async function loadEmployeeTerms(employeeId) {
+  const status = $("employmentTermsStatus");
+
+  try {
+    status.textContent = "جارٍ تحميل الملف الوظيفي...";
+
+    const { data: terms, error } = await db
+      .from("employee_employment_terms")
+      .select("*")
+      .eq("employee_id", employeeId)
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!terms) {
+      $("employmentTermsForm").reset();
+
+      status.textContent =
+        "لا يوجد ملف وظيفي سابق لهذا الموظف. يمكنك إنشاء ملف جديد.";
+
+      return;
+    }
+
+    $("termsSalary").value = terms.monthly_salary ?? "";
+    $("termsTarget").value = terms.monthly_target ?? "";
+
+    $("termsTier1Min").value =
+      terms.tier1_min_target_percent ?? 70;
+
+    $("termsTier1Rate").value =
+      terms.tier1_total_sales_rate ?? 0.5;
+
+    $("termsTier2Min").value =
+      terms.tier2_min_target_percent ?? 100;
+
+    $("termsTripleZeroRate").value =
+      terms.tier2_triple_zero_rate ?? 0.5;
+
+    $("termsPlusRate").value =
+      terms.tier2_plus_rate ?? 1;
+
+    $("termsWorkStart").value = terms.work_start ?? "";
+    $("termsWorkEnd").value = terms.work_end ?? "";
+
+    $("termsBreakMinutes").value =
+      terms.break_minutes ?? 60;
+
+    $("termsWeeklyDayOff").value =
+      terms.weekly_day_off ?? "";
+
+    $("termsAdditionalTerms").value =
+      terms.additional_terms ?? "";
+
+    $("termsEffectiveFrom").value =
+      terms.effective_from ?? "";
+
+    status.textContent =
+      "تم تحميل الملف الوظيفي. حالة الملف: " +
+      terms.status +
+      " — رقم الإصدار: " +
+      terms.version_number;
+
+  } catch (error) {
+    console.error(error);
+
+    status.textContent =
+      "تعذر تحميل الملف الوظيفي: " + error.message;
+  }
+}
+
+    
+async function loadTermsEmployees() {
+  const select = $("termsEmployeeSelect");
+  const info = $("termsEmployeeInfo");
+  const formContainer = $("employmentTermsFormContainer");
+
+  try {
+    const { data: employees, error } = await db
+      .from("profiles")
+      .select("id, employee_code, full_name, job_title, active")
+      .eq("role", "employee")
+      .order("employee_code");
+
+    if (error) throw error;
+
+    select.replaceChildren();
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "اختر الموظف...";
+    select.appendChild(placeholder);
+
+    employees.forEach(employee => {
+      const option = document.createElement("option");
+      option.value = employee.id;
+      option.textContent =
+        employee.employee_code + " - " + employee.full_name +
+        (employee.active ? "" : " (غير نشط)");
+
+      select.appendChild(option);
+    });
+
+    info.style.display = "none";
+    formContainer.style.display = "none";
+
+    select.onchange = async () => {
+      const employee = employees.find(
+        item => item.id === select.value
+      );
+
+      if (!employee) {
+        info.style.display = "none";
+        formContainer.style.display = "none";
+        return;
+      }
+
+      $("termsEmployeeName").textContent = employee.full_name;
+
+      $("termsEmployeeCode").textContent =
+        "كود الموظف: " + employee.employee_code;
+
+      $("termsEmployeeJob").textContent =
+        "المسمى الوظيفي: " +
+        (employee.job_title || "غير محدد");
+
+      info.style.display = "block";
+      formContainer.style.display = "block";
+
+      $("employmentTermsStatus").textContent =
+        "تم اختيار الموظف. جارٍ تجهيز ملفه الوظيفي.";
+      await loadEmployeeTerms(employee.id);
+    };
+
+    $("employmentTermsStatus").textContent =
+      "تم تحميل قائمة الموظفين بنجاح. اختر موظفًا للمتابعة.";
+
+  } catch (error) {
+    console.error(error);
+
+    $("employmentTermsStatus").textContent =
+      "تعذر تحميل الموظفين: " + error.message;
   }
 }
 
@@ -1522,6 +1820,16 @@ $("manageSalesButton").addEventListener("click", () => {
 
   loadSalesList();
   loadMonthlySalesPerformance();
+});
+
+    
+$("openEmploymentTermsButton").addEventListener("click", async () => {
+  showSection("employmentTermsSection");
+
+  $("employmentTermsStatus").textContent =
+    "جارٍ تحميل بيانات الموظفين...";
+
+  await loadTermsEmployees();
 });
 
 
