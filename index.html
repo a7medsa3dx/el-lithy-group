@@ -400,18 +400,17 @@
     فتح إدارة الإجازات
   </button>
 </div>
-
-    <div class="admin-card">
-  <strong>تغيير كلمة المرور</strong>
-  <p>تحديث كلمة المرور الخاصة بحساب مدير النظام.</p>
-  <button id="openPasswordSectionButton" type="button">
-    فتح تغيير كلمة المرور
-  </button>
-</div>
     
 
 </div>
-
+<!-- إعدادات حساب المدير -->
+<div class="admin-card" style="margin-top:20px">
+  <strong>إعدادات الحساب</strong>
+  <p>إدارة إعدادات الأمان والبيانات الخاصة بحساب المدير.</p>
+  <button id="openAccountSettingsButton" type="button">
+    فتح إعدادات الحساب
+  </button>
+</div>
     <!-- تقرير الحضور والانصراف للمدير -->
     <div id="attendanceReportSection"
      style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
@@ -584,6 +583,32 @@
 
     <button id="backFromEmployeeDaysOffButton" type="button"
       style="margin-top:20px">
+      العودة إلى لوحة المدير
+    </button>
+
+  </div>
+
+</section>
+
+<!-- إعدادات حساب المدير -->
+<section id="accountSettingsSection" class="hidden">
+
+  <div style="margin-top:25px;padding:22px;background:#f1f7fa;border:1px solid #dce4eb;border-radius:14px">
+
+    <h2>إعدادات الحساب</h2>
+    <p>إدارة بيانات وأمان حساب مدير النظام.</p>
+
+    <div class="admin-card">
+      <strong>تغيير كلمة المرور</strong>
+      <p>تحديث كلمة المرور الخاصة بحساب مدير النظام.</p>
+
+      <button id="openPasswordSectionButton" type="button">
+        تغيير كلمة المرور
+      </button>
+    </div>
+
+    <button id="backFromAccountSettingsButton"
+      type="button" style="margin-top:20px">
       العودة إلى لوحة المدير
     </button>
 
@@ -1453,7 +1478,19 @@ $("backToDashboardButton").addEventListener("click", () => {
   showSection("passwordChangeSection");
 });
 
+$("openAccountSettingsButton").addEventListener("click", () => {
+  showSection("accountSettingsSection");
+});
+
+$("openPasswordSectionButton").addEventListener("click", () => {
+  showSection("passwordChangeSection");
+});
+
 $("backFromPasswordButton").addEventListener("click", () => {
+  showSection("accountSettingsSection");
+});
+
+$("backFromAccountSettingsButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
 
