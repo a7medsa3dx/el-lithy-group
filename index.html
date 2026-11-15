@@ -725,6 +725,212 @@
   font-size: 13px;
 }
 
+    
+/* ===== EL-LITHY Modern Employment Design ===== */
+
+.employment-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 25px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+  color: white;
+  background: linear-gradient(120deg, #102b3f, #176477);
+  box-shadow: 0 8px 24px rgba(16,43,63,.15);
+}
+
+.employment-header-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 17px;
+  background: rgba(255,255,255,.15);
+  font-size: 27px;
+}
+
+.employment-page-header h2 {
+  margin: 0 0 6px;
+  font-size: 23px;
+  color: white;
+}
+
+.employment-page-header p {
+  margin: 0;
+  color: #d7e8ee;
+  font-size: 13px;
+}
+
+.employment-header-tag {
+  margin-right: auto;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 30px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.employment-intro-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px 20px;
+  margin-bottom: 22px;
+  border: 1px solid #d8eaf0;
+  border-radius: 16px;
+  background: linear-gradient(110deg,#eef8fb,#f7fbfd);
+}
+
+.employment-intro-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: #d9eff0;
+  color: #176477;
+  font-size: 23px;
+}
+
+.employment-intro-card strong {
+  color: #16465a;
+  font-size: 15px;
+}
+
+.employment-intro-card p {
+  margin: 5px 0 0;
+  color: #647887;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.employment-employee-card {
+  padding: 23px;
+  margin-bottom: 22px;
+  border: 1px solid #e0eaf0;
+  border-radius: 19px;
+  background: white;
+  box-shadow: 0 5px 20px rgba(22,55,75,.06);
+}
+
+.employment-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.employment-heading-icon {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #e5f2f7;
+  font-size: 21px;
+}
+
+.employment-card-heading h3 {
+  margin: 0;
+  color: #173d52;
+  font-size: 17px;
+}
+
+.employment-card-heading p {
+  margin: 5px 0 0;
+  color: #82919c;
+  font-size: 12px;
+}
+
+.employment-select-wrap {
+  width: min(100%, 440px);
+}
+
+.employment-select-wrap label {
+  display: block;
+  margin-bottom: 9px;
+  color: #435c6b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#termsEmployeeSelect {
+  width: 100% !important;
+  min-height: 49px;
+  padding: 10px 14px;
+  border: 1px solid #cbdde5;
+  border-radius: 12px;
+  background: #f8fbfd;
+  color: #173d52;
+  font-size: 14px;
+  outline: none;
+  transition: .2s;
+}
+
+#termsEmployeeSelect:focus {
+  border-color: #24869a;
+  box-shadow: 0 0 0 3px rgba(36,134,154,.12);
+  background: white;
+}
+
+.employment-employee-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 540px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #d5e9e9;
+  border-radius: 15px;
+  background: linear-gradient(110deg,#eff8f6,#f5f9fc);
+}
+
+.employment-employee-avatar {
+  width: 49px;
+  height: 49px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 15px;
+  background: #d9efea;
+  font-size: 23px;
+}
+
+.employment-employee-details strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #14566a;
+  font-size: 16px;
+}
+
+.employment-employee-details p {
+  margin: 4px 0;
+  color: #607583;
+  font-size: 12px;
+}
+
+@media(max-width:600px) {
+  .employment-page-header {
+    flex-wrap: wrap;
+    padding: 18px;
+  }
+
+  .employment-header-tag {
+    margin-right: 0;
+  }
+
+  .employment-employee-card {
+    padding: 16px;
+  }
+
+  .employment-select-wrap {
+    width: 100%;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1040,34 +1246,59 @@
 </section>
 
     
+
 <!-- إدارة الملفات الوظيفية والعمولات -->
 <section id="employmentTermsSection" class="hidden">
 
-  <h2 style="text-align:center">الملفات الوظيفية والعمولات</h2>
-
-  <div class="notice">
-    إدارة الراتب والعمولات وشروط العمل لكل موظف بصورة مستقلة.
+  <div class="employment-page-header">
+    <div class="employment-header-icon">💼</div>
+    <div>
+      <h2>إدارة الملفات الوظيفية</h2>
+      <p>الرواتب والعمولات والاتفاقات الوظيفية لكل موظف</p>
+    </div>
+    <span class="employment-header-tag">EL-LITHY GROUP</span>
   </div>
 
-  <div class="admin-card" style="margin-top:20px">
+  <div class="employment-intro-card">
+    <div class="employment-intro-icon">✦</div>
+    <div>
+      <strong>إدارة الموارد البشرية</strong>
+      <p>أنشئ وراجع الملفات الوظيفية، وتابع الاتفاقات المالية وسجل الإصدارات لكل موظف بصورة مستقلة.</p>
+    </div>
+  </div>
 
-    <h3>اختيار الموظف</h3>
+  <div class="employment-employee-card">
 
-    <label for="termsEmployeeSelect">الموظف</label>
-    <select id="termsEmployeeSelect" style="width:100%">
-      <option value="">اختر الموظف...</option>
-    </select>
+    <div class="employment-card-heading">
+      <span class="employment-heading-icon">👤</span>
+      <div>
+        <h3>اختيار الموظف</h3>
+        <p>حدد الموظف لعرض ملفه الوظيفي وإدارة بياناته</p>
+      </div>
+    </div>
+
+    <div class="employment-select-wrap">
+      <label for="termsEmployeeSelect">الموظف</label>
+      <select id="termsEmployeeSelect">
+        <option value="">اختر الموظف...</option>
+      </select>
+    </div>
 
     <div id="termsEmployeeInfo"
-         style="display:none;margin-top:15px;padding:15px;background:#f1f7fa;border-radius:10px">
+         class="employment-employee-info"
+         style="display:none">
 
-      <strong id="termsEmployeeName"></strong>
-      <p id="termsEmployeeCode"></p>
-      <p id="termsEmployeeJob"></p>
+      <div class="employment-employee-avatar">👨‍💼</div>
+      <div class="employment-employee-details">
+        <strong id="termsEmployeeName"></strong>
+        <p id="termsEmployeeCode"></p>
+        <p id="termsEmployeeJob"></p>
+      </div>
 
     </div>
 
   </div>
+
 
   <div id="employmentTermsFormContainer"
        style="display:none;margin-top:20px">
