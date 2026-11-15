@@ -2414,6 +2414,99 @@ $("clearEmployeeSignature").addEventListener("click", () => {
       $("message").textContent = message;
     }
 
+$("acceptEmployeeTermsButton").onclick = async () => {
+  if (employeePreviewMode) {
+    alert("لا يمكن قبول العقد أثناء وضع المعاينة.");
+    return;
+  }
+
+  if (!employeeContractTermsRecord || !employeeContractProfileRecord) {
+    alert("لم يتم تحميل بيانات العقد. أعد تسجيل الدخول.");
+    return;
+  }
+
+  if (!employeeSignatureDrawn) {
+    alert("من فضلك وقّع داخل مساحة التوقيع أولاً.");
+    return;
+  }
+
+  if (!confirm("هل تؤكد موافقتك على بنود الاتفاق الوظيفي وتوقيعه؟")) {
+    return;
+  }
+
+  const button = $("acceptEmployeeTermsButton");
+  button.disabled = true;
+  button.textContent = "جارٍ حفظ التوقيع...";
+
+  try {
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
+
+    if (userError || !userData.user) {
+      throw new Error("تعذر التحقق من حساب الموظف.");
+    }
+
+    const profile = employeeContractProfileRecord;
+    const terms = employeeContractTermsRecord;
+
+    if (userData.user.id !== profile.id) {
+      throw new Error("حساب الموظف الحالي لا يطابق بيانات العقد.");
+    }
+
+    const signatureBlob = await new Promise(resolve => {
+      employeeSignatureCanvas.toBlob(resolve, "image/png");
+    });
+
+    if (!signatureBlob) {
+      throw new Error("تعذر تجهيز صورة التوقيع.");
+    }
+
+    const signaturePath =
+      `${profile.id}/${terms.id}/${Date.now()}.png`;
+
+    const { error: uploadError } = await db.storage
+      .from("employee-signatures")
+      .upload(signaturePath, signatureBlob, {
+        contentType: "image/png",
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { error: insertError } = await db
+      .from("employee_employment_acknowledgements")
+      .insert({
+        terms_id: terms.id,
+        employee_id: profile.id,
+        signer_name: profile.full_name,
+        signature_path: signaturePath
+      });
+
+    if (insertError) throw insertError;
+
+    employeeSignatureContext.clearRect(
+      0,
+      0,
+      employeeSignatureCanvas.width,
+      employeeSignatureCanvas.height
+    );
+
+    employeeSignatureDrawn = false;
+
+    await loadEmployeeEmploymentTerms(profile);
+
+    alert("تم قبول الاتفاق الوظيفي وحفظ توقيعك بنجاح.");
+
+  } catch (error) {
+    console.error("Employment acceptance error:", error);
+    alert("تعذر حفظ القبول: " + error.message);
+
+  } finally {
+    button.disabled = false;
+    button.textContent = "قبول وتوقيع";
+  }
+};
+
 
 
 function showSection(section) {
@@ -3613,6 +3706,7 @@ async function loadEmployeeEmploymentTerms(profile) {
       message.textContent = "ملاحظاتك: " + response.response_note;
     } else {
       statusBadge.textContent = "بانتظار ردك";
+      actions.style.display = "block";
       intro.textContent =
         "يرجى مراجعة تفاصيل الاتفاق الوظيفي والرد عليه.";
     }
