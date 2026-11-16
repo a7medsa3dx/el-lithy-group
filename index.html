@@ -2870,7 +2870,7 @@ async function loadEmployeeTerms(employeeId) {
 
   $("previewEmploymentTermsButton").disabled = true;
   $("publishEmploymentTermsButton").disabled = true;
-
+$("deleteEmploymentTermsDraftButton").disabled = true;
   status.textContent =
     "لا يوجد ملف وظيفي سابق لهذا الموظف. يمكنك إنشاء ملف جديد.";
 
@@ -2914,7 +2914,10 @@ $("previewEmploymentTermsButton").disabled = false;
 
 $("publishEmploymentTermsButton").disabled =
   terms.status !== "draft";
-
+    
+$("deleteEmploymentTermsDraftButton").disabled =
+  terms.status !== "draft";
+    
 status.textContent =
   terms.status === "published"
     ? "تم تحميل أحدث إصدار منشور رقم " +
@@ -2925,7 +2928,9 @@ status.textContent =
       ". يمكنك معاينتها أو نشرها بعد المراجعة.";
   } catch (error) {
     console.error(error);
-
+    
+$("deleteEmploymentTermsDraftButton").disabled = true;
+    
     status.textContent =
       "تعذر تحميل الملف الوظيفي: " + error.message;
   }
