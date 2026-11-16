@@ -3256,11 +3256,82 @@ if (existingDraft) {
   }
 }
 
+ 
+async function publishEmploymentTerms() {
+  const employeeId = $("termsEmployeeSelect").value;
+  const status = $("employmentTermsStatus");
+  const publishButton = $("publishEmploymentTermsButton");
+
+  if (!employeeId) {
+    status.textContent = "من فضلك اختر الموظف أولاً.";
+    return;
+  }
+
+  const confirmed = confirm(
+    "هل أنت متأكد من نشر الاتفاق لهذا الموظف؟\n" +
+    "بعد النشر لن يمكن تعديل هذا الإصدار."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    publishButton.disabled = true;
+    status.textContent = "جارٍ نشر الاتفاق...";
+
+    const { data: draft, error: draftError } = await db
+      .from("employee_employment_terms")
+      .select("id, version_number")
+      .eq("employee_id", employeeId)
+      .eq("status", "draft")
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (draftError) throw draftError;
+
+    if (!draft) {
+      throw new Error("لا توجد مسودة محفوظة لهذا الموظف.");
+    }
+
+    const { data: published, error: publishError } = await db
+      .from("employee_employment_terms")
+      .update({ status: "published" })
+      .eq("id", draft.id)
+      .eq("employee_id", employeeId)
+      .eq("status", "draft")
+      .select()
+      .maybeSingle();
+
+    if (publishError) throw publishError;
+
+    if (!published) {
+      throw new Error("تعذر النشر. ربما تغيرت حالة المسودة.");
+    }
+
+    status.textContent =
+      "تم نشر الاتفاق بنجاح للموظف. رقم الإصدار: " +
+      published.version_number;
+
+    await loadManagerEmploymentResponse(employeeId);
+    await loadEmploymentTermsHistory(employeeId);
+
+  } catch (error) {
+    console.error(error);
+    status.textContent = "تعذر نشر الاتفاق: " + error.message;
+  } finally {
+    publishButton.disabled = false;
+  }
+}
+   
 $("saveEmploymentTermsButton").addEventListener(
   "click",
   saveEmploymentTermsDraft
 );
 
+    $("publishEmploymentTermsButton").addEventListener(
+  "click",
+  publishEmploymentTerms
+);
     
 function closeEmploymentTermsPreview() {
   $("employmentTermsPreviewModal").classList.add("hidden");
