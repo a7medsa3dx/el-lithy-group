@@ -3267,6 +3267,7 @@ if (existingDraft) {
 }
 
  
+
 async function publishEmploymentTerms() {
   const employeeId = $("termsEmployeeSelect").value;
   const status = $("employmentTermsStatus");
@@ -3318,20 +3319,24 @@ async function publishEmploymentTerms() {
       throw new Error("تعذر النشر. ربما تغيرت حالة المسودة.");
     }
 
+    await loadEmployeeTerms(employeeId);
+    await loadManagerEmploymentResponse(employeeId);
+    await loadEmploymentTermsHistory(employeeId);
+
     status.textContent =
       "تم نشر الاتفاق بنجاح للموظف. رقم الإصدار: " +
       published.version_number;
 
-    await loadManagerEmploymentResponse(employeeId);
-    await loadEmploymentTermsHistory(employeeId);
-
   } catch (error) {
     console.error(error);
-    status.textContent = "تعذر نشر الاتفاق: " + error.message;
-  } finally {
-    publishButton.disabled = false;
+
+    await loadEmployeeTerms(employeeId);
+
+    status.textContent =
+      "تعذر نشر الاتفاق: " + error.message;
   }
 }
+
    
 $("saveEmploymentTermsButton").addEventListener(
   "click",
