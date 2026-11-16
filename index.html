@@ -3377,6 +3377,75 @@ async function publishEmploymentTerms() {
 }
 
    
+async function deleteEmploymentTermsDraft() {
+  const employeeId = $("termsEmployeeSelect").value;
+  const status = $("employmentTermsStatus");
+  const deleteButton = $("deleteEmploymentTermsDraftButton");
+
+  if (!employeeId) {
+    status.textContent = "من فضلك اختر الموظف أولاً.";
+    return;
+  }
+
+  const confirmed = confirm(
+    "هل أنت متأكد من حذف مسودة الاتفاق؟\n" +
+    "لا يمكن التراجع عن الحذف."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    deleteButton.disabled = true;
+    status.textContent = "جارٍ حذف المسودة...";
+
+    // التأكد أن أحدث إصدار ما زال مسودة
+    const { data: latestTerms, error: latestError } = await db
+      .from("employee_employment_terms")
+      .select("id, version_number, status")
+      .eq("employee_id", employeeId)
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (latestError) throw latestError;
+
+    if (!latestTerms || latestTerms.status !== "draft") {
+      throw new Error(
+        "لا يمكن الحذف. أحدث إصدار ليس مسودة."
+      );
+    }
+
+    // حذف المسودة المحددة فقط
+    const { data: deletedTerms, error: deleteError } = await db
+      .from("employee_employment_terms")
+      .delete()
+      .eq("id", latestTerms.id)
+      .eq("employee_id", employeeId)
+      .eq("status", "draft")
+      .select("id")
+      .maybeSingle();
+
+    if (deleteError) throw deleteError;
+
+    if (!deletedTerms) {
+      throw new Error("لم يتم حذف المسودة. أعد تحميل البيانات.");
+    }
+
+    await loadEmployeeTerms(employeeId);
+    await loadEmploymentTermsHistory(employeeId);
+
+    status.textContent = "تم حذف المسودة بنجاح.";
+
+  } catch (error) {
+    console.error(error);
+
+    await loadEmployeeTerms(employeeId);
+
+    status.textContent =
+      "تعذر حذف المسودة: " + error.message;
+  }
+}
+
 $("saveEmploymentTermsButton").addEventListener(
   "click",
   saveEmploymentTermsDraft
@@ -3385,6 +3454,11 @@ $("saveEmploymentTermsButton").addEventListener(
     $("publishEmploymentTermsButton").addEventListener(
   "click",
   publishEmploymentTerms
+);
+
+    $("deleteEmploymentTermsDraftButton").addEventListener(
+  "click",
+  deleteEmploymentTermsDraft
 );
     
 function closeEmploymentTermsPreview() {
