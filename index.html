@@ -2823,14 +2823,17 @@ async function loadEmployeeTerms(employeeId) {
 
     if (error) throw error;
 
-    if (!terms) {
-      $("employmentTermsForm").reset();
+   if (!terms) {
+  $("employmentTermsForm").reset();
 
-      status.textContent =
-        "لا يوجد ملف وظيفي سابق لهذا الموظف. يمكنك إنشاء ملف جديد.";
+  $("previewEmploymentTermsButton").disabled = true;
+  $("publishEmploymentTermsButton").disabled = true;
 
-      return;
-    }
+  status.textContent =
+    "لا يوجد ملف وظيفي سابق لهذا الموظف. يمكنك إنشاء ملف جديد.";
+
+  return;
+}
 
     $("termsSalary").value = terms.monthly_salary ?? "";
    
