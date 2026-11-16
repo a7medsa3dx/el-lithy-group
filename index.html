@@ -1835,7 +1835,20 @@
 
   <div style="margin-top:25px;padding:18px;background:#f1f7fa;border-radius:12px">
 
-<!-- سجل الإصدارات محفوظ في قاعدة البيانات ولا يظهر في واجهة المدير -->
+<h3 style="margin:0 0 15px;color:#173b55">
+  📚 سجل إصدارات العقود والاتفاقات
+</h3>
+
+<p style="color:#64748b;margin-bottom:15px">
+  يمكنك مراجعة جميع إصدارات العقد السابقة وحالة كل إصدار.
+</p>
+
+<div id="employmentTermsHistory"
+     class="employment-history-list">
+  <p class="employment-history-message">
+    اختر موظفًا لعرض سجل إصداراته.
+  </p>
+</div>
 
 <div id="employmentTermsPreviewModal" class="hidden">
   <div class="terms-preview-overlay"
@@ -3139,8 +3152,9 @@ $("previewEmploymentTermsButton").removeAttribute("disabled");
 
       $("employmentTermsStatus").textContent =
         "تم اختيار الموظف. جارٍ تجهيز ملفه الوظيفي.";
-      await loadEmployeeTerms(employee.id);
-      await loadManagerEmploymentResponse(employee.id);
+    await loadEmployeeTerms(employee.id);
+await loadManagerEmploymentResponse(employee.id);
+await loadEmploymentTermsHistory(employee.id);
     };
 
     $("employmentTermsStatus").textContent =
