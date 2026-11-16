@@ -2868,12 +2868,19 @@ async function loadEmployeeTerms(employeeId) {
     $("termsEffectiveFrom").value =
       terms.effective_from ?? "";
 
-    status.textContent =
-      "تم تحميل الملف الوظيفي. حالة الملف: " +
-      terms.status +
-      " — رقم الإصدار: " +
-      terms.version_number;
+$("previewEmploymentTermsButton").disabled = false;
 
+$("publishEmploymentTermsButton").disabled =
+  terms.status !== "draft";
+
+status.textContent =
+  terms.status === "published"
+    ? "تم تحميل أحدث إصدار منشور رقم " +
+      terms.version_number +
+      ". أي تعديل وحفظ سينشئ إصدارًا جديدًا ولن يغيّر العقد المنشور."
+    : "تم تحميل المسودة رقم " +
+      terms.version_number +
+      ". يمكنك معاينتها أو نشرها بعد المراجعة.";
   } catch (error) {
     console.error(error);
 
