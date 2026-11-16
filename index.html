@@ -3190,19 +3190,29 @@ async function saveEmploymentTermsDraft() {
 
     let savedTerms;
 
-    if (existingDraft) {
-      // تحديث المسودة الحالية
-      const { data, error } = await db
-        .from("employee_employment_terms")
-        .update(payload)
-        .eq("id", existingDraft.id)
-        .select()
-        .single();
+   
+if (existingDraft) {
+  // تحديث المسودة فقط، ومنع تعديل أي إصدار منشور
+  const { data, error } = await db
+    .from("employee_employment_terms")
+    .update(payload)
+    .eq("id", existingDraft.id)
+    .eq("status", "draft")
+    .select()
+    .maybeSingle();
 
-      if (error) throw error;
-      savedTerms = data;
+  if (error) throw error;
 
-    } else {
+  if (!data) {
+    throw new Error(
+      "تعذر تحديث المسودة. ربما تم نشر هذا الإصدار بالفعل. أنشئ إصدارًا جديدًا."
+    );
+  }
+
+  savedTerms = data;
+
+} else {
+
       // تحديد رقم الإصدار التالي
       const { data: latestTerms, error: latestError } = await db
         .from("employee_employment_terms")
