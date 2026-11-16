@@ -2245,6 +2245,32 @@
         التوقيع الإلكتروني عند القبول
       </label>
 
+<label for="employeeSignerName" style="
+  display:block;
+  margin:14px 0 8px;
+  font-weight:bold;
+  color:#173b55;
+">
+  الاسم بالكامل كما هو مسجل بالشركة
+</label>
+
+<input
+  id="employeeSignerName"
+  type="text"
+  autocomplete="name"
+  placeholder="اكتب اسمك بالكامل"
+  style="
+    display:block;
+    width:100%;
+    box-sizing:border-box;
+    padding:13px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    font-size:15px;
+    margin-bottom:16px;
+  "
+/>
+
       <canvas id="employeeSignatureCanvas" width="600" height="180"
         style="
           display:block;
@@ -2497,7 +2523,17 @@ $("acceptEmployeeTermsButton").onclick = async () => {
     if (!signatureBlob) {
       throw new Error("تعذر تجهيز صورة التوقيع.");
     }
+const signerName = $("employeeSignerName").value.trim();
 
+if (!signerName) {
+  alert("من فضلك اكتب اسمك بالكامل قبل التوقيع.");
+  return;
+}
+
+if (signerName !== profile.full_name) {
+  alert("الاسم المكتوب يجب أن يطابق الاسم المسجل في الشركة.");
+  return;
+}
     const signaturePath =
       `${profile.id}/${terms.id}/${Date.now()}.png`;
 
@@ -2515,7 +2551,7 @@ $("acceptEmployeeTermsButton").onclick = async () => {
       .insert({
         terms_id: terms.id,
         employee_id: profile.id,
-        signer_name: profile.full_name,
+        signer_name: signerName,
         signature_path: signaturePath
       });
 
