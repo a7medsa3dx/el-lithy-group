@@ -3186,27 +3186,27 @@ async function saveEmploymentTermsDraft() {
       status: "draft"
     };
 
-    // البحث عن مسودة موجودة للموظف
-    const { data: existingDraft, error: draftError } = await db
-      .from("employee_employment_terms")
-      .select("id, version_number")
-      .eq("employee_id", employeeId)
-      .eq("status", "draft")
-      .order("version_number", { ascending: false })
-      .limit(1)
-      .maybeSingle();
 
-    if (draftError) throw draftError;
+// جلب أحدث إصدار للموظف، سواء كان مسودة أو منشورًا
+const { data: latestTerms, error: latestError } = await db
+  .from("employee_employment_terms")
+  .select("id, version_number, status")
+  .eq("employee_id", employeeId)
+  .order("version_number", { ascending: false })
+  .limit(1)
+  .maybeSingle();
 
-    let savedTerms;
+if (latestError) throw latestError;
 
-   
-if (existingDraft) {
-  // تحديث المسودة فقط، ومنع تعديل أي إصدار منشور
+let savedTerms;
+
+if (latestTerms && latestTerms.status === "draft") {
+  // تحديث أحدث مسودة فقط
   const { data, error } = await db
     .from("employee_employment_terms")
     .update(payload)
-    .eq("id", existingDraft.id)
+    .eq("id", latestTerms.id)
+    .eq("employee_id", employeeId)
     .eq("status", "draft")
     .select()
     .maybeSingle();
@@ -3215,42 +3215,34 @@ if (existingDraft) {
 
   if (!data) {
     throw new Error(
-      "تعذر تحديث المسودة. ربما تم نشر هذا الإصدار بالفعل. أنشئ إصدارًا جديدًا."
+      "تعذر تحديث المسودة. ربما تغيرت حالتها، أعد تحميل بيانات الموظف."
     );
   }
 
   savedTerms = data;
 
 } else {
+  // إنشاء إصدار جديد إذا كان أحدث إصدار منشورًا أو لا يوجد إصدار سابق
+  const nextVersion = latestTerms
+    ? latestTerms.version_number + 1
+    : 1;
 
-      // تحديد رقم الإصدار التالي
-      const { data: latestTerms, error: latestError } = await db
-        .from("employee_employment_terms")
-        .select("version_number")
-        .eq("employee_id", employeeId)
-        .order("version_number", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+  const { data, error } = await db
+    .from("employee_employment_terms")
+    .insert({
+      ...payload,
+      version_number: nextVersion,
+      created_by: user.id
+    })
+    .select()
+    .single();
 
-      if (latestError) throw latestError;
+  if (error) throw error;
 
-      const nextVersion = latestTerms
-        ? latestTerms.version_number + 1
-        : 1;
+  savedTerms = data;
+}
 
-      const { data, error } = await db
-        .from("employee_employment_terms")
-        .insert({
-          ...payload,
-          version_number: nextVersion,
-          created_by: user.id
-        })
-        .select()
-        .single();
 
-      if (error) throw error;
-      savedTerms = data;
-    }
 
    $("publishEmploymentTermsButton").disabled = false;
 
