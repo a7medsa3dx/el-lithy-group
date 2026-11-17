@@ -1921,11 +1921,6 @@
   تسجيل ومتابعة مبيعات موظفي EL-LITHY GROUP
 </div>
 
-<div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
-  <label for="salesDate"><strong>تاريخ تسجيل ومراجعة المبيعات</strong></label>
- <input id="salesDate" type="date"
-  style="width:100%;padding:12px;margin-top:10px">
-</div>
 
 <div style="margin-top:20px;padding:20px;border:1px solid #dce4eb;border-radius:12px">
   <h3>تسجيل عملية بيع جديدة</h3>
@@ -2081,29 +2076,51 @@
   </table>
 </div>
 </div>
-<h3>سجل المبيعات</h3>
+<h3>مراجعة مبيعات الموظفين</h3>
 
-  <div style="max-height:440px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px">
-    <table style="width:100%;border-collapse:collapse;min-width:750px">
-      <thead>
-        <tr style="background:#f1f7fa">
-          <th style="padding:12px">الموظف</th>
-          <th style="padding:12px">العميل</th>
-          <th style="padding:12px">نوع البيع</th>
-          <th style="padding:12px">المبلغ</th>
-          <th style="padding:12px">التاريخ</th>
-          <th style="padding:12px">الإجراءات</th>
-        </tr>
-      </thead>
-      <tbody id="salesListBody">
-        <tr>
-          <td colspan="6" style="padding:12px;text-align:center">
-            جارٍ تحميل المبيعات...
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+<div style="display:grid;gap:10px;max-width:500px;margin-bottom:18px">
+
+  <label for="salesHistoryEmployee">
+    <strong>اختر الموظف لمراجعة مبيعاته</strong>
+  </label>
+
+  <select id="salesHistoryEmployee"
+    style="padding:12px;border:1px solid #dce4eb;border-radius:8px">
+    <option value="">اختر الموظف</option>
+  </select>
+
+</div>
+
+<div id="salesHistorySummary"
+  style="padding:14px;margin-bottom:15px;background:#f1f7fa;border-radius:10px;font-weight:bold">
+  اختر الموظف لعرض جميع عملياته المسجلة.
+</div>
+
+<div style="max-height:440px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px">
+
+  <table style="width:100%;border-collapse:collapse;min-width:650px">
+
+    <thead>
+      <tr style="background:#f1f7fa">
+        <th style="padding:12px">تاريخ البيع</th>
+        <th style="padding:12px">نوع البيع</th>
+        <th style="padding:12px">العميل</th>
+        <th style="padding:12px">المبلغ</th>
+        <th style="padding:12px">الإجراءات</th>
+      </tr>
+    </thead>
+
+    <tbody id="employeeSalesHistoryBody">
+      <tr>
+        <td colspan="5" style="padding:12px;text-align:center">
+          اختر الموظف لعرض مبيعاته.
+        </td>
+      </tr>
+    </tbody>
+
+  </table>
+
+</div>
 </div>
       
 <button id="backFromSalesButton" type="button">
@@ -4544,40 +4561,31 @@ $("backFromEmployeeDaysOffButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
     
-$("manageSalesButton").addEventListener("click", () => {
+$("manageSalesButton").addEventListener("click", async () => {
   showSection("salesManagementSection");
 
   const today = new Date();
   const cairoDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Africa/Cairo",
     year: "numeric",
-    month: "2-digit", 
+    month: "2-digit",
     day: "2-digit"
   }).format(today);
 
-  $("salesDate").value = cairoDate;
   $("salesMonth").value = cairoDate.slice(0, 7);
 
-  loadSalesList();
-  loadMonthlySalesPerformance();
+  try {
+    await loadSalesHistoryEmployees();
+    await loadMonthlySalesPerformance();
+  } catch (error) {
+    console.error(error);
+    $("salesHistorySummary").textContent =
+      "تعذر تحميل البيانات: " + error.message;
+  }
 });
-
-    
-$("openEmploymentTermsButton").addEventListener("click", async () => {
-  showSection("employmentTermsSection");
-
-  $("employmentTermsStatus").textContent =
-    "جارٍ تحميل بيانات الموظفين...";
-
-  await loadTermsEmployees();
-});
-
 
 $("backFromSalesButton").addEventListener("click", () => {
   showSection("dashboardSection");
-});
-    $("salesDate").addEventListener("change", () => {
-  loadSalesList();
 });
 
     
@@ -4585,6 +4593,27 @@ $("salesMonth").addEventListener("change", () => {
   loadMonthlySalesPerformance();
 });
 
+    // عرض مبيعات الموظف عند اختياره
+$("salesHistoryEmployee").addEventListener("change", async () => {
+  const employeeId = $("salesHistoryEmployee").value;
+
+  if (!employeeId) {
+    $("salesHistorySummary").textContent =
+      "اختر الموظف لعرض جميع عملياته المسجلة.";
+
+    $("employeeSalesHistoryBody").innerHTML = `
+      <tr>
+        <td colspan="5" style="padding:12px;text-align:center">
+          اختر الموظف لعرض مبيعاته.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  await loadEmployeeSalesHistory(employeeId);
+});
+    
     // تعديل الهدف الشهري للشركة
 $("editCompanyTargetButton").addEventListener("click", async () => {
   const month = $("salesMonth").value;
@@ -4751,11 +4780,13 @@ $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
 }).format(new Date());
 
 message.textContent = "تم حفظ عملية البيع بنجاح.";
-    if ($("salesDate").value === saleDate) {
-  await loadSalesList();
-}
-    message.style.color = "green";
 
+if ($("salesHistoryEmployee").value === employee.id) {
+  await loadEmployeeSalesHistory(employee.id);
+}
+
+message.style.color = "green";
+    
   } catch (error) {
     console.error(error);
     message.textContent = error.message || "حدث خطأ أثناء حفظ عملية البيع.";
@@ -4766,20 +4797,61 @@ message.textContent = "تم حفظ عملية البيع بنجاح.";
   }
 });
 
-    // تحميل سجل المبيعات حسب التاريخ المختار
+// تحميل الموظفين في قائمة مراجعة المبيعات
+async function loadSalesHistoryEmployees() {
+  const select = $("salesHistoryEmployee");
 
-async function loadSalesList() {
-  const body = $("salesListBody");
-  const selectedDate = $("salesDate").value;
+  select.innerHTML = '<option value="">جارٍ تحميل الموظفين...</option>';
+
+  const { data: employees, error } = await db
+    .from("profiles")
+    .select("id, full_name, employee_code")
+    .eq("role", "employee")
+    .order("full_name", { ascending: true });
+
+  if (error) throw error;
+
+  select.replaceChildren();
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "اختر الموظف";
+  select.appendChild(placeholder);
+
+  (employees || []).forEach(employee => {
+    const option = document.createElement("option");
+    option.value = employee.id;
+    option.textContent = employee.full_name;
+    select.appendChild(option);
+  });
+
+  $("salesHistorySummary").textContent =
+    employees?.length
+      ? "اختر الموظف لعرض جميع عملياته المسجلة."
+      : "لا يوجد موظفون مسجلون.";
+
+  $("employeeSalesHistoryBody").innerHTML = `
+    <tr>
+      <td colspan="5" style="padding:12px;text-align:center">
+        اختر الموظف لعرض مبيعاته.
+      </td>
+    </tr>
+  `;
+}
+
+
+// تحميل جميع مبيعات الموظف المختار
+async function loadEmployeeSalesHistory(employeeId) {
+  const body = $("employeeSalesHistoryBody");
+  const summary = $("salesHistorySummary");
 
   const formatMoney = amount =>
-    Number(amount).toLocaleString("ar-EG") + " جنيه";
-
+    Number(amount || 0).toLocaleString("ar-EG") + " جنيه";
 
   body.innerHTML = `
     <tr>
-      <td colspan="6" style="padding:12px;text-align:center">
-        جارٍ تحميل المبيعات...
+      <td colspan="5" style="padding:12px;text-align:center">
+        جارٍ تحميل مبيعات الموظف...
       </td>
     </tr>
   `;
@@ -4787,33 +4859,31 @@ async function loadSalesList() {
   try {
     const { data: sales, error } = await db
       .from("sales_transactions")
-      .select("id, employee_id, sale_date, customer_name, sale_type, amount, created_at")
-      .eq("sale_date", selectedDate)
+      .select("id, sale_date, customer_name, sale_type, amount, created_at")
+      .eq("employee_id", employeeId)
+      .order("sale_date", { ascending: false })
       .order("created_at", { ascending: false });
 
     if (error) throw error;
 
-    const { data: employees, error: employeesError } = await db
-      .from("profiles")
-      .select("id, full_name");
+    const totalSales = (sales || []).reduce(
+      (sum, sale) => sum + Number(sale.amount || 0),
+      0
+    );
 
-    if (employeesError) throw employeesError;
-
-    const employeeNames = {};
-    employees.forEach(employee => {
-      employeeNames[employee.id] = employee.full_name;
-    });
-
+    summary.textContent =
+      `عدد العمليات: ${sales.length} | إجمالي المبيعات: ${formatMoney(totalSales)}`;
 
     body.replaceChildren();
 
     if (!sales || sales.length === 0) {
-      const row = body.insertRow();
-      const cell = row.insertCell();
-      cell.colSpan = 5;
-      cell.textContent = "لا توجد مبيعات مسجلة في هذا اليوم.";
-      cell.style.textAlign = "center";
-      cell.style.padding = "12px";
+      body.innerHTML = `
+        <tr>
+          <td colspan="5" style="padding:12px;text-align:center">
+            لا توجد مبيعات مسجلة لهذا الموظف.
+          </td>
+        </tr>
+      `;
       return;
     }
 
@@ -4821,100 +4891,117 @@ async function loadSalesList() {
       const row = body.insertRow();
 
       const values = [
-        employeeNames[sale.employee_id] || "غير معروف",
-        sale.customer_name || "—",
+        sale.sale_date || "—",
         sale.sale_type === "plus" ? "Plus" : "Triple Zero",
-        formatMoney(sale.amount),
-        sale.sale_date
+        sale.customer_name || "—",
+        formatMoney(sale.amount)
       ];
 
-     values.forEach(value => {
-  const cell = row.insertCell();
-  cell.textContent = value;
-  cell.style.padding = "12px";
-  cell.style.textAlign = "center";
-  cell.style.borderBottom = "1px solid #dce4eb";
-});
+      values.forEach(value => {
+        const cell = row.insertCell();
+        cell.textContent = value;
+        cell.style.padding = "12px";
+        cell.style.textAlign = "center";
+        cell.style.borderBottom = "1px solid #dce4eb";
+      });
 
-// خلية الإجراءات
-const actionsCell = row.insertCell();
-actionsCell.style.padding = "10px";
-actionsCell.style.textAlign = "center";
-actionsCell.style.whiteSpace = "nowrap";
+      // أزرار التعديل والحذف
+      const actionsCell = row.insertCell();
+      actionsCell.style.padding = "10px";
+      actionsCell.style.textAlign = "center";
+      actionsCell.style.whiteSpace = "nowrap";
 
-const editButton = document.createElement("button");
-editButton.textContent = "تعديل";
-editButton.style.cssText =
-  "background:#1c7890;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
+      const editButton = document.createElement("button");
+      editButton.textContent = "تعديل";
+      editButton.style.cssText =
+        "background:#1c7890;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
 
-const deleteButton = document.createElement("button");
-deleteButton.textContent = "حذف";
-deleteButton.style.cssText =
-  "background:#c0392b;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "حذف";
+      deleteButton.style.cssText =
+        "background:#c0392b;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
 
-actionsCell.append(editButton, deleteButton);
+      actionsCell.append(editButton, deleteButton);
 
+      // حذف عملية البيع
       deleteButton.addEventListener("click", async () => {
-  const confirmed = confirm("هل أنت متأكد من حذف عملية البيع دي؟");
+        if (!confirm("هل أنت متأكد من حذف عملية البيع دي؟")) {
+          return;
+        }
 
-  if (!confirmed) return;
+        deleteButton.disabled = true;
 
-  try {
-    const { error } = await db
-      .from("sales_transactions")
-      .delete()
-      .eq("id", sale.id);
+        try {
+          const { error } = await db
+            .from("sales_transactions")
+            .delete()
+            .eq("id", sale.id)
+            .eq("employee_id", employeeId);
 
-    if (error) throw error;
+          if (error) throw error;
 
-    alert("تم حذف عملية البيع بنجاح");
-    await loadSalesList();
-    await loadMonthlySalesPerformance();
+          alert("تم حذف عملية البيع بنجاح");
 
-  } catch (error) {
-    console.error(error);
-    alert("حصل خطأ أثناء حذف عملية البيع");
-  }
-});
+          await loadEmployeeSalesHistory(employeeId);
+          await loadMonthlySalesPerformance();
 
+        } catch (error) {
+          console.error(error);
+          alert("حصل خطأ أثناء حذف عملية البيع: " + error.message);
+          deleteButton.disabled = false;
+        }
+      });
+
+      // تعديل مبلغ البيع
       editButton.addEventListener("click", async () => {
-  const newAmount = prompt(
-    "اكتب المبلغ الجديد لعملية البيع:",
-    sale.amount
-  );
+        const newAmount = prompt(
+          "اكتب المبلغ الجديد لعملية البيع:",
+          sale.amount
+        );
 
-  if (newAmount === null) return;
+        if (newAmount === null) return;
 
-  const amount = Number(newAmount);
+        const amount = Number(newAmount);
 
-  if (!Number.isFinite(amount) || amount <= 0) {
-    alert("من فضلك أدخل مبلغًا صحيحًا أكبر من صفر");
-    return;
-  }
+        if (!Number.isFinite(amount) || amount <= 0) {
+          alert("من فضلك أدخل مبلغًا صحيحًا أكبر من صفر");
+          return;
+        }
 
-  try {
-    const { error } = await db
-      .from("sales_transactions")
-      .update({ amount })
-      .eq("id", sale.id);
+        editButton.disabled = true;
 
-    if (error) throw error;
+        try {
+          const { error } = await db
+            .from("sales_transactions")
+            .update({ amount })
+            .eq("id", sale.id)
+            .eq("employee_id", employeeId);
 
-    alert("تم تعديل مبلغ البيع بنجاح");
-    await loadSalesList();
-    await loadMonthlySalesPerformance();
+          if (error) throw error;
+
+          alert("تم تعديل مبلغ البيع بنجاح");
+
+          await loadEmployeeSalesHistory(employeeId);
+          await loadMonthlySalesPerformance();
+
+        } catch (error) {
+          console.error(error);
+          alert("حدث خطأ أثناء تعديل عملية البيع: " + error.message);
+          editButton.disabled = false;
+        }
+      });
+    });
 
   } catch (error) {
     console.error(error);
-    alert("حدث خطأ أثناء تعديل عملية البيع");
-  }
-});
-      
-});
-      
-  } catch (error) {
-    console.error(error);
-    body.textContent = "حدث خطأ أثناء تحميل سجل المبيعات.";
+    summary.textContent = "تعذر تحميل مبيعات الموظف.";
+    body.innerHTML = `
+      <tr>
+        <td colspan="5" style="padding:12px;text-align:center">
+          حدث خطأ أثناء تحميل المبيعات.
+        </td>
+      </tr>
+    `;
   }
 }
 
