@@ -10,25 +10,25 @@
   <title>EL-LITHY GROUP</title>
   <style>
     * { box-sizing: border-box; }
-   body {
-  margin: 0;
-  padding: 16px;
-  min-height: 100vh;
-  display: block;
-  background: #f1f5f9;
-  color: #172b3a;
-  font-family: Arial, sans-serif;
-  overflow-x: hidden;
-}
-.container {
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f1f5f9;
+      color: #172b3a;
+      font-family: Arial, sans-serif;
+    }
+ .container {
   width: 100%;
-  max-width: 1560px;
-  min-width: 0;
-  padding: 28px;
+  max-width: 1200px;
+  padding: 32px;
   background: white;
   border-radius: 20px;
   box-shadow: 0 12px 40px #102b3f14;
-  margin: 0 auto;
+  margin: 20px auto;
 }
  
 .logo {
@@ -1332,159 +1332,7 @@
     font-size: 16px;
   }
 }
-/* ===== EL-LITHY Responsive Layout ===== */
 
-html {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-main.container {
-  width: 100%;
-  max-width: 1560px;
-  min-width: 0;
-  margin: 0 auto;
-}
-
-#dashboardSection,
-#salesManagementSection,
-#employeeDashboardSection {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-}
-
-/* جدول أداء الموظفين */
-#monthlySalesPerformanceTable {
-  width: 100% !important;
-  min-width: 1120px !important;
-  table-layout: fixed;
-  direction: rtl;
-  border-collapse: separate !important;
-  border-spacing: 0;
-}
-
-#monthlySalesPerformanceTable th,
-#monthlySalesPerformanceTable td {
-  writing-mode: horizontal-tb !important;
-  text-orientation: mixed !important;
-  word-break: normal !important;
-  overflow-wrap: normal !important;
-  vertical-align: middle;
-  line-height: 1.6;
-}
-
-/* توزيع الأعمدة */
-#monthlySalesPerformanceTable th:nth-child(1),
-#monthlySalesPerformanceTable td:nth-child(1) {
-  width: 14%;
-}
-
-#monthlySalesPerformanceTable th:nth-child(2),
-#monthlySalesPerformanceTable td:nth-child(2) {
-  width: 16%;
-}
-
-#monthlySalesPerformanceTable th:nth-child(3),
-#monthlySalesPerformanceTable td:nth-child(3) {
-  width: 14%;
-}
-
-#monthlySalesPerformanceTable th:nth-child(4),
-#monthlySalesPerformanceTable td:nth-child(4) {
-  width: 18%;
-}
-
-#monthlySalesPerformanceTable th:nth-child(5),
-#monthlySalesPerformanceTable td:nth-child(5) {
-  width: 13%;
-}
-
-#monthlySalesPerformanceTable th:nth-child(6),
-#monthlySalesPerformanceTable td:nth-child(6) {
-  width: 15%;
-}
-
-#monthlySalesPerformanceTable th:nth-child(7),
-#monthlySalesPerformanceTable td:nth-child(7) {
-  width: 10%;
-}
-
-#monthlySalesBody td:first-child {
-  text-align: right !important;
-}
-
-#monthlySalesPerformanceTable td:nth-child(2),
-#monthlySalesPerformanceTable td:nth-child(5),
-#monthlySalesPerformanceTable td:nth-child(7) {
-  white-space: nowrap;
-}
-
-/* اللابتوب والشاشات المتوسطة */
-@media (max-width: 900px) {
-  body {
-    padding: 12px;
-  }
-
-  .container {
-    padding: 20px;
-    border-radius: 16px;
-  }
-
-  #dashboardSection h2,
-  #salesManagementSection > h2 {
-    font-size: 25px;
-  }
-}
-
-/* الموبايل */
-@media (max-width: 600px) {
-  body {
-    padding: 7px;
-    display: block;
-  }
-
-  .container {
-    width: 100%;
-    padding: 14px 11px;
-    margin: 0 auto;
-    border-radius: 13px;
-  }
-
-  #dashboardSection h2,
-  #salesManagementSection > h2 {
-    font-size: 22px;
-  }
-
-  #dashboardSection h3,
-  #salesManagementSection h3 {
-    font-size: 18px;
-  }
-
-  #monthlySalesPerformanceTable {
-    min-width: 1050px !important;
-  }
-
-  #monthlySalesPerformanceTable th,
-  #monthlySalesPerformanceTable td {
-    padding: 10px 8px !important;
-    font-size: 12px;
-  }
-
-  #employeeSalesPanel {
-    padding: 13px !important;
-  }
-
-  #employeeSalesPanel > div {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .admin-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-    
 </style>
 </head>
 <body>
@@ -2073,6 +1921,11 @@ main.container {
   تسجيل ومتابعة مبيعات موظفي EL-LITHY GROUP
 </div>
 
+<div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
+  <label for="salesDate"><strong>تاريخ تسجيل ومراجعة المبيعات</strong></label>
+ <input id="salesDate" type="date"
+  style="width:100%;padding:12px;margin-top:10px">
+</div>
 
 <div style="margin-top:20px;padding:20px;border:1px solid #dce4eb;border-radius:12px">
   <h3>تسجيل عملية بيع جديدة</h3>
@@ -2180,56 +2033,13 @@ main.container {
       <div style="font-size:14px;color:#718096">📊 نسبة تحقيق الهدف</div>
       <h2 id="companyAchievement" style="font-size:30px;margin:15px 0;color:#3478c8">0%</h2>
 
-     <div style="position:relative;height:11px;background:#e8eef5;border-radius:20px;overflow:hidden">
-
- <div style="
-  position:relative;
-  height:11px;
-  background:linear-gradient(270deg,
-    #e53935 0%,
-    #f47b36 25%,
-    #f5cf42 45%,
-    #3988d8 70%,
-    #20a66a 100%
-  );
-  border-radius:20px;
-  overflow:hidden;
-">
-
-<div style="
-  position:relative;
-  height:12px;
-  width:100%;
-  background:#e8eef5;
-  border-radius:999px;
-  overflow:hidden;
-  direction:rtl;
-">
-
-  <div id="companyProgressBar"
-    style="
-      position:absolute;
-      top:0;
-      right:0;
-      height:100%;
-      width:0%;
-      background:linear-gradient(
-        270deg,
-        #e53935 0%,
-        #f47b36 25%,
-        #f5cf42 45%,
-        #3988d8 70%,
-        #20a66a 100%
-      );
-      border-radius:999px;
-      transition:width .7s ease;
-    ">
-  </div>
-
-</div>
-<div style="font-size:12px;color:#84949c;margin-top:9px">
-  مستوى إنجاز تارجت الشركة
-</div>
+      <div style="height:11px;background:#e8eef5;border-radius:20px;overflow:hidden">
+        <div id="companyProgressBar"
+          style="height:100%;width:0%;background:linear-gradient(90deg,#4385d8,#20b486);border-radius:20px;transition:width .5s">
+        </div>
+      </div>
+      <div style="font-size:12px;color:#84949c;margin-top:9px">مستوى إنجاز تارجت الشركة</div>
+    </div>
 
     <!-- المتبقي -->
     <div style="background:white;padding:22px;border-radius:17px;border:1px solid #eee5fa;border-bottom:4px solid #9b6bd6;box-shadow:0 7px 18px #102b3f0a">
@@ -2245,141 +2055,55 @@ main.container {
     جارٍ مراجعة تطابق الأهداف...
   </div>
 
-  <!-- إدارة أهداف الموظفين -->
-<div id="employeeTargetManagementCard"
-  style="margin-top:25px;padding:24px;background:#f7fafc;border:1px solid #dce8ef;border-radius:16px">
+  <h3 style="margin-top:28px">أداء الموظفين الشهري</h3>
 
-  <h3 style="margin-top:0;color:#102b3f">
-    إدارة أهداف الموظفين
-  </h3>
-
-  <p style="color:#64748b;line-height:1.8">
-    اختر الموظف وحدد هدفه الشهري. سيتم تطبيق التعديل على الشهر المحدد في لوحة المبيعات.
-  </p>
-
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
-
-    <div>
-      <label for="employeeTargetSelect">اختيار الموظف</label>
-      <select id="employeeTargetSelect"
-        style="width:100%;padding:12px;border:1px solid #dce4eb;border-radius:9px">
-        <option value="">اختر الموظف</option>
-      </select>
-    </div>
-
-    <div>
-      <label for="employeeTargetAmount">الهدف الشهري بالجنيه</label>
-      <input id="employeeTargetAmount" type="number"
-        min="1" step="1" placeholder="أدخل الهدف الشهري"
-        style="width:100%;padding:12px;border:1px solid #dce4eb;border-radius:9px">
-    </div>
-
-  </div>
-
-  <button id="saveEmployeeTargetButton" type="button"
-    style="margin-top:18px;padding:11px 24px;background:#102b3f;color:white;border:0;border-radius:9px;cursor:pointer;font-weight:bold">
-    حفظ الهدف
-  </button>
-
-  <p id="employeeTargetStatus"
-    style="margin-bottom:0;line-height:1.8"></p>
-
-</div>
-  
-<!-- صندوق الأداء الشهري -->
-<div style="margin-top:28px;overflow:hidden;background:#fff;border:1px solid #e5edf2;border-radius:18px;box-shadow:0 8px 25px rgba(16,43,63,0.07)">
-
-  <div style="padding:22px;background:linear-gradient(135deg,#f4f8fb,#eaf2f7);border-bottom:1px solid #e5edf2">
-
-    <h3 style="margin:0;color:#102b3f;font-size:21px">
-      أداء الموظفين الشهري
-    </h3>
-
-    <p style="margin:8px 0 0;color:#718096;font-size:13px">
-      متابعة المبيعات والأهداف ونسب الإنجاز والعمولات
-    </p>
-
-  </div>
-
-  <div style="overflow-x:auto">
-
-<table id="monthlySalesPerformanceTable"
-  style="width:100%;border-collapse:collapse;min-width:1120px">
-  
-      <thead>
-        <tr style="background:linear-gradient(90deg,#102b3f,#1b4963);color:white">
-
-          <th style="padding:17px 14px;white-space:nowrap">الموظف</th>
-          <th style="padding:17px 14px;white-space:nowrap">إجمالي المبيعات</th>
-          <th style="padding:17px 14px;white-space:nowrap">مبيعات Plus</th>
-          <th style="padding:17px 14px;white-space:nowrap">مبيعات Triple Zero</th>
-          <th style="padding:17px 14px;white-space:nowrap">الهدف الشهري</th>
-          <th style="padding:17px 14px;white-space:nowrap">نسبة التحقيق</th>
-          <th style="padding:17px 14px;white-space:nowrap">العمولة</th>
-
-        </tr>
-      </thead>
-
-      <tbody id="monthlySalesBody">
-
-        <tr>
-          <td colspan="7" style="padding:25px;text-align:center;color:#718096">
-            جارٍ تحميل الأداء الشهري...
-          </td>
-        </tr>
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-</div>
-</div>
-<h3>مراجعة مبيعات الموظفين</h3>
-
-<div style="display:grid;gap:10px;max-width:500px;margin-bottom:18px">
-
-  <label for="salesHistoryEmployee">
-    <strong>اختر الموظف لمراجعة مبيعاته</strong>
-  </label>
-
-  <select id="salesHistoryEmployee"
-    style="padding:12px;border:1px solid #dce4eb;border-radius:8px">
-    <option value="">اختر الموظف</option>
-  </select>
-
-</div>
-
-<div id="salesHistorySummary"
-  style="padding:14px;margin-bottom:15px;background:#f1f7fa;border-radius:10px;font-weight:bold">
-  اختر الموظف لعرض جميع عملياته المسجلة.
-</div>
-
-<div style="max-height:440px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px">
-
-  <table style="width:100%;border-collapse:collapse;min-width:650px">
-
+<div style="overflow-x:auto;background:white;border-radius:14px;border:1px solid #e5edf2">
+  <table style="width:100%;border-collapse:collapse;min-width:1100px">
     <thead>
-      <tr style="background:#f1f7fa">
-        <th style="padding:12px">تاريخ البيع</th>
-        <th style="padding:12px">نوع البيع</th>
-        <th style="padding:12px">المبلغ</th>
-        <th style="padding:12px">الإجراءات</th>
+      <tr style="background:#102b3f;color:white">
+        <th style="padding:14px">الموظف</th>
+        <th style="padding:14px">إجمالي المبيعات</th>
+        <th style="padding:14px">مبيعات Plus</th>
+        <th style="padding:14px">مبيعات Triple Zero</th>
+        <th style="padding:14px">الهدف</th>
+        <th style="padding:14px">نسبة التحقيق</th>
+        <th style="padding:14px">العمولة</th>
+        <th style="padding:14px">إجراءات</th>
       </tr>
     </thead>
-
-    <tbody id="employeeSalesHistoryBody">
+    <tbody id="monthlySalesBody">
       <tr>
-        <td colspan="4" style="padding:12px;text-align:center">
-          اختر الموظف لعرض مبيعاته.
+        <td colspan="8" style="padding:15px;text-align:center">
+          جارٍ تحميل الأداء الشهري...
         </td>
       </tr>
     </tbody>
-
   </table>
-
 </div>
+</div>
+<h3>سجل المبيعات</h3>
+
+  <div style="max-height:440px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px">
+    <table style="width:100%;border-collapse:collapse;min-width:750px">
+      <thead>
+        <tr style="background:#f1f7fa">
+          <th style="padding:12px">الموظف</th>
+          <th style="padding:12px">العميل</th>
+          <th style="padding:12px">نوع البيع</th>
+          <th style="padding:12px">المبلغ</th>
+          <th style="padding:12px">التاريخ</th>
+          <th style="padding:12px">الإجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="salesListBody">
+        <tr>
+          <td colspan="6" style="padding:12px;text-align:center">
+            جارٍ تحميل المبيعات...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
       
 <button id="backFromSalesButton" type="button">
@@ -2469,47 +2193,18 @@ main.container {
       <strong id="employeeAchievement">—</strong>
     </div>
 
-<div id="employeeProgressTrack"
-  style="
-    position:relative;
-    height:12px;
-    width:100%;
-    background:#e8eef5;
-    border-radius:999px;
-    overflow:hidden;
-    margin:14px 0;
-  ">
+    <div style="height:12px;background:#e8eef5;border-radius:20px;overflow:hidden;margin:14px 0">
+      <div id="employeeProgressBar" style="height:100%;width:0%;background:#20a675;border-radius:20px;transition:width .5s"></div>
+    </div>
 
-  <div id="employeeProgressBar"
-    style="
-      position:absolute;
-      top:0;
-      right:0;
-      height:100%;
-      width:0%;
-      background:linear-gradient(
-        270deg,
-        #e53935 0%,
-        #f47b36 25%,
-        #f5cf42 45%,
-        #3988d8 70%,
-        #20a66a 100%
-      );
-      background-position:right center;
-      background-repeat:no-repeat;
-      background-size:100% 100%;
-      border-radius:999px;
-      transition:width .7s ease, background-size .7s ease;
-    ">
+    <p id="employeeTargetAmount" style="margin:0;color:#475569">الهدف: —</p>
+    <p id="employeeRemainingTarget" style="margin:8px 0 0;color:#475569">المتبقي: —</p>
   </div>
+
+  <p id="employeeSalesMessage" style="margin:14px 0 0;color:#64748b;text-align:center"></p>
 
 </div>
 
-<p id="employeeTargetAmount" style="margin:0;color:#475569">الهدف: —</p>
-<p id="employeeRemainingTarget" style="margin:8px 0 0;color:#475569">المتبقي: —</p>
-</div> <!-- إغلاق صندوق الهدف الشهري -->
-
-</div> <!-- إغلاق صندوق ملخص المبيعات -->
   <!-- سجل مبيعات الموظف -->
   
 <!-- العقد والاتفاق الوظيفي للموظف -->
@@ -2699,12 +2394,9 @@ main.container {
       مرحبًا بك في نظام EL-LITHY GROUP.
     </div>
 
-  <footer>EL-LITHY GROUP © 2026</footer>
+    <footer>EL-LITHY GROUP © 2026</footer>
+  </main>
 
-</section>
-
-</main>
-  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://xksqddhhnrpmutkxjjaj.supabase.co";
@@ -4852,119 +4544,47 @@ $("backFromEmployeeDaysOffButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
     
-$("manageSalesButton").addEventListener("click", async () => {
+$("manageSalesButton").addEventListener("click", () => {
   showSection("salesManagementSection");
 
   const today = new Date();
   const cairoDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Africa/Cairo",
     year: "numeric",
-    month: "2-digit",
+    month: "2-digit", 
     day: "2-digit"
   }).format(today);
 
+  $("salesDate").value = cairoDate;
   $("salesMonth").value = cairoDate.slice(0, 7);
 
-  try {
-    await loadSalesHistoryEmployees();
-    await loadMonthlySalesPerformance();
-  } catch (error) {
-    console.error(error);
-    $("salesHistorySummary").textContent =
-      "تعذر تحميل البيانات: " + error.message;
-  }
+  loadSalesList();
+  loadMonthlySalesPerformance();
 });
+
+    
+$("openEmploymentTermsButton").addEventListener("click", async () => {
+  showSection("employmentTermsSection");
+
+  $("employmentTermsStatus").textContent =
+    "جارٍ تحميل بيانات الموظفين...";
+
+  await loadTermsEmployees();
+});
+
 
 $("backFromSalesButton").addEventListener("click", () => {
   showSection("dashboardSection");
+});
+    $("salesDate").addEventListener("change", () => {
+  loadSalesList();
 });
 
     
 $("salesMonth").addEventListener("change", () => {
   loadMonthlySalesPerformance();
 });
-    
-// حفظ الهدف الشهري للموظف
-$("saveEmployeeTargetButton").addEventListener("click", async () => {
-  const employeeId = $("employeeTargetSelect").value;
-  const amount = Number($("employeeTargetAmount").value);
-  const month = $("salesMonth").value;
-  const status = $("employeeTargetStatus");
-  const button = $("saveEmployeeTargetButton");
 
-  if (!employeeId) {
-    status.textContent = "من فضلك اختر الموظف أولاً.";
-    status.style.color = "#c0392b";
-    return;
-  }
-
-  if (!month) {
-    status.textContent = "من فضلك اختر الشهر المطلوب.";
-    status.style.color = "#c0392b";
-    return;
-  }
-
-  if (!Number.isFinite(amount) || amount <= 0) {
-    status.textContent = "أدخل هدفًا صحيحًا أكبر من صفر.";
-    status.style.color = "#c0392b";
-    return;
-  }
-
-  button.disabled = true;
-  button.textContent = "جارٍ حفظ الهدف...";
-
-  try {
-    const { error } = await db
-      .from("monthly_employee_targets")
-      .upsert(
-        {
-          employee_id: employeeId,
-          month_start: month + "-01",
-          target_amount: amount
-        },
-        { onConflict: "employee_id,month_start" }
-      );
-
-    if (error) throw error;
-
-    await loadMonthlySalesPerformance();
-
-    status.textContent = "تم تحديث الهدف الشهري بنجاح.";
-    status.style.color = "#176b3a";
-
-    showMessage("تم تحديث هدف الموظف بنجاح.");
-
-  } catch (error) {
-    console.error("Employee target update error:", error);
-    status.textContent = "تعذر حفظ الهدف: " + error.message;
-    status.style.color = "#c0392b";
-  } finally {
-    button.disabled = false;
-    button.textContent = "حفظ الهدف";
-  }
-});
-    
-    // عرض مبيعات الموظف عند اختياره
-$("salesHistoryEmployee").addEventListener("change", async () => {
-  const employeeId = $("salesHistoryEmployee").value;
-
-  if (!employeeId) {
-    $("salesHistorySummary").textContent =
-      "اختر الموظف لعرض جميع عملياته المسجلة.";
-
-    $("employeeSalesHistoryBody").innerHTML = `
-      <tr>
-        <td colspan="4" style="padding:12px;text-align:center">
-          اختر الموظف لعرض مبيعاته.
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  await loadEmployeeSalesHistory(employeeId);
-});
-    
     // تعديل الهدف الشهري للشركة
 $("editCompanyTargetButton").addEventListener("click", async () => {
   const month = $("salesMonth").value;
@@ -5131,13 +4751,11 @@ $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
 }).format(new Date());
 
 message.textContent = "تم حفظ عملية البيع بنجاح.";
-
-if ($("salesHistoryEmployee").value === employee.id) {
-  await loadEmployeeSalesHistory(employee.id);
+    if ($("salesDate").value === saleDate) {
+  await loadSalesList();
 }
+    message.style.color = "green";
 
-message.style.color = "green";
-    
   } catch (error) {
     console.error(error);
     message.textContent = error.message || "حدث خطأ أثناء حفظ عملية البيع.";
@@ -5148,61 +4766,20 @@ message.style.color = "green";
   }
 });
 
-// تحميل الموظفين في قائمة مراجعة المبيعات
-async function loadSalesHistoryEmployees() {
-  const select = $("salesHistoryEmployee");
+    // تحميل سجل المبيعات حسب التاريخ المختار
 
-  select.innerHTML = '<option value="">جارٍ تحميل الموظفين...</option>';
-
-  const { data: employees, error } = await db
-    .from("profiles")
-    .select("id, full_name, employee_code")
-    .eq("role", "employee")
-    .order("employee_code", { ascending: true });
-
-  if (error) throw error;
-
-  select.replaceChildren();
-
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "اختر الموظف";
-  select.appendChild(placeholder);
-
-  (employees || []).forEach(employee => {
-    const option = document.createElement("option");
-    option.value = employee.id;
-    option.textContent = employee.full_name;
-    select.appendChild(option);
-  });
-
-  $("salesHistorySummary").textContent =
-    employees?.length
-      ? "اختر الموظف لعرض جميع عملياته المسجلة."
-      : "لا يوجد موظفون مسجلون.";
-
-  $("employeeSalesHistoryBody").innerHTML = `
-    <tr>
-      <td colspan="4" style="padding:12px;text-align:center">
-        اختر الموظف لعرض مبيعاته.
-      </td>
-    </tr>
-  `;
-}
-
-
-// تحميل جميع مبيعات الموظف المختار
-async function loadEmployeeSalesHistory(employeeId) {
-  const body = $("employeeSalesHistoryBody");
-  const summary = $("salesHistorySummary");
+async function loadSalesList() {
+  const body = $("salesListBody");
+  const selectedDate = $("salesDate").value;
 
   const formatMoney = amount =>
-    Number(amount || 0).toLocaleString("ar-EG") + " جنيه";
+    Number(amount).toLocaleString("ar-EG") + " جنيه";
+
 
   body.innerHTML = `
     <tr>
-      <td colspan="4" style="padding:12px;text-align:center">
-        جارٍ تحميل مبيعات الموظف...
+      <td colspan="6" style="padding:12px;text-align:center">
+        جارٍ تحميل المبيعات...
       </td>
     </tr>
   `;
@@ -5210,31 +4787,33 @@ async function loadEmployeeSalesHistory(employeeId) {
   try {
     const { data: sales, error } = await db
       .from("sales_transactions")
-      .select("id, sale_date, sale_type, amount, created_at")
-      .eq("employee_id", employeeId)
-      .order("sale_date", { ascending: false })
+      .select("id, employee_id, sale_date, customer_name, sale_type, amount, created_at")
+      .eq("sale_date", selectedDate)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
 
-    const totalSales = (sales || []).reduce(
-      (sum, sale) => sum + Number(sale.amount || 0),
-      0
-    );
+    const { data: employees, error: employeesError } = await db
+      .from("profiles")
+      .select("id, full_name");
 
-    summary.textContent =
-      `عدد العمليات: ${sales.length} | إجمالي المبيعات: ${formatMoney(totalSales)}`;
+    if (employeesError) throw employeesError;
+
+    const employeeNames = {};
+    employees.forEach(employee => {
+      employeeNames[employee.id] = employee.full_name;
+    });
+
 
     body.replaceChildren();
 
     if (!sales || sales.length === 0) {
-      body.innerHTML = `
-        <tr>
-          <td colspan="4" style="padding:12px;text-align:center">
-            لا توجد مبيعات مسجلة لهذا الموظف.
-          </td>
-        </tr>
-      `;
+      const row = body.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 5;
+      cell.textContent = "لا توجد مبيعات مسجلة في هذا اليوم.";
+      cell.style.textAlign = "center";
+      cell.style.padding = "12px";
       return;
     }
 
@@ -5242,192 +4821,103 @@ async function loadEmployeeSalesHistory(employeeId) {
       const row = body.insertRow();
 
       const values = [
-        sale.sale_date || "—",
+        employeeNames[sale.employee_id] || "غير معروف",
+        sale.customer_name || "—",
         sale.sale_type === "plus" ? "Plus" : "Triple Zero",
-        formatMoney(sale.amount)
+        formatMoney(sale.amount),
+        sale.sale_date
       ];
 
-      values.forEach(value => {
-        const cell = row.insertCell();
-        cell.textContent = value;
-        cell.style.padding = "12px";
-        cell.style.textAlign = "center";
-        cell.style.borderBottom = "1px solid #dce4eb";
-      });
+     values.forEach(value => {
+  const cell = row.insertCell();
+  cell.textContent = value;
+  cell.style.padding = "12px";
+  cell.style.textAlign = "center";
+  cell.style.borderBottom = "1px solid #dce4eb";
+});
 
-      // أزرار التعديل والحذف
-      const actionsCell = row.insertCell();
-      actionsCell.style.padding = "10px";
-      actionsCell.style.textAlign = "center";
-      actionsCell.style.whiteSpace = "nowrap";
+// خلية الإجراءات
+const actionsCell = row.insertCell();
+actionsCell.style.padding = "10px";
+actionsCell.style.textAlign = "center";
+actionsCell.style.whiteSpace = "nowrap";
 
-      const editButton = document.createElement("button");
-      editButton.textContent = "تعديل";
-      editButton.style.cssText =
-        "background:#1c7890;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
+const editButton = document.createElement("button");
+editButton.textContent = "تعديل";
+editButton.style.cssText =
+  "background:#1c7890;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
 
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "حذف";
-      deleteButton.style.cssText =
-        "background:#c0392b;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
+const deleteButton = document.createElement("button");
+deleteButton.textContent = "حذف";
+deleteButton.style.cssText =
+  "background:#c0392b;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
 
-      actionsCell.append(editButton, deleteButton);
+actionsCell.append(editButton, deleteButton);
 
-      // حذف عملية البيع
       deleteButton.addEventListener("click", async () => {
-        if (!confirm("هل أنت متأكد من حذف عملية البيع دي؟")) {
-          return;
-        }
+  const confirmed = confirm("هل أنت متأكد من حذف عملية البيع دي؟");
 
-        deleteButton.disabled = true;
+  if (!confirmed) return;
 
-        try {
-          const { error } = await db
-            .from("sales_transactions")
-            .delete()
-            .eq("id", sale.id)
-            .eq("employee_id", employeeId);
+  try {
+    const { error } = await db
+      .from("sales_transactions")
+      .delete()
+      .eq("id", sale.id);
 
-          if (error) throw error;
+    if (error) throw error;
 
-          alert("تم حذف عملية البيع بنجاح");
-
-          await loadEmployeeSalesHistory(employeeId);
-          await loadMonthlySalesPerformance();
-
-        } catch (error) {
-          console.error(error);
-          alert("حصل خطأ أثناء حذف عملية البيع: " + error.message);
-          deleteButton.disabled = false;
-        }
-      });
-
-      // تعديل مبلغ البيع
-      editButton.addEventListener("click", async () => {
-        const newAmount = prompt(
-          "اكتب المبلغ الجديد لعملية البيع:",
-          sale.amount
-        );
-
-        if (newAmount === null) return;
-
-        const amount = Number(newAmount);
-
-        if (!Number.isFinite(amount) || amount <= 0) {
-          alert("من فضلك أدخل مبلغًا صحيحًا أكبر من صفر");
-          return;
-        }
-
-        editButton.disabled = true;
-
-        try {
-          const { error } = await db
-            .from("sales_transactions")
-            .update({ amount })
-            .eq("id", sale.id)
-            .eq("employee_id", employeeId);
-
-          if (error) throw error;
-
-          alert("تم تعديل مبلغ البيع بنجاح");
-
-          await loadEmployeeSalesHistory(employeeId);
-          await loadMonthlySalesPerformance();
-
-        } catch (error) {
-          console.error(error);
-          alert("حدث خطأ أثناء تعديل عملية البيع: " + error.message);
-          editButton.disabled = false;
-        }
-      });
-    });
+    alert("تم حذف عملية البيع بنجاح");
+    await loadSalesList();
+    await loadMonthlySalesPerformance();
 
   } catch (error) {
     console.error(error);
-    summary.textContent = "تعذر تحميل مبيعات الموظف.";
-    body.innerHTML = `
-      <tr>
-        <td colspan="4" style="padding:12px;text-align:center">
-          حدث خطأ أثناء تحميل المبيعات.
-        </td>
-      </tr>
-    `;
+    alert("حصل خطأ أثناء حذف عملية البيع");
   }
-}
+});
 
-    // تدرج ألوان موحد لنسب تحقيق الأهداف
-function setAchievementProgressBar(element, value) {
-  const progress = Math.min(100, Math.max(0, Number(value) || 0));
-
-  const stops = [
-    { position: 0, color: "#e53935" },
-    { position: 25, color: "#f47b36" },
-    { position: 45, color: "#f5cf42" },
-    { position: 70, color: "#3988d8" },
-    { position: 100, color: "#20a66a" }
-  ];
-
-  function hexToRgb(hex) {
-    return {
-      r: parseInt(hex.slice(1, 3), 16),
-      g: parseInt(hex.slice(3, 5), 16),
-      b: parseInt(hex.slice(5, 7), 16)
-    };
-  }
-
-  function interpolateColor(start, end, ratio) {
-    const a = hexToRgb(start);
-    const b = hexToRgb(end);
-
-    const channel = (x, y) =>
-      Math.round(x + (y - x) * ratio)
-        .toString(16)
-        .padStart(2, "0");
-
-    return "#" +
-      channel(a.r, b.r) +
-      channel(a.g, b.g) +
-      channel(a.b, b.b);
-  }
-
-  let lower = stops[0];
-  let upper = stops[stops.length - 1];
-
-  for (let i = 1; i < stops.length; i++) {
-    if (progress <= stops[i].position) {
-      upper = stops[i];
-      lower = stops[i - 1];
-      break;
-    }
-  }
-
-  const ratio = upper.position === lower.position
-    ? 0
-    : (progress - lower.position) /
-      (upper.position - lower.position);
-
-  const endColor = interpolateColor(
-    lower.color,
-    upper.color,
-    ratio
+      editButton.addEventListener("click", async () => {
+  const newAmount = prompt(
+    "اكتب المبلغ الجديد لعملية البيع:",
+    sale.amount
   );
 
-  const gradientStops = stops
-    .filter(stop => stop.position < progress)
-    .map(stop =>
-      `${stop.color} ${(stop.position / Math.max(progress, 0.001) * 100).toFixed(2)}%`
-    );
+  if (newAmount === null) return;
 
-  gradientStops.push(`${endColor} 100%`);
+  const amount = Number(newAmount);
 
-  element.style.width = progress + "%";
-  element.style.background =
-    `linear-gradient(to left, ${gradientStops.join(", ")})`;
+  if (!Number.isFinite(amount) || amount <= 0) {
+    alert("من فضلك أدخل مبلغًا صحيحًا أكبر من صفر");
+    return;
+  }
 
-  element.style.borderRadius = "999px";
-  element.style.transition =
-    "width .7s ease, background .7s ease";
+  try {
+    const { error } = await db
+      .from("sales_transactions")
+      .update({ amount })
+      .eq("id", sale.id);
+
+    if (error) throw error;
+
+    alert("تم تعديل مبلغ البيع بنجاح");
+    await loadSalesList();
+    await loadMonthlySalesPerformance();
+
+  } catch (error) {
+    console.error(error);
+    alert("حدث خطأ أثناء تعديل عملية البيع");
+  }
+});
+      
+});
+      
+  } catch (error) {
+    console.error(error);
+    body.textContent = "حدث خطأ أثناء تحميل سجل المبيعات.";
+  }
 }
+
     
 async function loadMonthlySalesPerformance() {
   const month = $("salesMonth").value;
@@ -5453,57 +4943,6 @@ async function loadMonthlySalesPerformance() {
       .eq("month_start", monthStart)
       .order("employee_code");
 
-    // تحميل الموظفين في قائمة إدارة الأهداف
-const targetSelect = $("employeeTargetSelect");
-const previousEmployeeId = targetSelect.value;
-
-targetSelect.replaceChildren();
-
-const placeholder = document.createElement("option");
-placeholder.value = "";
-placeholder.textContent = "اختر الموظف";
-targetSelect.appendChild(placeholder);
-
-const targetEmployees = (employees || [])
-  .filter(employee => employee.employee_code !== "EMP002");
-
-targetEmployees.forEach(employee => {
-  const option = document.createElement("option");
-  option.value = employee.employee_id;
-  option.textContent = employee.full_name;
-  targetSelect.appendChild(option);
-});
-
-// الاحتفاظ بالموظف المختار عند تحديث البيانات
-if (targetEmployees.some(employee =>
-  employee.employee_id === previousEmployeeId
-)) {
-  targetSelect.value = previousEmployeeId;
-
-  const selectedEmployee = targetEmployees.find(employee =>
-    employee.employee_id === previousEmployeeId
-  );
-
-  $("employeeTargetAmount").value =
-    selectedEmployee.target_amount || "";
-} else {
-  $("employeeTargetAmount").value = "";
-}
-    // عرض الهدف الحالي عند اختيار الموظف
-targetSelect.onchange = () => {
-  const selectedEmployee = targetEmployees.find(
-    employee => employee.employee_id === targetSelect.value
-  );
-
-  $("employeeTargetAmount").value =
-    selectedEmployee?.target_amount || "";
-
-  $("employeeTargetStatus").textContent =
-    selectedEmployee
-      ? "الهدف الحالي: " + formatMoney(selectedEmployee.target_amount)
-      : "اختر الموظف لتعديل هدفه.";
-};
-    
     if (employeesError) throw employeesError;
 
     // حساب مبيعات Plus وTriple Zero للشهر المختار
@@ -5561,10 +5000,7 @@ targetSelect.onchange = () => {
   Math.min(100, Number(company.achievement_percentage || 0))
 );
 
-setAchievementProgressBar(
-  $("companyProgressBar"),
-  companyProgress
-);
+$("companyProgressBar").style.width = companyProgress + "%";
       
       const remaining = Number(company.remaining_target || 0);
 
@@ -5576,10 +5012,7 @@ setAchievementProgressBar(
       $("companyMonthlyTarget").textContent = "غير محدد";
       $("companyMonthlySales").textContent = formatMoney(0);
       $("companyAchievement").textContent = "0%";
-      setAchievementProgressBar(
-  $("companyProgressBar"),
-  0
-);
+      $("companyProgressBar").style.width = "0%";
       $("companyRemainingTarget").textContent = "غير محدد";
     }
 
@@ -5589,7 +5022,7 @@ setAchievementProgressBar(
     if (!employees || employees.length === 0) {
       const row = body.insertRow();
       const cell = row.insertCell();
-      cell.colSpan = 7;
+      cell.colSpan = 6;
       cell.textContent = "لا توجد بيانات أهداف لهذا الشهر.";
       cell.style.textAlign = "center";
       cell.style.padding = "12px";
@@ -5638,176 +5071,128 @@ if (employeeTargetsTotal === companyTarget) {
   warning.style.display = "block";
 }
     
-employees.forEach((employee, employeeIndex) => {
-
+employees.forEach(employee => {
   const row = body.insertRow();
 
-  row.style.background =
-    employeeIndex % 2 === 0 ? "#ffffff" : "#f7fafc";
+const values = [
+  employee.full_name,
+  formatMoney(employee.total_sales),
 
-  row.style.transition = "background .2s";
+  `${formatMoney(employee.plus_sales)} (${Number(employee.plus_count || 0).toLocaleString("ar-EG")} عملية)`,
 
-  const styleCell = cell => {
-    cell.style.padding = "17px 14px";
+  `${formatMoney(employee.triple_zero_sales)} (${Number(employee.triple_zero_count || 0).toLocaleString("ar-EG")} عملية)`,
+
+  employee.target_amount
+    ? formatMoney(employee.target_amount)
+    : "بدون هدف",
+
+  employee.achievement_percentage == null
+    ? "—"
+    : Number(employee.achievement_percentage).toLocaleString("ar-EG") + "%",
+
+  formatMoney(employee.commission_amount)
+];
+
+    values.forEach((value, index) => {
+    const cell = row.insertCell();
+    cell.style.padding = "12px";
     cell.style.textAlign = "center";
-    cell.style.verticalAlign = "middle";
-    cell.style.borderBottom = "1px solid #edf1f5";
-    cell.style.color = "#334155";
-    cell.style.fontSize = "13px";
-  };
+    cell.style.borderBottom = "1px solid #dce4eb";
 
-  // 1- الموظف والكود
-  const nameCell = row.insertCell();
-  styleCell(nameCell);
+    if (index !== 5) {
+      cell.textContent = value;
+      return;
+    }
 
-  const employeeName = document.createElement("div");
-  employeeName.textContent = employee.full_name;
-  employeeName.style.cssText =
-    "font-size:14px;font-weight:800;color:#102b3f";
+    if (employee.achievement_percentage == null) {
+      cell.textContent = "بدون تارجت";
+      return;
+    }
 
-  const employeeCode = document.createElement("div");
-  employeeCode.textContent = employee.employee_code || "";
-  employeeCode.style.cssText =
-    "font-size:11px;color:#94a3b8;margin-top:5px";
-
-  nameCell.append(employeeName, employeeCode);
-
-  // 2- إجمالي المبيعات
-  const totalCell = row.insertCell();
-  styleCell(totalCell);
-
-  totalCell.textContent = formatMoney(employee.total_sales);
-  totalCell.style.fontWeight = "800";
-  totalCell.style.color = "#102b3f";
-  totalCell.style.fontSize = "14px";
-
-  // 3- مبيعات Plus
-  const plusCell = row.insertCell();
-  styleCell(plusCell);
-
-  const plusAmount = document.createElement("div");
-  plusAmount.textContent = formatMoney(employee.plus_sales);
-  plusAmount.style.cssText =
-    "font-weight:700;color:#2476b8";
-
-  const plusCount = document.createElement("div");
-  plusCount.textContent =
-    Number(employee.plus_count || 0).toLocaleString("ar-EG") +
-    " عملية";
-  plusCount.style.cssText =
-    "font-size:11px;color:#94a3b8;margin-top:5px";
-
-  plusCell.append(plusAmount, plusCount);
-
-  // 4- مبيعات Triple Zero
-  const tripleCell = row.insertCell();
-  styleCell(tripleCell);
-
-  const tripleAmount = document.createElement("div");
-  tripleAmount.textContent =
-    formatMoney(employee.triple_zero_sales);
-  tripleAmount.style.cssText =
-    "font-weight:700;color:#52647a";
-
-  const tripleCount = document.createElement("div");
-  tripleCount.textContent =
-    Number(employee.triple_zero_count || 0).toLocaleString("ar-EG") +
-    " عملية";
-  tripleCount.style.cssText =
-    "font-size:11px;color:#94a3b8;margin-top:5px";
-
-  tripleCell.append(tripleAmount, tripleCount);
-
-  // 5- الهدف الشهري
-  const targetCell = row.insertCell();
-  styleCell(targetCell);
-
-  if (Number(employee.target_amount || 0) > 0) {
-    targetCell.textContent =
-      formatMoney(employee.target_amount);
-    targetCell.style.fontWeight = "700";
-  } else {
-    const badge = document.createElement("span");
-    badge.textContent = "بدون هدف";
-    badge.style.cssText =
-      "padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
-    targetCell.appendChild(badge);
-  }
-
-  // 6- نسبة التحقيق والشريط المتدرج
-  const achievementCell = row.insertCell();
-  styleCell(achievementCell);
-
-  if (employee.achievement_percentage == null) {
-    const badge = document.createElement("span");
-    badge.textContent = "بدون تارجت";
-    badge.style.cssText =
-      "padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
-    achievementCell.appendChild(badge);
-
-  } else {
-    const percentage =
-      Number(employee.achievement_percentage) || 0;
-
-    const progress =
-      Math.min(100, Math.max(0, percentage));
+    const percentage = Number(employee.achievement_percentage);
+    const progress = Math.max(0, Math.min(100, percentage));
 
     const label = document.createElement("div");
     label.textContent =
       percentage.toLocaleString("ar-EG") + "%";
-
-    label.style.cssText =
-      "font-size:15px;font-weight:800;margin-bottom:9px;color:#102b3f";
+    label.style.fontWeight = "bold";
+    label.style.marginBottom = "8px";
+    label.style.color = percentage >= 100 ? "#16865f" : "#3478c8";
 
     const track = document.createElement("div");
-    track.style.cssText = `
-      position:relative;
-      height:10px;
-      width:100%;
-      min-width:100px;
-      background:#e8eef5;
-      border-radius:999px;
-      overflow:hidden;
-      direction:rtl;
-    `;
+    track.style.cssText =
+      "height:9px;background:#e8eef5;border-radius:20px;overflow:hidden;min-width:90px";
 
     const bar = document.createElement("div");
-    bar.style.cssText = `
-      position:absolute;
-      top:0;
-      right:0;
-      height:100%;
-      width:0%;
-      border-radius:999px;
-    `;
-
-    setAchievementProgressBar(bar, percentage);
+    bar.style.cssText =
+      "height:100%;width:" + progress +
+      "%;background:" +
+      (percentage >= 100 ? "#20a675" : "#4385d8") +
+      ";border-radius:20px;transition:width .5s";
 
     track.appendChild(bar);
-    achievementCell.append(label, track);
+    cell.appendChild(label);
+    cell.appendChild(track);
+  });
+  const actionCell = row.insertCell();
+  actionCell.style.textAlign = "center";
+  actionCell.style.padding = "12px";
+
+  if (employee.employee_code !== "EMP002") {
+    const editButton = document.createElement("button");
+    editButton.textContent = "تعديل الهدف";
+    editButton.style.cssText =
+      "padding:8px 12px;background:#173b55;color:white;border:0;border-radius:7px;cursor:pointer";
+
+    editButton.addEventListener("click", async () => {
+      const newTarget = prompt(
+        "أدخل الهدف الشهري الجديد للموظف " + employee.full_name,
+        employee.target_amount || ""
+      );
+
+      if (newTarget === null) return;
+
+      const amount = Number(newTarget.replace(/,/g, ""));
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showMessage("أدخل مبلغًا صحيحًا أكبر من صفر.");
+        return;
+      }
+
+      editButton.disabled = true;
+
+      try {
+        const { error } = await db
+          .from("monthly_employee_targets")
+          .upsert(
+            {
+              employee_id: employee.employee_id,
+              month_start: monthStart,
+              target_amount: amount
+            },
+            { onConflict: "employee_id,month_start" }
+          );
+
+        if (error) throw error;
+
+        await loadMonthlySalesPerformance();
+        showMessage("تم تحديث هدف الموظف بنجاح.");
+
+      } catch (error) {
+        console.error("Employee target update error:", error);
+        showMessage(error.message || "تعذر تحديث هدف الموظف.");
+      } finally {
+        editButton.disabled = false;
+      }
+    });
+
+    actionCell.appendChild(editButton);
+  } else {
+    actionCell.textContent = "بدون هدف";
   }
-
-  // 7- العمولة
-  const commissionCell = row.insertCell();
-  styleCell(commissionCell);
-
-  const commission = document.createElement("span");
-  commission.textContent =
-    formatMoney(employee.commission_amount);
-
-  commission.style.cssText = `
-    display:inline-block;
-    padding:8px 11px;
-    background:#eaf7f0;
-    color:#177347;
-    border-radius:9px;
-    font-weight:800;
-    white-space:nowrap;
-  `;
-
-  commissionCell.appendChild(commission);
-
 });
+
+
   } catch (error) {
     console.error("Monthly sales error:", error);
     $("monthlySalesBody").textContent =
@@ -5901,12 +5286,11 @@ async function loadEmployeeSalesDashboard(profile) {
           : "تم تحقيق التارجت وتجاوزه بمبلغ " +
             formatMoney(totalSales - target);
 
- setAchievementProgressBar(
-  $("employeeProgressBar"),
-  achievement
-);
-} // إغلاق else الخاص بهدف الموظف
-    
+      $("employeeProgressBar").style.width =
+        Math.min(100, Math.max(0, achievement)) + "%";
+    }
+
+   
       // تحميل سجل مبيعات الموظف
 const [year, month] = cairoDate.slice(0, 7).split("-").map(Number);
 
