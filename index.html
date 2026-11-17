@@ -2028,13 +2028,39 @@
       <div style="font-size:14px;color:#718096">📊 نسبة تحقيق الهدف</div>
       <h2 id="companyAchievement" style="font-size:30px;margin:15px 0;color:#3478c8">0%</h2>
 
-      <div style="height:11px;background:#e8eef5;border-radius:20px;overflow:hidden">
-        <div id="companyProgressBar"
-          style="height:100%;width:0%;background:linear-gradient(90deg,#4385d8,#20b486);border-radius:20px;transition:width .5s">
-        </div>
-      </div>
-      <div style="font-size:12px;color:#84949c;margin-top:9px">مستوى إنجاز تارجت الشركة</div>
-    </div>
+     <div style="position:relative;height:11px;background:#e8eef5;border-radius:20px;overflow:hidden">
+
+ <div style="
+  position:relative;
+  height:11px;
+  background:linear-gradient(270deg,
+    #e53935 0%,
+    #f47b36 25%,
+    #f5cf42 45%,
+    #3988d8 70%,
+    #20a66a 100%
+  );
+  border-radius:20px;
+  overflow:hidden;
+">
+
+  <div id="companyProgressBar"
+    style="
+      position:absolute;
+      top:0;
+      left:0;
+      height:100%;
+      width:100%;
+      background:#e8eef5;
+      border-radius:20px;
+      transition:width .7s ease;
+    ">
+  </div>
+
+</div>
+<div style="font-size:12px;color:#84949c;margin-top:9px">
+  مستوى إنجاز تارجت الشركة
+</div>
 
     <!-- المتبقي -->
     <div style="background:white;padding:22px;border-radius:17px;border:1px solid #eee5fa;border-bottom:4px solid #9b6bd6;box-shadow:0 7px 18px #102b3f0a">
@@ -2273,17 +2299,17 @@
       <strong id="employeeAchievement">—</strong>
     </div>
 
-    <div style="height:12px;background:#e8eef5;border-radius:20px;overflow:hidden;margin:14px 0">
-      <div id="employeeProgressBar" style="height:100%;width:0%;background:#20a675;border-radius:20px;transition:width .5s"></div>
-    </div>
+ <div id="employeeProgressTrack"
+  style="position:relative;height:12px;background:linear-gradient(270deg,#e53935 0%,#f47b36 25%,#f5cf42 45%,#3988d8 70%,#20a66a 100%);border-radius:20px;overflow:hidden;margin:14px 0">
 
-    <p id="employeeTargetAmount" style="margin:0;color:#475569">الهدف: —</p>
-    <p id="employeeRemainingTarget" style="margin:8px 0 0;color:#475569">المتبقي: —</p>
+  <div id="employeeProgressBar"
+    style="position:absolute;top:0;left:0;height:100%;width:100%;background:#e8eef5;border-radius:20px;transition:width .5s">
   </div>
 
-  <p id="employeeSalesMessage" style="margin:14px 0 0;color:#64748b;text-align:center"></p>
-
 </div>
+
+<p id="employeeTargetAmount" style="margin:0;color:#475569">الهدف: —</p>
+<p id="employeeRemainingTarget" style="margin:8px 0 0;color:#475569">المتبقي: —</p>
 
   <!-- سجل مبيعات الموظف -->
   
@@ -5260,7 +5286,8 @@ targetSelect.onchange = () => {
   Math.min(100, Number(company.achievement_percentage || 0))
 );
 
-$("companyProgressBar").style.width = companyProgress + "%";
+$("companyProgressBar").style.width =
+  (100 - companyProgress) + "%";
       
       const remaining = Number(company.remaining_target || 0);
 
@@ -5272,7 +5299,7 @@ $("companyProgressBar").style.width = companyProgress + "%";
       $("companyMonthlyTarget").textContent = "غير محدد";
       $("companyMonthlySales").textContent = formatMoney(0);
       $("companyAchievement").textContent = "0%";
-      $("companyProgressBar").style.width = "0%";
+      $("companyProgressBar").style.width = "100%";
       $("companyRemainingTarget").textContent = "غير محدد";
     }
 
@@ -5464,17 +5491,37 @@ employees.forEach((employee, employeeIndex) => {
         progressColor +
         ";margin-bottom:9px";
 
-      const track = document.createElement("div");
-      track.style.cssText =
-        "height:9px;background:#e9eef4;border-radius:20px;overflow:hidden;min-width:100px";
+    const track = document.createElement("div");
 
-      const bar = document.createElement("div");
-      bar.style.cssText =
-        "height:100%;width:" + progress +
-        "%;background:" + progressColor +
-        ";border-radius:20px;transition:width .5s";
+track.style.cssText = `
+  position:relative;
+  height:9px;
+  background:linear-gradient(270deg,
+    #e53935 0%,
+    #f47b36 25%,
+    #f5cf42 45%,
+    #3988d8 70%,
+    #20a66a 100%
+  );
+  border-radius:20px;
+  overflow:hidden;
+  min-width:100px;
+`;
 
-      track.appendChild(bar);
+const bar = document.createElement("div");
+
+bar.style.cssText = `
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:${100 - progress}%;
+  background:#e8eef4;
+  border-radius:20px;
+  transition:width .7s ease;
+`;
+
+track.appendChild(bar);
       cell.append(label, track);
       return;
     }
@@ -5584,9 +5631,10 @@ async function loadEmployeeSalesDashboard(profile) {
           : "تم تحقيق التارجت وتجاوزه بمبلغ " +
             formatMoney(totalSales - target);
 
-      $("employeeProgressBar").style.width =
-        Math.min(100, Math.max(0, achievement)) + "%";
-    }
+    const progress = Math.min(100, Math.max(0, achievement));
+
+$("employeeProgressBar").style.width =
+  (100 - progress) + "%";
 
    
       // تحميل سجل مبيعات الموظف
