@@ -5364,185 +5364,205 @@ if (employeeTargetsTotal === companyTarget) {
 }
     
 employees.forEach((employee, employeeIndex) => {
+
   const row = body.insertRow();
 
   row.style.background =
     employeeIndex % 2 === 0 ? "#ffffff" : "#f7fafc";
 
-  row.style.transition = "background 0.2s";
+  row.style.transition = "background .2s";
 
-  const values = [
-    employee.full_name,
-    formatMoney(employee.total_sales),
-    formatMoney(employee.plus_sales),
-    formatMoney(employee.triple_zero_sales),
-    employee.target_amount
-      ? formatMoney(employee.target_amount)
-      : "بدون هدف",
-    employee.achievement_percentage == null
-      ? "بدون تارجت"
-      : Number(employee.achievement_percentage).toLocaleString("ar-EG") + "%",
-    formatMoney(employee.commission_amount)
-  ];
-
-  values.forEach((value, index) => {
-    const cell = row.insertCell();
-
+  // تنسيق أساسي موحد للخلايا
+  const styleCell = cell => {
     cell.style.padding = "17px 14px";
     cell.style.textAlign = "center";
     cell.style.verticalAlign = "middle";
     cell.style.borderBottom = "1px solid #edf1f5";
     cell.style.color = "#334155";
     cell.style.fontSize = "13px";
+  };
 
-    // اسم الموظف وكوده
-    if (index === 0) {
-      const name = document.createElement("div");
-      name.textContent = employee.full_name;
-      name.style.cssText =
-        "font-size:14px;font-weight:800;color:#102b3f";
+  // 1- اسم الموظف وكوده داخل خلية واحدة
+  const nameCell = row.insertCell();
+  styleCell(nameCell);
 
-      cell.appendChild(name);
+  const employeeName = document.createElement("div");
+  employeeName.textContent = employee.full_name;
+  employeeName.style.cssText =
+    "font-size:14px;font-weight:800;color:#102b3f";
 
-      if (employee.employee_code) {
-        const code = document.createElement("div");
-        code.textContent = employee.employee_code;
-        code.style.cssText =
-          "font-size:11px;color:#94a3b8;margin-top:5px";
+  const employeeCode = document.createElement("div");
+  employeeCode.textContent = employee.employee_code || "";
+  employeeCode.style.cssText =
+    "font-size:11px;color:#94a3b8;margin-top:5px";
 
-        cell.appendChild(code);
-      }
+  nameCell.append(employeeName, employeeCode);
 
-      return;
-    }
 
-    // إجمالي المبيعات
-    if (index === 1) {
-      cell.textContent = value;
-      cell.style.fontWeight = "800";
-      cell.style.color = "#102b3f";
-      cell.style.fontSize = "14px";
-      return;
-    }
+  // 2- إجمالي المبيعات
+  const totalCell = row.insertCell();
+  styleCell(totalCell);
 
-    // مبيعات Plus وTriple Zero
-    if (index === 2 || index === 3) {
-      const isPlus = index === 2;
+  totalCell.textContent = formatMoney(employee.total_sales);
+  totalCell.style.fontWeight = "800";
+  totalCell.style.color = "#102b3f";
+  totalCell.style.fontSize = "14px";
 
-      const amount = document.createElement("div");
-      amount.textContent = value;
-      amount.style.cssText =
-        "font-weight:700;color:" +
-        (isPlus ? "#2476b8" : "#52647a");
 
-      const count = document.createElement("div");
-      count.textContent = Number(
-        isPlus ? employee.plus_count : employee.triple_zero_count
-      ).toLocaleString("ar-EG") + " عملية";
+  // 3- مبيعات Plus وعدد العمليات
+  const plusCell = row.insertCell();
+  styleCell(plusCell);
 
-      count.style.cssText =
-        "font-size:11px;color:#94a3b8;margin-top:5px";
+  const plusAmount = document.createElement("div");
+  plusAmount.textContent = formatMoney(employee.plus_sales);
+  plusAmount.style.cssText =
+    "font-weight:700;color:#2476b8";
 
-      cell.append(amount, count);
-      return;
-    }
+  const plusCount = document.createElement("div");
+  plusCount.textContent =
+    Number(employee.plus_count || 0).toLocaleString("ar-EG") +
+    " عملية";
 
-    // الهدف الشهري
-    if (index === 4) {
-      if (!employee.target_amount) {
-        const badge = document.createElement("span");
-        badge.textContent = "بدون هدف";
-        badge.style.cssText =
-          "padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
+  plusCount.style.cssText =
+    "font-size:11px;color:#94a3b8;margin-top:5px";
 
-        cell.appendChild(badge);
-      } else {
-        cell.textContent = value;
-        cell.style.fontWeight = "700";
-        cell.style.color = "#334155";
-      }
+  plusCell.append(plusAmount, plusCount);
 
-      return;
-    }
 
-    // نسبة تحقيق التارجت وشريط التقدم
-    if (index === 5) {
-      if (employee.achievement_percentage == null) {
-        const badge = document.createElement("span");
-        badge.textContent = "بدون تارجت";
-        badge.style.cssText =
-          "padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
+  // 4- مبيعات Triple Zero وعدد العمليات
+  const tripleCell = row.insertCell();
+  styleCell(tripleCell);
 
-        cell.appendChild(badge);
-        return;
-      }
+  const tripleAmount = document.createElement("div");
+  tripleAmount.textContent =
+    formatMoney(employee.triple_zero_sales);
 
-      const percentage = Number(employee.achievement_percentage);
-      const progress = Math.max(0, Math.min(100, percentage));
+  tripleAmount.style.cssText =
+    "font-weight:700;color:#52647a";
 
-      const progressColor =
-        percentage >= 100
-          ? "#16a36a"
-          : percentage >= 70
-            ? "#3478c8"
-            : "#d69b36";
+  const tripleCount = document.createElement("div");
+  tripleCount.textContent =
+    Number(employee.triple_zero_count || 0).toLocaleString("ar-EG") +
+    " عملية";
 
-      const label = document.createElement("div");
-      label.textContent =
-        percentage.toLocaleString("ar-EG") + "%";
+  tripleCount.style.cssText =
+    "font-size:11px;color:#94a3b8;margin-top:5px";
 
-      label.style.cssText =
-        "font-size:15px;font-weight:800;color:" +
-        progressColor +
-        ";margin-bottom:9px";
+  tripleCell.append(tripleAmount, tripleCount);
+
+
+  // 5- الهدف الشهري
+  const targetCell = row.insertCell();
+  styleCell(targetCell);
+
+  if (Number(employee.target_amount || 0) > 0) {
+    targetCell.textContent =
+      formatMoney(employee.target_amount);
+
+    targetCell.style.fontWeight = "700";
+    targetCell.style.color = "#334155";
+  } else {
+    const badge = document.createElement("span");
+    badge.textContent = "بدون هدف";
+    badge.style.cssText =
+      "display:inline-block;padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
+
+    targetCell.appendChild(badge);
+  }
+
+
+  // 6- نسبة التحقيق والشريط المتدرج
+  const achievementCell = row.insertCell();
+  styleCell(achievementCell);
+
+  if (employee.achievement_percentage == null) {
+
+    const badge = document.createElement("span");
+    badge.textContent = "بدون تارجت";
+    badge.style.cssText =
+      "display:inline-block;padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
+
+    achievementCell.appendChild(badge);
+
+  } else {
+
+    const percentage =
+      Number(employee.achievement_percentage) || 0;
+
+    const progress =
+      Math.max(0, Math.min(100, percentage));
+
+    const label = document.createElement("div");
+
+    label.textContent =
+      percentage.toLocaleString("ar-EG") + "%";
+
+    label.style.cssText =
+      "font-size:15px;font-weight:800;margin-bottom:9px;color:" +
+      (percentage >= 100
+        ? "#16865f"
+        : percentage >= 70
+          ? "#3478c8"
+          : "#d69b36");
 
     const track = document.createElement("div");
 
-track.style.cssText = `
-  position:relative;
-  height:9px;
-  background:linear-gradient(270deg,
-    #e53935 0%,
-    #f47b36 25%,
-    #f5cf42 45%,
-    #3988d8 70%,
-    #20a66a 100%
-  );
-  border-radius:20px;
-  overflow:hidden;
-  min-width:100px;
-`;
+    track.style.cssText = `
+      position:relative;
+      height:9px;
+      min-width:100px;
+      background:linear-gradient(
+        270deg,
+        #e53935 0%,
+        #f47b36 25%,
+        #f5cf42 45%,
+        #3988d8 70%,
+        #20a66a 100%
+      );
+      border-radius:20px;
+      overflow:hidden;
+    `;
 
-const bar = document.createElement("div");
+    const remainingBar = document.createElement("div");
 
-bar.style.cssText = `
-  position:absolute;
-  top:0;
-  left:0;
-  height:100%;
-  width:${100 - progress}%;
-  background:#e8eef4;
-  border-radius:20px;
-  transition:width .7s ease;
-`;
+    remainingBar.style.cssText = `
+      position:absolute;
+      top:0;
+      left:0;
+      height:100%;
+      width:${100 - progress}%;
+      background:#e8eef4;
+      border-radius:20px;
+      transition:width .7s ease;
+    `;
 
-track.appendChild(bar);
-      cell.append(label, track);
-      return;
-    }
+    track.appendChild(remainingBar);
+    achievementCell.append(label, track);
+  }
 
-    // العمولة
-    if (index === 6) {
-      const commission = document.createElement("span");
-      commission.textContent = value;
-      commission.style.cssText =
-        "display:inline-block;padding:8px 11px;background:#eaf7f0;color:#177347;border-radius:9px;font-weight:800;white-space:nowrap";
 
-      cell.appendChild(commission);
-    }
-  });
+  // 7- العمولة
+  const commissionCell = row.insertCell();
+  styleCell(commissionCell);
+
+  const commission = document.createElement("span");
+
+  commission.textContent =
+    formatMoney(employee.commission_amount);
+
+  commission.style.cssText = `
+    display:inline-block;
+    padding:8px 11px;
+    background:#eaf7f0;
+    color:#177347;
+    border-radius:9px;
+    font-weight:800;
+    white-space:nowrap;
+  `;
+
+  commissionCell.appendChild(commission);
+
 });
-
   } catch (error) {
     console.error("Monthly sales error:", error);
     $("monthlySalesBody").textContent =
