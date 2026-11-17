@@ -10,25 +10,25 @@
   <title>EL-LITHY GROUP</title>
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f1f5f9;
-      color: #172b3a;
-      font-family: Arial, sans-serif;
-    }
- .container {
+   body {
+  margin: 0;
+  padding: 16px;
+  min-height: 100vh;
+  display: block;
+  background: #f1f5f9;
+  color: #172b3a;
+  font-family: Arial, sans-serif;
+  overflow-x: hidden;
+}
+.container {
   width: 100%;
-  max-width: 1200px;
-  padding: 32px;
+  max-width: 1560px;
+  min-width: 0;
+  padding: 28px;
   background: white;
   border-radius: 20px;
   box-shadow: 0 12px 40px #102b3f14;
-  margin: 20px auto;
+  margin: 0 auto;
 }
  
 .logo {
@@ -1332,7 +1332,159 @@
     font-size: 16px;
   }
 }
+/* ===== EL-LITHY Responsive Layout ===== */
 
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+main.container {
+  width: 100%;
+  max-width: 1560px;
+  min-width: 0;
+  margin: 0 auto;
+}
+
+#dashboardSection,
+#salesManagementSection,
+#employeeDashboardSection {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* جدول أداء الموظفين */
+#monthlySalesPerformanceTable {
+  width: 100% !important;
+  min-width: 1120px !important;
+  table-layout: fixed;
+  direction: rtl;
+  border-collapse: separate !important;
+  border-spacing: 0;
+}
+
+#monthlySalesPerformanceTable th,
+#monthlySalesPerformanceTable td {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  vertical-align: middle;
+  line-height: 1.6;
+}
+
+/* توزيع الأعمدة */
+#monthlySalesPerformanceTable th:nth-child(1),
+#monthlySalesPerformanceTable td:nth-child(1) {
+  width: 14%;
+}
+
+#monthlySalesPerformanceTable th:nth-child(2),
+#monthlySalesPerformanceTable td:nth-child(2) {
+  width: 16%;
+}
+
+#monthlySalesPerformanceTable th:nth-child(3),
+#monthlySalesPerformanceTable td:nth-child(3) {
+  width: 14%;
+}
+
+#monthlySalesPerformanceTable th:nth-child(4),
+#monthlySalesPerformanceTable td:nth-child(4) {
+  width: 18%;
+}
+
+#monthlySalesPerformanceTable th:nth-child(5),
+#monthlySalesPerformanceTable td:nth-child(5) {
+  width: 13%;
+}
+
+#monthlySalesPerformanceTable th:nth-child(6),
+#monthlySalesPerformanceTable td:nth-child(6) {
+  width: 15%;
+}
+
+#monthlySalesPerformanceTable th:nth-child(7),
+#monthlySalesPerformanceTable td:nth-child(7) {
+  width: 10%;
+}
+
+#monthlySalesBody td:first-child {
+  text-align: right !important;
+}
+
+#monthlySalesPerformanceTable td:nth-child(2),
+#monthlySalesPerformanceTable td:nth-child(5),
+#monthlySalesPerformanceTable td:nth-child(7) {
+  white-space: nowrap;
+}
+
+/* اللابتوب والشاشات المتوسطة */
+@media (max-width: 900px) {
+  body {
+    padding: 12px;
+  }
+
+  .container {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  #dashboardSection h2,
+  #salesManagementSection > h2 {
+    font-size: 25px;
+  }
+}
+
+/* الموبايل */
+@media (max-width: 600px) {
+  body {
+    padding: 7px;
+    display: block;
+  }
+
+  .container {
+    width: 100%;
+    padding: 14px 11px;
+    margin: 0 auto;
+    border-radius: 13px;
+  }
+
+  #dashboardSection h2,
+  #salesManagementSection > h2 {
+    font-size: 22px;
+  }
+
+  #dashboardSection h3,
+  #salesManagementSection h3 {
+    font-size: 18px;
+  }
+
+  #monthlySalesPerformanceTable {
+    min-width: 1050px !important;
+  }
+
+  #monthlySalesPerformanceTable th,
+  #monthlySalesPerformanceTable td {
+    padding: 10px 8px !important;
+    font-size: 12px;
+  }
+
+  #employeeSalesPanel {
+    padding: 13px !important;
+  }
+
+  #employeeSalesPanel > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+    
 </style>
 </head>
 <body>
@@ -2044,15 +2196,32 @@
   overflow:hidden;
 ">
 
+<div style="
+  position:relative;
+  height:12px;
+  width:100%;
+  background:#e8eef5;
+  border-radius:999px;
+  overflow:hidden;
+  direction:rtl;
+">
+
   <div id="companyProgressBar"
     style="
       position:absolute;
       top:0;
-      left:0;
+      right:0;
       height:100%;
-      width:100%;
-      background:#e8eef5;
-      border-radius:20px;
+      width:0%;
+      background:linear-gradient(
+        270deg,
+        #e53935 0%,
+        #f47b36 25%,
+        #f5cf42 45%,
+        #3988d8 70%,
+        #20a66a 100%
+      );
+      border-radius:999px;
       transition:width .7s ease;
     ">
   </div>
@@ -2134,8 +2303,9 @@
 
   <div style="overflow-x:auto">
 
-    <table style="width:100%;border-collapse:collapse;min-width:1100px">
-
+<table id="monthlySalesPerformanceTable"
+  style="width:100%;border-collapse:collapse;min-width:1120px">
+  
       <thead>
         <tr style="background:linear-gradient(90deg,#102b3f,#1b4963);color:white">
 
@@ -2299,11 +2469,38 @@
       <strong id="employeeAchievement">—</strong>
     </div>
 
- <div id="employeeProgressTrack"
-  style="position:relative;height:12px;background:linear-gradient(270deg,#e53935 0%,#f47b36 25%,#f5cf42 45%,#3988d8 70%,#20a66a 100%);border-radius:20px;overflow:hidden;margin:14px 0">
+<div id="employeeProgressTrack"
+  style="
+    position:relative;
+    height:12px;
+    width:100%;
+    background:#e8eef5;
+    border-radius:999px;
+    overflow:hidden;
+    margin:14px 0;
+  ">
 
   <div id="employeeProgressBar"
-    style="position:absolute;top:0;left:0;height:100%;width:100%;background:#e8eef5;border-radius:20px;transition:width .5s">
+    style="
+      position:absolute;
+      top:0;
+      right:0;
+      height:100%;
+      width:0%;
+      background:linear-gradient(
+        270deg,
+        #e53935 0%,
+        #f47b36 25%,
+        #f5cf42 45%,
+        #3988d8 70%,
+        #20a66a 100%
+      );
+      background-position:right center;
+      background-repeat:no-repeat;
+      background-size:100% 100%;
+      border-radius:999px;
+      transition:width .7s ease, background-size .7s ease;
+    ">
   </div>
 
 </div>
@@ -5158,6 +5355,79 @@ async function loadEmployeeSalesHistory(employeeId) {
   }
 }
 
+    // تدرج ألوان موحد لنسب تحقيق الأهداف
+function setAchievementProgressBar(element, value) {
+  const progress = Math.min(100, Math.max(0, Number(value) || 0));
+
+  const stops = [
+    { position: 0, color: "#e53935" },
+    { position: 25, color: "#f47b36" },
+    { position: 45, color: "#f5cf42" },
+    { position: 70, color: "#3988d8" },
+    { position: 100, color: "#20a66a" }
+  ];
+
+  function hexToRgb(hex) {
+    return {
+      r: parseInt(hex.slice(1, 3), 16),
+      g: parseInt(hex.slice(3, 5), 16),
+      b: parseInt(hex.slice(5, 7), 16)
+    };
+  }
+
+  function interpolateColor(start, end, ratio) {
+    const a = hexToRgb(start);
+    const b = hexToRgb(end);
+
+    const channel = (x, y) =>
+      Math.round(x + (y - x) * ratio)
+        .toString(16)
+        .padStart(2, "0");
+
+    return "#" +
+      channel(a.r, b.r) +
+      channel(a.g, b.g) +
+      channel(a.b, b.b);
+  }
+
+  let lower = stops[0];
+  let upper = stops[stops.length - 1];
+
+  for (let i = 1; i < stops.length; i++) {
+    if (progress <= stops[i].position) {
+      upper = stops[i];
+      lower = stops[i - 1];
+      break;
+    }
+  }
+
+  const ratio = upper.position === lower.position
+    ? 0
+    : (progress - lower.position) /
+      (upper.position - lower.position);
+
+  const endColor = interpolateColor(
+    lower.color,
+    upper.color,
+    ratio
+  );
+
+  const gradientStops = stops
+    .filter(stop => stop.position < progress)
+    .map(stop =>
+      `${stop.color} ${(stop.position / Math.max(progress, 0.001) * 100).toFixed(2)}%`
+    );
+
+  gradientStops.push(`${endColor} 100%`);
+
+  element.style.width = progress + "%";
+  element.style.background =
+    `linear-gradient(to left, ${gradientStops.join(", ")})`;
+
+  element.style.borderRadius = "999px";
+  element.style.transition =
+    "width .7s ease, background .7s ease";
+}
     
 async function loadMonthlySalesPerformance() {
   const month = $("salesMonth").value;
@@ -5291,8 +5561,10 @@ targetSelect.onchange = () => {
   Math.min(100, Number(company.achievement_percentage || 0))
 );
 
-$("companyProgressBar").style.width =
-  (100 - companyProgress) + "%";
+setAchievementProgressBar(
+  $("companyProgressBar"),
+  companyProgress
+);
       
       const remaining = Number(company.remaining_target || 0);
 
@@ -5304,7 +5576,10 @@ $("companyProgressBar").style.width =
       $("companyMonthlyTarget").textContent = "غير محدد";
       $("companyMonthlySales").textContent = formatMoney(0);
       $("companyAchievement").textContent = "0%";
-      $("companyProgressBar").style.width = "100%";
+      setAchievementProgressBar(
+  $("companyProgressBar"),
+  0
+);
       $("companyRemainingTarget").textContent = "غير محدد";
     }
 
@@ -5372,7 +5647,6 @@ employees.forEach((employee, employeeIndex) => {
 
   row.style.transition = "background .2s";
 
-  // تنسيق أساسي موحد للخلايا
   const styleCell = cell => {
     cell.style.padding = "17px 14px";
     cell.style.textAlign = "center";
@@ -5382,7 +5656,7 @@ employees.forEach((employee, employeeIndex) => {
     cell.style.fontSize = "13px";
   };
 
-  // 1- اسم الموظف وكوده داخل خلية واحدة
+  // 1- الموظف والكود
   const nameCell = row.insertCell();
   styleCell(nameCell);
 
@@ -5398,7 +5672,6 @@ employees.forEach((employee, employeeIndex) => {
 
   nameCell.append(employeeName, employeeCode);
 
-
   // 2- إجمالي المبيعات
   const totalCell = row.insertCell();
   styleCell(totalCell);
@@ -5408,8 +5681,7 @@ employees.forEach((employee, employeeIndex) => {
   totalCell.style.color = "#102b3f";
   totalCell.style.fontSize = "14px";
 
-
-  // 3- مبيعات Plus وعدد العمليات
+  // 3- مبيعات Plus
   const plusCell = row.insertCell();
   styleCell(plusCell);
 
@@ -5422,21 +5694,18 @@ employees.forEach((employee, employeeIndex) => {
   plusCount.textContent =
     Number(employee.plus_count || 0).toLocaleString("ar-EG") +
     " عملية";
-
   plusCount.style.cssText =
     "font-size:11px;color:#94a3b8;margin-top:5px";
 
   plusCell.append(plusAmount, plusCount);
 
-
-  // 4- مبيعات Triple Zero وعدد العمليات
+  // 4- مبيعات Triple Zero
   const tripleCell = row.insertCell();
   styleCell(tripleCell);
 
   const tripleAmount = document.createElement("div");
   tripleAmount.textContent =
     formatMoney(employee.triple_zero_sales);
-
   tripleAmount.style.cssText =
     "font-weight:700;color:#52647a";
 
@@ -5444,12 +5713,10 @@ employees.forEach((employee, employeeIndex) => {
   tripleCount.textContent =
     Number(employee.triple_zero_count || 0).toLocaleString("ar-EG") +
     " عملية";
-
   tripleCount.style.cssText =
     "font-size:11px;color:#94a3b8;margin-top:5px";
 
   tripleCell.append(tripleAmount, tripleCount);
-
 
   // 5- الهدف الشهري
   const targetCell = row.insertCell();
@@ -5458,95 +5725,73 @@ employees.forEach((employee, employeeIndex) => {
   if (Number(employee.target_amount || 0) > 0) {
     targetCell.textContent =
       formatMoney(employee.target_amount);
-
     targetCell.style.fontWeight = "700";
-    targetCell.style.color = "#334155";
   } else {
     const badge = document.createElement("span");
     badge.textContent = "بدون هدف";
     badge.style.cssText =
-      "display:inline-block;padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
-
+      "padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
     targetCell.appendChild(badge);
   }
-
 
   // 6- نسبة التحقيق والشريط المتدرج
   const achievementCell = row.insertCell();
   styleCell(achievementCell);
 
   if (employee.achievement_percentage == null) {
-
     const badge = document.createElement("span");
     badge.textContent = "بدون تارجت";
     badge.style.cssText =
-      "display:inline-block;padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
-
+      "padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
     achievementCell.appendChild(badge);
 
   } else {
-
     const percentage =
       Number(employee.achievement_percentage) || 0;
 
     const progress =
-      Math.max(0, Math.min(100, percentage));
+      Math.min(100, Math.max(0, percentage));
 
     const label = document.createElement("div");
-
     label.textContent =
       percentage.toLocaleString("ar-EG") + "%";
 
     label.style.cssText =
-      "font-size:15px;font-weight:800;margin-bottom:9px;color:" +
-      (percentage >= 100
-        ? "#16865f"
-        : percentage >= 70
-          ? "#3478c8"
-          : "#d69b36");
+      "font-size:15px;font-weight:800;margin-bottom:9px;color:#102b3f";
 
     const track = document.createElement("div");
-
     track.style.cssText = `
       position:relative;
-      height:9px;
+      height:10px;
+      width:100%;
       min-width:100px;
-      background:linear-gradient(
-        270deg,
-        #e53935 0%,
-        #f47b36 25%,
-        #f5cf42 45%,
-        #3988d8 70%,
-        #20a66a 100%
-      );
-      border-radius:20px;
+      background:#e8eef5;
+      border-radius:999px;
       overflow:hidden;
+      direction:rtl;
     `;
 
-    const remainingBar = document.createElement("div");
-
-    remainingBar.style.cssText = `
+    const bar = document.createElement("div");
+    bar.style.cssText = `
       position:absolute;
       top:0;
-      left:0;
+      right:0;
       height:100%;
-      width:${100 - progress}%;
-      background:#e8eef4;
-      border-radius:20px;
-      transition:width .7s ease;
+      width:0%;
+      border-radius:999px;
     `;
 
-    track.appendChild(remainingBar);
+    setAchievementProgressBar(bar, percentage);
+
+    track.appendChild(bar);
     achievementCell.append(label, track);
   }
-
 
   // 7- العمولة
   const commissionCell = row.insertCell();
   styleCell(commissionCell);
 
   const commission = document.createElement("span");
-
   commission.textContent =
     formatMoney(employee.commission_amount);
 
@@ -5656,10 +5901,10 @@ async function loadEmployeeSalesDashboard(profile) {
           : "تم تحقيق التارجت وتجاوزه بمبلغ " +
             formatMoney(totalSales - target);
 
-    const progress = Math.min(100, Math.max(0, achievement));
-
-$("employeeProgressBar").style.width =
-  (100 - progress) + "%";
+ setAchievementProgressBar(
+  $("employeeProgressBar"),
+  achievement
+);
 } // إغلاق else الخاص بهدف الموظف
     
       // تحميل سجل مبيعات الموظف
