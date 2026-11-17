@@ -2104,7 +2104,6 @@
       <tr style="background:#f1f7fa">
         <th style="padding:12px">تاريخ البيع</th>
         <th style="padding:12px">نوع البيع</th>
-        <th style="padding:12px">العميل</th>
         <th style="padding:12px">المبلغ</th>
         <th style="padding:12px">الإجراءات</th>
       </tr>
@@ -2112,7 +2111,7 @@
 
     <tbody id="employeeSalesHistoryBody">
       <tr>
-        <td colspan="5" style="padding:12px;text-align:center">
+        <td colspan="4" style="padding:12px;text-align:center">
           اختر الموظف لعرض مبيعاته.
         </td>
       </tr>
@@ -4603,7 +4602,7 @@ $("salesHistoryEmployee").addEventListener("change", async () => {
 
     $("employeeSalesHistoryBody").innerHTML = `
       <tr>
-        <td colspan="5" style="padding:12px;text-align:center">
+        <td colspan="4" style="padding:12px;text-align:center">
           اختر الموظف لعرض مبيعاته.
         </td>
       </tr>
@@ -4807,7 +4806,7 @@ async function loadSalesHistoryEmployees() {
     .from("profiles")
     .select("id, full_name, employee_code")
     .eq("role", "employee")
-    .order("full_name", { ascending: true });
+    .order("employee_code", { ascending: true });
 
   if (error) throw error;
 
@@ -4832,7 +4831,7 @@ async function loadSalesHistoryEmployees() {
 
   $("employeeSalesHistoryBody").innerHTML = `
     <tr>
-      <td colspan="5" style="padding:12px;text-align:center">
+      <td colspan="4" style="padding:12px;text-align:center">
         اختر الموظف لعرض مبيعاته.
       </td>
     </tr>
@@ -4850,7 +4849,7 @@ async function loadEmployeeSalesHistory(employeeId) {
 
   body.innerHTML = `
     <tr>
-      <td colspan="5" style="padding:12px;text-align:center">
+      <td colspan="4" style="padding:12px;text-align:center">
         جارٍ تحميل مبيعات الموظف...
       </td>
     </tr>
@@ -4859,7 +4858,7 @@ async function loadEmployeeSalesHistory(employeeId) {
   try {
     const { data: sales, error } = await db
       .from("sales_transactions")
-      .select("id, sale_date, customer_name, sale_type, amount, created_at")
+      .select("id, sale_date, sale_type, amount, created_at")
       .eq("employee_id", employeeId)
       .order("sale_date", { ascending: false })
       .order("created_at", { ascending: false });
@@ -4879,7 +4878,7 @@ async function loadEmployeeSalesHistory(employeeId) {
     if (!sales || sales.length === 0) {
       body.innerHTML = `
         <tr>
-          <td colspan="5" style="padding:12px;text-align:center">
+          <td colspan="4" style="padding:12px;text-align:center">
             لا توجد مبيعات مسجلة لهذا الموظف.
           </td>
         </tr>
@@ -4893,7 +4892,6 @@ async function loadEmployeeSalesHistory(employeeId) {
       const values = [
         sale.sale_date || "—",
         sale.sale_type === "plus" ? "Plus" : "Triple Zero",
-        sale.customer_name || "—",
         formatMoney(sale.amount)
       ];
 
@@ -4997,7 +4995,7 @@ async function loadEmployeeSalesHistory(employeeId) {
     summary.textContent = "تعذر تحميل مبيعات الموظف.";
     body.innerHTML = `
       <tr>
-        <td colspan="5" style="padding:12px;text-align:center">
+        <td colspan="4" style="padding:12px;text-align:center">
           حدث خطأ أثناء تحميل المبيعات.
         </td>
       </tr>
