@@ -5635,8 +5635,7 @@ async function loadEmployeeSalesDashboard(profile) {
 
 $("employeeProgressBar").style.width =
   (100 - progress) + "%";
-
-}    
+} // إغلاق else الخاص بهدف الموظف
     
       // تحميل سجل مبيعات الموظف
 const [year, month] = cairoDate.slice(0, 7).split("-").map(Number);
