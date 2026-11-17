@@ -2050,30 +2050,94 @@
     جارٍ مراجعة تطابق الأهداف...
   </div>
 
-  <h3 style="margin-top:28px">أداء الموظفين الشهري</h3>
+  <!-- إدارة أهداف الموظفين -->
+<div id="employeeTargetManagementCard"
+  style="margin-top:25px;padding:24px;background:#f7fafc;border:1px solid #dce8ef;border-radius:16px">
 
-<div style="overflow-x:auto;background:white;border-radius:14px;border:1px solid #e5edf2">
-  <table style="width:100%;border-collapse:collapse;min-width:1100px">
-    <thead>
-      <tr style="background:#102b3f;color:white">
-        <th style="padding:14px">الموظف</th>
-        <th style="padding:14px">إجمالي المبيعات</th>
-        <th style="padding:14px">مبيعات Plus</th>
-        <th style="padding:14px">مبيعات Triple Zero</th>
-        <th style="padding:14px">الهدف</th>
-        <th style="padding:14px">نسبة التحقيق</th>
-        <th style="padding:14px">العمولة</th>
-        <th style="padding:14px">إجراءات</th>
-      </tr>
-    </thead>
-    <tbody id="monthlySalesBody">
-      <tr>
-        <td colspan="8" style="padding:15px;text-align:center">
-          جارٍ تحميل الأداء الشهري...
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <h3 style="margin-top:0;color:#102b3f">
+    إدارة أهداف الموظفين
+  </h3>
+
+  <p style="color:#64748b;line-height:1.8">
+    اختر الموظف وحدد هدفه الشهري. سيتم تطبيق التعديل على الشهر المحدد في لوحة المبيعات.
+  </p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+
+    <div>
+      <label for="employeeTargetSelect">اختيار الموظف</label>
+      <select id="employeeTargetSelect"
+        style="width:100%;padding:12px;border:1px solid #dce4eb;border-radius:9px">
+        <option value="">اختر الموظف</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="employeeTargetAmount">الهدف الشهري بالجنيه</label>
+      <input id="employeeTargetAmount" type="number"
+        min="1" step="1" placeholder="أدخل الهدف الشهري"
+        style="width:100%;padding:12px;border:1px solid #dce4eb;border-radius:9px">
+    </div>
+
+  </div>
+
+  <button id="saveEmployeeTargetButton" type="button"
+    style="margin-top:18px;padding:11px 24px;background:#102b3f;color:white;border:0;border-radius:9px;cursor:pointer;font-weight:bold">
+    حفظ الهدف
+  </button>
+
+  <p id="employeeTargetStatus"
+    style="margin-bottom:0;line-height:1.8"></p>
+
+</div>
+  
+<!-- صندوق الأداء الشهري -->
+<div style="margin-top:28px;overflow:hidden;background:#fff;border:1px solid #e5edf2;border-radius:18px;box-shadow:0 8px 25px rgba(16,43,63,0.07)">
+
+  <div style="padding:22px;background:linear-gradient(135deg,#f4f8fb,#eaf2f7);border-bottom:1px solid #e5edf2">
+
+    <h3 style="margin:0;color:#102b3f;font-size:21px">
+      أداء الموظفين الشهري
+    </h3>
+
+    <p style="margin:8px 0 0;color:#718096;font-size:13px">
+      متابعة المبيعات والأهداف ونسب الإنجاز والعمولات
+    </p>
+
+  </div>
+
+  <div style="overflow-x:auto">
+
+    <table style="width:100%;border-collapse:collapse;min-width:1100px">
+
+      <thead>
+        <tr style="background:linear-gradient(90deg,#102b3f,#1b4963);color:white">
+
+          <th style="padding:17px 14px;white-space:nowrap">الموظف</th>
+          <th style="padding:17px 14px;white-space:nowrap">إجمالي المبيعات</th>
+          <th style="padding:17px 14px;white-space:nowrap">مبيعات Plus</th>
+          <th style="padding:17px 14px;white-space:nowrap">مبيعات Triple Zero</th>
+          <th style="padding:17px 14px;white-space:nowrap">الهدف الشهري</th>
+          <th style="padding:17px 14px;white-space:nowrap">نسبة التحقيق</th>
+          <th style="padding:17px 14px;white-space:nowrap">العمولة</th>
+
+        </tr>
+      </thead>
+
+      <tbody id="monthlySalesBody">
+
+        <tr>
+          <td colspan="7" style="padding:25px;text-align:center;color:#718096">
+            جارٍ تحميل الأداء الشهري...
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
 </div>
 </div>
 <h3>مراجعة مبيعات الموظفين</h3>
@@ -4591,7 +4655,67 @@ $("backFromSalesButton").addEventListener("click", () => {
 $("salesMonth").addEventListener("change", () => {
   loadMonthlySalesPerformance();
 });
+    
+// حفظ الهدف الشهري للموظف
+$("saveEmployeeTargetButton").addEventListener("click", async () => {
+  const employeeId = $("employeeTargetSelect").value;
+  const amount = Number($("employeeTargetAmount").value);
+  const month = $("salesMonth").value;
+  const status = $("employeeTargetStatus");
+  const button = $("saveEmployeeTargetButton");
 
+  if (!employeeId) {
+    status.textContent = "من فضلك اختر الموظف أولاً.";
+    status.style.color = "#c0392b";
+    return;
+  }
+
+  if (!month) {
+    status.textContent = "من فضلك اختر الشهر المطلوب.";
+    status.style.color = "#c0392b";
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    status.textContent = "أدخل هدفًا صحيحًا أكبر من صفر.";
+    status.style.color = "#c0392b";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "جارٍ حفظ الهدف...";
+
+  try {
+    const { error } = await db
+      .from("monthly_employee_targets")
+      .upsert(
+        {
+          employee_id: employeeId,
+          month_start: month + "-01",
+          target_amount: amount
+        },
+        { onConflict: "employee_id,month_start" }
+      );
+
+    if (error) throw error;
+
+    await loadMonthlySalesPerformance();
+
+    status.textContent = "تم تحديث الهدف الشهري بنجاح.";
+    status.style.color = "#176b3a";
+
+    showMessage("تم تحديث هدف الموظف بنجاح.");
+
+  } catch (error) {
+    console.error("Employee target update error:", error);
+    status.textContent = "تعذر حفظ الهدف: " + error.message;
+    status.style.color = "#c0392b";
+  } finally {
+    button.disabled = false;
+    button.textContent = "حفظ الهدف";
+  }
+});
+    
     // عرض مبيعات الموظف عند اختياره
 $("salesHistoryEmployee").addEventListener("change", async () => {
   const employeeId = $("salesHistoryEmployee").value;
@@ -5028,6 +5152,57 @@ async function loadMonthlySalesPerformance() {
       .eq("month_start", monthStart)
       .order("employee_code");
 
+    // تحميل الموظفين في قائمة إدارة الأهداف
+const targetSelect = $("employeeTargetSelect");
+const previousEmployeeId = targetSelect.value;
+
+targetSelect.replaceChildren();
+
+const placeholder = document.createElement("option");
+placeholder.value = "";
+placeholder.textContent = "اختر الموظف";
+targetSelect.appendChild(placeholder);
+
+const targetEmployees = (employees || [])
+  .filter(employee => employee.employee_code !== "EMP002");
+
+targetEmployees.forEach(employee => {
+  const option = document.createElement("option");
+  option.value = employee.employee_id;
+  option.textContent = employee.full_name;
+  targetSelect.appendChild(option);
+});
+
+// الاحتفاظ بالموظف المختار عند تحديث البيانات
+if (targetEmployees.some(employee =>
+  employee.employee_id === previousEmployeeId
+)) {
+  targetSelect.value = previousEmployeeId;
+
+  const selectedEmployee = targetEmployees.find(employee =>
+    employee.employee_id === previousEmployeeId
+  );
+
+  $("employeeTargetAmount").value =
+    selectedEmployee.target_amount || "";
+} else {
+  $("employeeTargetAmount").value = "";
+}
+    // عرض الهدف الحالي عند اختيار الموظف
+targetSelect.onchange = () => {
+  const selectedEmployee = targetEmployees.find(
+    employee => employee.employee_id === targetSelect.value
+  );
+
+  $("employeeTargetAmount").value =
+    selectedEmployee?.target_amount || "";
+
+  $("employeeTargetStatus").textContent =
+    selectedEmployee
+      ? "الهدف الحالي: " + formatMoney(selectedEmployee.target_amount)
+      : "اختر الموظف لتعديل هدفه.";
+};
+    
     if (employeesError) throw employeesError;
 
     // حساب مبيعات Plus وTriple Zero للشهر المختار
@@ -5107,7 +5282,7 @@ $("companyProgressBar").style.width = companyProgress + "%";
     if (!employees || employees.length === 0) {
       const row = body.insertRow();
       const cell = row.insertCell();
-      cell.colSpan = 6;
+      cell.colSpan = 7;
       cell.textContent = "لا توجد بيانات أهداف لهذا الشهر.";
       cell.style.textAlign = "center";
       cell.style.padding = "12px";
@@ -5156,127 +5331,165 @@ if (employeeTargetsTotal === companyTarget) {
   warning.style.display = "block";
 }
     
-employees.forEach(employee => {
+employees.forEach((employee, employeeIndex) => {
   const row = body.insertRow();
 
-const values = [
-  employee.full_name,
-  formatMoney(employee.total_sales),
+  row.style.background =
+    employeeIndex % 2 === 0 ? "#ffffff" : "#f7fafc";
 
-  `${formatMoney(employee.plus_sales)} (${Number(employee.plus_count || 0).toLocaleString("ar-EG")} عملية)`,
+  row.style.transition = "background 0.2s";
 
-  `${formatMoney(employee.triple_zero_sales)} (${Number(employee.triple_zero_count || 0).toLocaleString("ar-EG")} عملية)`,
+  const values = [
+    employee.full_name,
+    formatMoney(employee.total_sales),
+    formatMoney(employee.plus_sales),
+    formatMoney(employee.triple_zero_sales),
+    employee.target_amount
+      ? formatMoney(employee.target_amount)
+      : "بدون هدف",
+    employee.achievement_percentage == null
+      ? "بدون تارجت"
+      : Number(employee.achievement_percentage).toLocaleString("ar-EG") + "%",
+    formatMoney(employee.commission_amount)
+  ];
 
-  employee.target_amount
-    ? formatMoney(employee.target_amount)
-    : "بدون هدف",
-
-  employee.achievement_percentage == null
-    ? "—"
-    : Number(employee.achievement_percentage).toLocaleString("ar-EG") + "%",
-
-  formatMoney(employee.commission_amount)
-];
-
-    values.forEach((value, index) => {
+  values.forEach((value, index) => {
     const cell = row.insertCell();
-    cell.style.padding = "12px";
+
+    cell.style.padding = "17px 14px";
     cell.style.textAlign = "center";
-    cell.style.borderBottom = "1px solid #dce4eb";
+    cell.style.verticalAlign = "middle";
+    cell.style.borderBottom = "1px solid #edf1f5";
+    cell.style.color = "#334155";
+    cell.style.fontSize = "13px";
 
-    if (index !== 5) {
+    // اسم الموظف وكوده
+    if (index === 0) {
+      const name = document.createElement("div");
+      name.textContent = employee.full_name;
+      name.style.cssText =
+        "font-size:14px;font-weight:800;color:#102b3f";
+
+      cell.appendChild(name);
+
+      if (employee.employee_code) {
+        const code = document.createElement("div");
+        code.textContent = employee.employee_code;
+        code.style.cssText =
+          "font-size:11px;color:#94a3b8;margin-top:5px";
+
+        cell.appendChild(code);
+      }
+
+      return;
+    }
+
+    // إجمالي المبيعات
+    if (index === 1) {
       cell.textContent = value;
+      cell.style.fontWeight = "800";
+      cell.style.color = "#102b3f";
+      cell.style.fontSize = "14px";
       return;
     }
 
-    if (employee.achievement_percentage == null) {
-      cell.textContent = "بدون تارجت";
+    // مبيعات Plus وTriple Zero
+    if (index === 2 || index === 3) {
+      const isPlus = index === 2;
+
+      const amount = document.createElement("div");
+      amount.textContent = value;
+      amount.style.cssText =
+        "font-weight:700;color:" +
+        (isPlus ? "#2476b8" : "#52647a");
+
+      const count = document.createElement("div");
+      count.textContent = Number(
+        isPlus ? employee.plus_count : employee.triple_zero_count
+      ).toLocaleString("ar-EG") + " عملية";
+
+      count.style.cssText =
+        "font-size:11px;color:#94a3b8;margin-top:5px";
+
+      cell.append(amount, count);
       return;
     }
 
-    const percentage = Number(employee.achievement_percentage);
-    const progress = Math.max(0, Math.min(100, percentage));
+    // الهدف الشهري
+    if (index === 4) {
+      if (!employee.target_amount) {
+        const badge = document.createElement("span");
+        badge.textContent = "بدون هدف";
+        badge.style.cssText =
+          "padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
 
-    const label = document.createElement("div");
-    label.textContent =
-      percentage.toLocaleString("ar-EG") + "%";
-    label.style.fontWeight = "bold";
-    label.style.marginBottom = "8px";
-    label.style.color = percentage >= 100 ? "#16865f" : "#3478c8";
+        cell.appendChild(badge);
+      } else {
+        cell.textContent = value;
+        cell.style.fontWeight = "700";
+        cell.style.color = "#334155";
+      }
 
-    const track = document.createElement("div");
-    track.style.cssText =
-      "height:9px;background:#e8eef5;border-radius:20px;overflow:hidden;min-width:90px";
+      return;
+    }
 
-    const bar = document.createElement("div");
-    bar.style.cssText =
-      "height:100%;width:" + progress +
-      "%;background:" +
-      (percentage >= 100 ? "#20a675" : "#4385d8") +
-      ";border-radius:20px;transition:width .5s";
+    // نسبة تحقيق التارجت وشريط التقدم
+    if (index === 5) {
+      if (employee.achievement_percentage == null) {
+        const badge = document.createElement("span");
+        badge.textContent = "بدون تارجت";
+        badge.style.cssText =
+          "padding:6px 10px;background:#f1f5f9;color:#64748b;border-radius:20px;font-size:11px";
 
-    track.appendChild(bar);
-    cell.appendChild(label);
-    cell.appendChild(track);
-  });
-  const actionCell = row.insertCell();
-  actionCell.style.textAlign = "center";
-  actionCell.style.padding = "12px";
-
-  if (employee.employee_code !== "EMP002") {
-    const editButton = document.createElement("button");
-    editButton.textContent = "تعديل الهدف";
-    editButton.style.cssText =
-      "padding:8px 12px;background:#173b55;color:white;border:0;border-radius:7px;cursor:pointer";
-
-    editButton.addEventListener("click", async () => {
-      const newTarget = prompt(
-        "أدخل الهدف الشهري الجديد للموظف " + employee.full_name,
-        employee.target_amount || ""
-      );
-
-      if (newTarget === null) return;
-
-      const amount = Number(newTarget.replace(/,/g, ""));
-
-      if (!Number.isFinite(amount) || amount <= 0) {
-        showMessage("أدخل مبلغًا صحيحًا أكبر من صفر.");
+        cell.appendChild(badge);
         return;
       }
 
-      editButton.disabled = true;
+      const percentage = Number(employee.achievement_percentage);
+      const progress = Math.max(0, Math.min(100, percentage));
 
-      try {
-        const { error } = await db
-          .from("monthly_employee_targets")
-          .upsert(
-            {
-              employee_id: employee.employee_id,
-              month_start: monthStart,
-              target_amount: amount
-            },
-            { onConflict: "employee_id,month_start" }
-          );
+      const progressColor =
+        percentage >= 100
+          ? "#16a36a"
+          : percentage >= 70
+            ? "#3478c8"
+            : "#d69b36";
 
-        if (error) throw error;
+      const label = document.createElement("div");
+      label.textContent =
+        percentage.toLocaleString("ar-EG") + "%";
 
-        await loadMonthlySalesPerformance();
-        showMessage("تم تحديث هدف الموظف بنجاح.");
+      label.style.cssText =
+        "font-size:15px;font-weight:800;color:" +
+        progressColor +
+        ";margin-bottom:9px";
 
-      } catch (error) {
-        console.error("Employee target update error:", error);
-        showMessage(error.message || "تعذر تحديث هدف الموظف.");
-      } finally {
-        editButton.disabled = false;
-      }
-    });
+      const track = document.createElement("div");
+      track.style.cssText =
+        "height:9px;background:#e9eef4;border-radius:20px;overflow:hidden;min-width:100px";
 
-    actionCell.appendChild(editButton);
-  } else {
-    actionCell.textContent = "بدون هدف";
-  }
+      const bar = document.createElement("div");
+      bar.style.cssText =
+        "height:100%;width:" + progress +
+        "%;background:" + progressColor +
+        ";border-radius:20px;transition:width .5s";
+
+      track.appendChild(bar);
+      cell.append(label, track);
+      return;
+    }
+
+    // العمولة
+    if (index === 6) {
+      const commission = document.createElement("span");
+      commission.textContent = value;
+      commission.style.cssText =
+        "display:inline-block;padding:8px 11px;background:#eaf7f0;color:#177347;border-radius:9px;font-weight:800;white-space:nowrap";
+
+      cell.appendChild(commission);
+    }
+  });
 });
-
 
   } catch (error) {
     console.error("Monthly sales error:", error);
