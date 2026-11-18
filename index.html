@@ -1921,11 +1921,7 @@
   تسجيل ومتابعة مبيعات موظفي EL-LITHY GROUP
 </div>
 
-<div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
-  <label for="salesDate"><strong>تاريخ تسجيل ومراجعة المبيعات</strong></label>
- <input id="salesDate" type="date"
-  style="width:100%;padding:12px;margin-top:10px">
-</div>
+
 
 <div style="margin-top:20px;padding:20px;border:1px solid #dce4eb;border-radius:12px">
   <h3>تسجيل عملية بيع جديدة</h3>
@@ -2081,29 +2077,92 @@
   </table>
 </div>
 </div>
-<h3>سجل المبيعات</h3>
+<!-- مراجعة مبيعات الموظفين -->
+<div id="employeeSalesReviewPanel" style="
+  margin-top:28px;
+  padding:22px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  box-shadow:0 5px 18px rgba(16,43,63,.05);
+">
 
-  <div style="max-height:440px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px">
-    <table style="width:100%;border-collapse:collapse;min-width:750px">
+  <h3 style="margin:0 0 8px;color:#102b3f">
+    📋 مراجعة مبيعات الموظفين
+  </h3>
+
+  <p style="margin:0 0 18px;color:#718096;font-size:13px;line-height:1.8">
+    اختر الموظف لعرض جميع عمليات البيع المسجلة باسمه.
+  </p>
+
+  <div style="max-width:450px;margin-bottom:18px">
+
+    <label for="salesHistoryEmployee">
+      <strong>اختر الموظف</strong>
+    </label>
+
+    <select id="salesHistoryEmployee"
+      style="
+        width:100%;
+        padding:13px;
+        margin-top:8px;
+        border:1px solid #dce4eb;
+        border-radius:10px;
+        background:#f8fafc;
+        font-size:14px;
+      ">
+      <option value="">اختر الموظف</option>
+    </select>
+
+  </div>
+
+  <div id="salesHistorySummary" style="
+    padding:14px;
+    margin-bottom:15px;
+    background:#f1f7fa;
+    border-radius:10px;
+    color:#173b55;
+    font-weight:bold;
+    line-height:1.8;
+  ">
+    اختر الموظف لعرض جميع عملياته المسجلة.
+  </div>
+
+  <div style="
+    width:100%;
+    max-height:440px;
+    overflow:auto;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+  ">
+
+    <table style="
+      width:100%;
+      border-collapse:collapse;
+      min-width:650px;
+    ">
+
       <thead>
-        <tr style="background:#f1f7fa">
-          <th style="padding:12px">الموظف</th>
-          <th style="padding:12px">العميل</th>
-          <th style="padding:12px">نوع البيع</th>
-          <th style="padding:12px">المبلغ</th>
-          <th style="padding:12px">التاريخ</th>
-          <th style="padding:12px">الإجراءات</th>
+        <tr style="background:#102b3f;color:white">
+          <th style="padding:13px">تاريخ البيع</th>
+          <th style="padding:13px">نوع البيع</th>
+          <th style="padding:13px">المبلغ</th>
+          <th style="padding:13px">الإجراءات</th>
         </tr>
       </thead>
-      <tbody id="salesListBody">
+
+      <tbody id="employeeSalesHistoryBody">
         <tr>
-          <td colspan="6" style="padding:12px;text-align:center">
-            جارٍ تحميل المبيعات...
+          <td colspan="4" style="padding:18px;text-align:center;color:#718096">
+            اختر الموظف لعرض مبيعاته.
           </td>
         </tr>
       </tbody>
+
     </table>
+
   </div>
+
 </div>
       
 <button id="backFromSalesButton" type="button">
@@ -2118,6 +2177,7 @@
 
   <div style="background:#f1f7fa;padding:18px;border-radius:12px;margin-top:20px">
     <h3>بيانات الموظف</h3>
+    
     <p>الاسم: <strong id="staffName"></strong></p>
     <p>كود الموظف: <strong id="staffCode"></strong></p>
     <p>المسمى الوظيفي: <strong id="staffJobTitle"></strong></p>
@@ -4555,7 +4615,6 @@ $("manageSalesButton").addEventListener("click", () => {
     day: "2-digit"
   }).format(today);
 
-  $("salesDate").value = cairoDate;
   $("salesMonth").value = cairoDate.slice(0, 7);
 
   loadSalesList();
@@ -4576,9 +4635,7 @@ $("openEmploymentTermsButton").addEventListener("click", async () => {
 $("backFromSalesButton").addEventListener("click", () => {
   showSection("dashboardSection");
 });
-    $("salesDate").addEventListener("change", () => {
-  loadSalesList();
-});
+ 
 
     
 $("salesMonth").addEventListener("change", () => {
@@ -4687,15 +4744,15 @@ $("addEmployeeForm").addEventListener("submit", async event => {
   }
 });
 
-    // تسجيل عملية بيع جديدة
+// تسجيل عملية بيع جديدة
 $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Africa/Cairo",
   year: "numeric",
   month: "2-digit",
   day: "2-digit"
 }).format(new Date());
-    
-    $("addSaleForm").addEventListener("submit", async event => {
+
+$("addSaleForm").addEventListener("submit", async event => {
   event.preventDefault();
 
   const employeeCode = $("saleEmployee").value;
@@ -4703,10 +4760,20 @@ $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
   const saleType = $("saleType").value;
   const amount = Number($("saleAmount").value);
   const message = $("saleFormMessage");
-  const submitButton = $("addSaleForm").querySelector('button[type="submit"]');
+  const submitButton = $("addSaleForm").querySelector(
+    'button[type="submit"]'
+  );
 
-  if (!employeeCode || !saleDate || !saleType || !Number.isFinite(amount) || amount <= 0) {
-    message.textContent = "يرجى مراجعة البيانات وإدخال مبلغ صحيح.";
+  if (
+    !employeeCode ||
+    !saleDate ||
+    !saleType ||
+    !Number.isFinite(amount) ||
+    amount <= 0
+  ) {
+    message.textContent =
+      "يرجى مراجعة البيانات وإدخال مبلغ صحيح.";
+    message.style.color = "red";
     return;
   }
 
@@ -4717,17 +4784,21 @@ $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
   try {
     const { data: employee, error: employeeError } = await db
       .from("profiles")
-      .select("id")
+      .select("id, full_name")
       .eq("employee_code", employeeCode)
       .eq("role", "employee")
       .single();
 
     if (employeeError) throw employeeError;
 
-    const { data: authData, error: authError } = await db.auth.getUser();
+    const { data: authData, error: authError } =
+      await db.auth.getUser();
 
     if (authError) throw authError;
-    if (!authData.user) throw new Error("يجب تسجيل دخول المدير أولاً.");
+
+    if (!authData.user) {
+      throw new Error("يجب تسجيل دخول المدير أولاً.");
+    }
 
     const { error: saleError } = await db
       .from("sales_transactions")
@@ -4741,183 +4812,336 @@ $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
 
     if (saleError) throw saleError;
 
- $("addSaleForm").reset();
+    $("addSaleForm").reset();
 
-$("saleDate").value = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Africa/Cairo",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit"
-}).format(new Date());
+    $("saleDate").value = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Africa/Cairo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date());
 
-message.textContent = "تم حفظ عملية البيع بنجاح.";
-    if ($("salesDate").value === saleDate) {
-  await loadSalesList();
-}
+    message.textContent = "تم حفظ عملية البيع بنجاح.";
     message.style.color = "green";
 
+    // تحديث قائمة الموظفين ومراجعة العملية الجديدة
+    try {
+      await loadSalesList();
+
+      const reviewSelect = $("salesHistoryEmployee");
+
+      if (reviewSelect) {
+        reviewSelect.value = employee.id;
+        await loadSalesList();
+      }
+
+      // تحديث الأداء الشهري والعمولات
+      await loadMonthlySalesPerformance();
+
+    } catch (refreshError) {
+      console.error("Sales refresh error:", refreshError);
+
+      message.textContent =
+        "تم حفظ البيع، لكن تعذر تحديث العرض تلقائيًا. أعد اختيار الموظف لمراجعة العملية.";
+      message.style.color = "#b7791f";
+    }
+
   } catch (error) {
-    console.error(error);
-    message.textContent = error.message || "حدث خطأ أثناء حفظ عملية البيع.";
+    console.error("Add sale error:", error);
+
+    message.textContent =
+      error.message || "حدث خطأ أثناء حفظ عملية البيع.";
+
     message.style.color = "red";
+
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = "حفظ عملية البيع";
   }
 });
-
     // تحميل سجل المبيعات حسب التاريخ المختار
 
+// تحميل ومراجعة جميع مبيعات الموظف المختار
 async function loadSalesList() {
-  const body = $("salesListBody");
-  const selectedDate = $("salesDate").value;
 
-  const formatMoney = amount =>
-    Number(amount).toLocaleString("ar-EG") + " جنيه";
+  const select = $("salesHistoryEmployee");
+  const body = $("employeeSalesHistoryBody");
+  const summary = $("salesHistorySummary");
 
+  if (!select || !body || !summary) return;
 
-  body.innerHTML = `
-    <tr>
-      <td colspan="6" style="padding:12px;text-align:center">
-        جارٍ تحميل المبيعات...
-      </td>
-    </tr>
-  `;
+  const previousEmployeeId = select.value;
+
+  body.replaceChildren();
 
   try {
-    const { data: sales, error } = await db
-      .from("sales_transactions")
-      .select("id, employee_id, sale_date, customer_name, sale_type, amount, created_at")
-      .eq("sale_date", selectedDate)
-      .order("created_at", { ascending: false });
 
-    if (error) throw error;
-
+    // تحميل قائمة الموظفين
     const { data: employees, error: employeesError } = await db
       .from("profiles")
-      .select("id, full_name");
+      .select("id, employee_code, full_name")
+      .eq("role", "employee")
+      .order("employee_code");
 
     if (employeesError) throw employeesError;
 
-    const employeeNames = {};
-    employees.forEach(employee => {
-      employeeNames[employee.id] = employee.full_name;
+    // تجهيز قائمة الاختيار
+    select.replaceChildren();
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "اختر الموظف";
+    select.appendChild(placeholder);
+
+    (employees || []).forEach(employee => {
+      const option = document.createElement("option");
+      option.value = employee.id;
+      option.textContent =
+        employee.full_name;
+
+      select.appendChild(option);
     });
 
+    // الاحتفاظ بالموظف المختار
+    if ((employees || []).some(
+      employee => employee.id === previousEmployeeId
+    )) {
+      select.value = previousEmployeeId;
+    }
+
+    // عند اختيار موظف جديد
+    select.onchange = () => {
+      loadSalesList();
+    };
+
+    if (!select.value) {
+      summary.textContent =
+        "اختر الموظف لعرض جميع عملياته المسجلة.";
+
+      const row = body.insertRow();
+      const cell = row.insertCell();
+
+      cell.colSpan = 4;
+      cell.textContent = "اختر الموظف لعرض مبيعاته.";
+      cell.style.cssText =
+        "padding:20px;text-align:center;color:#718096";
+
+      return;
+    }
+
+    const selectedEmployee = employees.find(
+      employee => employee.id === select.value
+    );
+
+    // تحميل جميع عمليات الموظف دون التقيد بتاريخ معين
+    const { data: sales, error: salesError } = await db
+      .from("sales_transactions")
+      .select("id, employee_id, sale_date, sale_type, amount, created_at")
+      .eq("employee_id", select.value)
+      .order("sale_date", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (salesError) throw salesError;
+
+    const formatMoney = amount =>
+      Number(amount || 0).toLocaleString("ar-EG") + " جنيه";
+
+    const totalSales = (sales || []).reduce(
+      (sum, sale) => sum + Number(sale.amount || 0),
+      0
+    );
+
+    const plusSales = (sales || [])
+      .filter(sale => sale.sale_type === "plus")
+      .reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
+
+    const tripleSales = (sales || [])
+      .filter(sale => sale.sale_type === "triple_zero")
+      .reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
+
+    // ملخص مبيعات الموظف
+    summary.textContent =
+      "الموظف: " + selectedEmployee.full_name +
+      " | إجمالي العمليات: " +
+      Number(sales?.length || 0).toLocaleString("ar-EG") +
+      " | إجمالي المبيعات: " + formatMoney(totalSales) +
+      " | Plus: " + formatMoney(plusSales) +
+      " | Triple Zero: " + formatMoney(tripleSales);
 
     body.replaceChildren();
 
     if (!sales || sales.length === 0) {
       const row = body.insertRow();
       const cell = row.insertCell();
-      cell.colSpan = 5;
-      cell.textContent = "لا توجد مبيعات مسجلة في هذا اليوم.";
-      cell.style.textAlign = "center";
-      cell.style.padding = "12px";
+
+      cell.colSpan = 4;
+      cell.textContent = "لا توجد مبيعات مسجلة لهذا الموظف.";
+      cell.style.cssText =
+        "padding:20px;text-align:center;color:#718096";
+
       return;
     }
 
+    // عرض عمليات البيع
     sales.forEach(sale => {
+
       const row = body.insertRow();
 
-      const values = [
-        employeeNames[sale.employee_id] || "غير معروف",
-        sale.customer_name || "—",
-        sale.sale_type === "plus" ? "Plus" : "Triple Zero",
-        formatMoney(sale.amount),
-        sale.sale_date
-      ];
+      row.style.background =
+        body.rows.length % 2 === 0 ? "#f8fafc" : "#ffffff";
 
-     values.forEach(value => {
-  const cell = row.insertCell();
-  cell.textContent = value;
-  cell.style.padding = "12px";
-  cell.style.textAlign = "center";
-  cell.style.borderBottom = "1px solid #dce4eb";
-});
+      // تاريخ البيع
+      const dateCell = row.insertCell();
+      dateCell.textContent = sale.sale_date || "—";
 
-// خلية الإجراءات
-const actionsCell = row.insertCell();
-actionsCell.style.padding = "10px";
-actionsCell.style.textAlign = "center";
-actionsCell.style.whiteSpace = "nowrap";
+      // نوع العرض
+      const typeCell = row.insertCell();
+      typeCell.textContent =
+        sale.sale_type === "plus" ? "Plus" : "Triple Zero";
 
-const editButton = document.createElement("button");
-editButton.textContent = "تعديل";
-editButton.style.cssText =
-  "background:#1c7890;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
+      // المبلغ
+      const amountCell = row.insertCell();
+      amountCell.textContent = formatMoney(sale.amount);
+      amountCell.style.fontWeight = "bold";
 
-const deleteButton = document.createElement("button");
-deleteButton.textContent = "حذف";
-deleteButton.style.cssText =
-  "background:#c0392b;color:white;border:0;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;width:55px";
+      [dateCell, typeCell, amountCell].forEach(cell => {
+        cell.style.cssText +=
+          ";padding:13px;text-align:center;border-bottom:1px solid #e5edf2";
+      });
 
-actionsCell.append(editButton, deleteButton);
+      // الإجراءات
+      const actionsCell = row.insertCell();
 
-      deleteButton.addEventListener("click", async () => {
-  const confirmed = confirm("هل أنت متأكد من حذف عملية البيع دي؟");
+      actionsCell.style.cssText =
+        "padding:10px;text-align:center;white-space:nowrap";
 
-  if (!confirmed) return;
+      const actionsWrapper = document.createElement("div");
 
-  try {
-    const { error } = await db
-      .from("sales_transactions")
-      .delete()
-      .eq("id", sale.id);
+      actionsWrapper.style.cssText =
+        "display:flex;justify-content:center;gap:7px;flex-wrap:wrap";
 
-    if (error) throw error;
+      const editButton = document.createElement("button");
 
-    alert("تم حذف عملية البيع بنجاح");
-    await loadSalesList();
-    await loadMonthlySalesPerformance();
+      editButton.type = "button";
+      editButton.textContent = "تعديل";
 
-  } catch (error) {
-    console.error(error);
-    alert("حصل خطأ أثناء حذف عملية البيع");
-  }
-});
+      editButton.style.cssText =
+        "width:auto;margin:0;padding:8px 13px;background:#1c7890;color:white;border:0;border-radius:8px;font-size:12px;cursor:pointer";
 
+      const deleteButton = document.createElement("button");
+
+      deleteButton.type = "button";
+      deleteButton.textContent = "حذف";
+
+      deleteButton.style.cssText =
+        "width:auto;margin:0;padding:8px 13px;background:#c0392b;color:white;border:0;border-radius:8px;font-size:12px;cursor:pointer";
+
+      actionsWrapper.append(editButton, deleteButton);
+      actionsCell.appendChild(actionsWrapper);
+
+      // تعديل مبلغ البيع
       editButton.addEventListener("click", async () => {
-  const newAmount = prompt(
-    "اكتب المبلغ الجديد لعملية البيع:",
-    sale.amount
-  );
 
-  if (newAmount === null) return;
+        const newAmount = prompt(
+          "اكتب المبلغ الجديد لعملية البيع:",
+          sale.amount
+        );
 
-  const amount = Number(newAmount);
+        if (newAmount === null) return;
 
-  if (!Number.isFinite(amount) || amount <= 0) {
-    alert("من فضلك أدخل مبلغًا صحيحًا أكبر من صفر");
-    return;
-  }
+        const amount = Number(
+          newAmount.replace(/,/g, "")
+        );
 
-  try {
-    const { error } = await db
-      .from("sales_transactions")
-      .update({ amount })
-      .eq("id", sale.id);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          alert("أدخل مبلغًا صحيحًا أكبر من صفر.");
+          return;
+        }
 
-    if (error) throw error;
+        editButton.disabled = true;
 
-    alert("تم تعديل مبلغ البيع بنجاح");
-    await loadSalesList();
-    await loadMonthlySalesPerformance();
+        try {
+
+          const { error } = await db
+            .from("sales_transactions")
+            .update({ amount })
+            .eq("id", sale.id)
+            .eq("employee_id", select.value);
+
+          if (error) throw error;
+
+          alert("تم تعديل مبلغ البيع بنجاح.");
+
+          await loadSalesList();
+          await loadMonthlySalesPerformance();
+
+        } catch (error) {
+
+          console.error("Sale update error:", error);
+          alert(error.message || "تعذر تعديل عملية البيع.");
+
+        } finally {
+          editButton.disabled = false;
+        }
+      });
+
+      // حذف عملية البيع
+      deleteButton.addEventListener("click", async () => {
+
+        const confirmed = confirm(
+          "هل أنت متأكد من حذف عملية البيع دي؟"
+        );
+
+        if (!confirmed) return;
+
+        deleteButton.disabled = true;
+
+        try {
+
+          const { error } = await db
+            .from("sales_transactions")
+            .delete()
+            .eq("id", sale.id)
+            .eq("employee_id", select.value);
+
+          if (error) throw error;
+
+          alert("تم حذف عملية البيع بنجاح.");
+
+          await loadSalesList();
+          await loadMonthlySalesPerformance();
+
+        } catch (error) {
+
+          console.error("Sale deletion error:", error);
+          alert(error.message || "تعذر حذف عملية البيع.");
+
+        } finally {
+          deleteButton.disabled = false;
+        }
+      });
+
+    });
 
   } catch (error) {
-    console.error(error);
-    alert("حدث خطأ أثناء تعديل عملية البيع");
-  }
-});
-      
-});
-      
-  } catch (error) {
-    console.error(error);
-    body.textContent = "حدث خطأ أثناء تحميل سجل المبيعات.";
+
+    console.error("Employee sales review error:", error);
+
+    summary.textContent = "تعذر تحميل بيانات الموظف.";
+
+    body.replaceChildren();
+
+    const row = body.insertRow();
+    const cell = row.insertCell();
+
+    cell.colSpan = 4;
+    cell.textContent =
+      error.message || "حدث خطأ أثناء تحميل المبيعات.";
+
+    cell.style.cssText =
+      "padding:18px;text-align:center;color:#c0392b";
   }
 }
-
     
 async function loadMonthlySalesPerformance() {
   const month = $("salesMonth").value;
