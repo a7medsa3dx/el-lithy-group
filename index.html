@@ -5955,8 +5955,15 @@ if (profile.role === "owner") {
   $("attendanceStatus").textContent = "";
   $("attendanceLocationStatus").textContent = "";
 
-  await loadEmployeeSalesDashboard(profile);
-  await loadEmployeeEmploymentTerms(profile);
+ await loadEmployeeSalesDashboard(profile);
+
+// استعادة رسائل الحضور والراحة والانصراف
+await loadEmployeeAttendanceSmartMessages(profile);
+
+// بدء متابعة تحقيق التارجت أثناء العمل
+startEmployeeTargetMonitor(profile);
+
+await loadEmployeeEmploymentTerms(profile);
 }
       
 showMessage("تم تسجيل الدخول بنجاح.");
@@ -6062,6 +6069,8 @@ let activeEmployeeSmartMessageDeliveryId = null;
 // تنظيم رسائل التارجت المتتابعة
 let employeeSmartMessageIsShowing = false;
 let employeeSmartMessageQueue = [];
+let employeeTargetMonitorTimer = null;
+let employeeTargetMonitorBusy = false;
     
 // تجهيز الصوت عند تفاعل الموظف
 function primeEmployeeSmartMessageAudio() {
@@ -6646,6 +6655,53 @@ async function showEmployeeSmartMessage(eventKey) {
 
   }
 }
+    // استعادة رسائل أحداث الحضور غير المعروضة عند دخول الموظف
+async function loadEmployeeAttendanceSmartMessages(profile) {
+
+  if (employeePreviewMode || !profile?.id) return;
+
+  try {
+
+    const cairoDate = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Africa/Cairo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date());
+
+    const { data: attendance, error } = await db
+      .from("attendance")
+      .select("check_in, break_start, break_end, check_out")
+      .eq("employee_id", profile.id)
+      .eq("work_date", cairoDate)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!attendance) return;
+
+    const events = [
+      ["check_in", attendance.check_in],
+      ["break_start", attendance.break_start],
+      ["break_end", attendance.break_end],
+      ["check_out", attendance.check_out]
+    ];
+
+    for (const [eventKey, eventTime] of events) {
+      if (eventTime) {
+        await showEmployeeSmartMessage(eventKey);
+      }
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Employee attendance messages recovery error:",
+      error
+    );
+
+  }
+}
     
 // ربط أزرار لوحة الموظف
 $("checkInButton").addEventListener("click", () => {
@@ -6664,15 +6720,50 @@ $("checkOutButton").addEventListener("click", () => {
   performAttendanceAction("check_out", "checkOutButton");
 });
 $("employeeLogoutButton").addEventListener("click", async () => {
+
   if (employeePreviewMode) {
     showMessage("أنت في وضع معاينة المدير. استخدم زر العودة لإدارة الموظفين.");
     return;
   }
 
-  await db.auth.signOut();
-  $("loginForm").reset();
-  showSection("loginSection");
-  showMessage("تم تسجيل الخروج بنجاح.");
+  try {
+
+    const { error } = await db.auth.signOut();
+
+    if (error) throw error;
+
+    // إيقاف مراقبة التارجت
+    stopEmployeeTargetMonitor();
+
+    // تنظيف قائمة الرسائل عند تسجيل الخروج
+    employeeSmartMessageQueue = [];
+    employeeSmartMessageIsShowing = false;
+
+    // إغلاق نافذة الرسالة إن كانت مفتوحة
+    const overlay = $("smartEmployeeMessageOverlay");
+
+    if (overlay) {
+      overlay.style.display = "none";
+      overlay.classList.add("hidden");
+    }
+
+    // الاحتفاظ بالرسالة غير المقروءة لإعادتها عند الدخول التالي
+    activeEmployeeSmartMessageDeliveryId = null;
+
+    $("loginForm").reset();
+
+    showSection("loginSection");
+
+    showMessage("تم تسجيل الخروج بنجاح.");
+
+  } catch (error) {
+
+    console.error("Employee logout error:", error);
+
+    showMessage(error.message || "تعذر تسجيل الخروج.");
+
+  }
+
 });
 $("manageEmployeesButton").addEventListener("click", () => {
   showSection("employeesSection");
