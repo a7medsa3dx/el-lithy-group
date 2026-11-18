@@ -6059,7 +6059,10 @@ showMessage("تم تسجيل الدخول بنجاح.");
 let employeeSmartMessageAudioContext = null;
 let activeEmployeeSmartMessageDeliveryId = null;
 
-
+// تنظيم رسائل التارجت المتتابعة
+let employeeSmartMessageIsShowing = false;
+let employeeSmartMessageQueue = [];
+    
 // تجهيز الصوت عند تفاعل الموظف
 function primeEmployeeSmartMessageAudio() {
 
@@ -6148,35 +6151,50 @@ async function closeEmployeeSmartMessage() {
 
   const overlay = $("smartEmployeeMessageOverlay");
 
+  if (!overlay || overlay.style.display === "none") return;
+
   overlay.style.display = "none";
   overlay.classList.add("hidden");
 
   const deliveryId = activeEmployeeSmartMessageDeliveryId;
   activeEmployeeSmartMessageDeliveryId = null;
 
-  if (!deliveryId) return;
-
   try {
 
-    const { data: authData } = await db.auth.getUser();
+    if (deliveryId) {
 
-    if (!authData?.user) return;
+      const { data: authData, error: authError } =
+        await db.auth.getUser();
 
-    const { error } = await db
-      .from("employee_smart_message_deliveries")
-      .update({
-        seen_at: new Date().toISOString()
-      })
-      .eq("id", deliveryId)
-      .eq("employee_id", authData.user.id);
+      if (authError) throw authError;
 
-    if (error) throw error;
+      if (authData?.user) {
+
+        const { error } = await db
+          .from("employee_smart_message_deliveries")
+          .update({
+            seen_at: new Date().toISOString()
+          })
+          .eq("id", deliveryId)
+          .eq("employee_id", authData.user.id);
+
+        if (error) throw error;
+      }
+    }
 
   } catch (error) {
+
     console.warn("Message seen status:", error);
+
+  } finally {
+
+    employeeSmartMessageIsShowing = false;
+
+    // عرض الرسالة التالية بعد إغلاق الحالية
+    await showNextQueuedEmployeeSmartMessage();
+
   }
 }
-
 
 // تشغيل الرسوم المتحركة داخل نافذة الموظف
 function animateEmployeeSmartMessage(animationType) {
@@ -6352,9 +6370,33 @@ function animateEmployeeSmartMessage(animationType) {
   });
 }
 
+// عرض الرسالة التالية في قائمة الانتظار
+async function showNextQueuedEmployeeSmartMessage() {
 
+  if (employeeSmartMessageIsShowing) return;
+
+  const nextEvent = employeeSmartMessageQueue.shift();
+
+  if (nextEvent) {
+    await showEmployeeSmartMessage(nextEvent);
+  }
+}
+    
 // عرض الرسالة الخاصة بالموظف
+// عرض الرسالة الخاصة بالموظف مع استعادة الرسائل غير المقروءة
 async function showEmployeeSmartMessage(eventKey) {
+
+  // انتظار انتهاء الرسالة الحالية
+  if (employeeSmartMessageIsShowing) {
+
+    if (!employeeSmartMessageQueue.includes(eventKey)) {
+      employeeSmartMessageQueue.push(eventKey);
+    }
+
+    return;
+  }
+
+  let messageOpened = false;
 
   try {
 
@@ -6367,20 +6409,7 @@ async function showEmployeeSmartMessage(eventKey) {
 
     if (!user) return;
 
-    // تحميل رسالة الموظف لهذه المناسبة
-    const { data: message, error } = await db
-      .from("employee_smart_messages")
-      .select("*")
-      .eq("employee_id", user.id)
-      .eq("event_key", eventKey)
-      .eq("enabled", true)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    if (!message || !message.message_body.trim()) return;
-
-    // تحديد فترة منع التكرار بتوقيت القاهرة
+    // حساب الفترة حسب توقيت القاهرة
     const cairoDate = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Africa/Cairo",
       year: "numeric",
@@ -6388,45 +6417,130 @@ async function showEmployeeSmartMessage(eventKey) {
       day: "2-digit"
     }).format(new Date());
 
-    const periodKey = cairoDate;
+    const periodKey = eventKey.startsWith("target_")
+      ? cairoDate.slice(0, 7) + "-01"
+      : cairoDate;
 
-    // حفظ سجل ظهور الرسالة مرة واحدة فقط
+    // تحميل الإعدادات الحالية والتأكد من تفعيل الرسالة
+    const { data: message, error: messageError } = await db
+      .from("employee_smart_messages")
+      .select("*")
+      .eq("employee_id", user.id)
+      .eq("event_key", eventKey)
+      .eq("enabled", true)
+      .maybeSingle();
+
+    if (messageError) throw messageError;
+
+    if (!message || !message.message_body?.trim()) {
+      return;
+    }
+
+    // البحث عن سجل سابق لنفس المناسبة والفترة
+    const { data: existingDelivery, error: existingError } =
+      await db
+        .from("employee_smart_message_deliveries")
+        .select("*")
+        .eq("employee_id", user.id)
+        .eq("event_key", eventKey)
+        .eq("period_key", periodKey)
+        .maybeSingle();
+
+    if (existingError) throw existingError;
+
+    // الرسالة مقروءة بالفعل
+    if (existingDelivery?.seen_at) {
+      return;
+    }
+
     const deliveryData = {
       employee_id: user.id,
       event_key: eventKey,
       period_key: periodKey,
+
       message_title: message.message_title,
       message_body: message.message_body,
+
       visual_style: message.visual_style,
       animation: message.animation,
       message_size: message.message_size,
+
       accent_color: message.accent_color,
       sound_enabled: message.sound_enabled,
       sound_type: message.sound_type
     };
 
-    const { data: delivery, error: deliveryError } = await db
-      .from("employee_smart_message_deliveries")
-      .insert(deliveryData)
-      .select("id")
-      .single();
+    let delivery = existingDelivery;
 
-    // الرسالة سبق تسجيل ظهورها اليوم
-    if (deliveryError?.code === "23505") {
-      return;
+    if (delivery) {
+
+      // تحديث الرسالة المعلقة بآخر إعدادات المدير
+      const { data: updatedDelivery, error: updateError } =
+        await db
+          .from("employee_smart_message_deliveries")
+          .update(deliveryData)
+          .eq("id", delivery.id)
+          .eq("employee_id", user.id)
+          .select("*")
+          .single();
+
+      if (updateError) throw updateError;
+
+      delivery = updatedDelivery;
+
+    } else {
+
+      // إنشاء سجل جديد عند عدم وجود رسالة سابقة
+      const { data: newDelivery, error: insertError } =
+        await db
+          .from("employee_smart_message_deliveries")
+          .insert(deliveryData)
+          .select("*")
+          .single();
+
+      if (insertError?.code === "23505") {
+
+        // إعادة جلب السجل إذا سبق إنشاؤه بالتزامن
+        const { data: duplicateDelivery, error: duplicateError } =
+          await db
+            .from("employee_smart_message_deliveries")
+            .select("*")
+            .eq("employee_id", user.id)
+            .eq("event_key", eventKey)
+            .eq("period_key", periodKey)
+            .maybeSingle();
+
+        if (duplicateError) throw duplicateError;
+
+        delivery = duplicateDelivery;
+
+        if (!delivery || delivery.seen_at) {
+          return;
+        }
+
+      } else if (insertError) {
+
+        throw insertError;
+
+      } else {
+
+        delivery = newDelivery;
+
+      }
     }
 
-    if (deliveryError) throw deliveryError;
+    if (!delivery || delivery.seen_at) return;
 
     activeEmployeeSmartMessageDeliveryId = delivery.id;
 
-    // تجهيز عناصر النافذة
+    // تجهيز عناصر نافذة الموظف
     const overlay = $("smartEmployeeMessageOverlay");
     const messageWindow = $("smartEmployeeMessageWindow");
 
     const title = $("smartEmployeeMessageTitle");
     const body = $("smartEmployeeMessageBody");
     const icon = $("smartEmployeeMessageIcon");
+
     const decorations = $("smartEmployeeMessageDecorations");
 
     const backgrounds = {
@@ -6445,21 +6559,24 @@ async function showEmployeeSmartMessage(eventKey) {
       glass: "✨"
     };
 
-    const color = message.accent_color || "#1c7890";
+    const color = delivery.accent_color || "#1c7890";
 
-    title.textContent = message.message_title;
-    body.textContent = message.message_body;
+    title.textContent = delivery.message_title;
+    body.textContent = delivery.message_body;
 
-    icon.textContent = icons[message.visual_style] || "✨";
+    icon.textContent =
+      icons[delivery.visual_style] || "✨";
 
     messageWindow.style.background =
-      backgrounds[message.visual_style] || "#ffffff";
+      backgrounds[delivery.visual_style] || "#ffffff";
 
     messageWindow.style.borderColor = color;
 
     $("smartEmployeeMessageDismiss").style.background = color;
 
-    const mobile = window.matchMedia("(max-width:600px)").matches;
+    const mobile = window.matchMedia(
+      "(max-width:600px)"
+    ).matches;
 
     const sizes = {
       large: { width: "680px", height: "340px" },
@@ -6468,7 +6585,7 @@ async function showEmployeeSmartMessage(eventKey) {
     };
 
     const selectedSize =
-      sizes[message.message_size] || sizes.large;
+      sizes[delivery.message_size] || sizes.large;
 
     messageWindow.style.width = mobile
       ? "calc(100vw - 24px)"
@@ -6478,10 +6595,12 @@ async function showEmployeeSmartMessage(eventKey) {
       ? "clamp(300px, 62dvh, 440px)"
       : selectedSize.height;
 
-    messageWindow.style.maxHeight = "90dvh";
+    messageWindow.style.maxHeight = mobile
+      ? "calc(100dvh - 24px)"
+      : "90vh";
 
     messageWindow.style.backdropFilter =
-      message.visual_style === "glass"
+      delivery.visual_style === "glass"
         ? "blur(15px)"
         : "none";
 
@@ -6492,18 +6611,22 @@ async function showEmployeeSmartMessage(eventKey) {
 
     decorations.replaceChildren();
 
-    // إظهار النافذة
+    // تفعيل حالة عرض الرسالة
+    employeeSmartMessageIsShowing = true;
+
     overlay.classList.remove("hidden");
     overlay.style.display = "flex";
 
-    animateEmployeeSmartMessage(message.animation);
+    messageOpened = true;
 
-    // تشغيل الصوت إذا اختاره المدير
-    if (message.sound_enabled) {
-      playEmployeeSmartMessageSound(message.sound_type);
+    // تشغيل الرسوم والصوت
+    animateEmployeeSmartMessage(delivery.animation);
+
+    if (delivery.sound_enabled) {
+      playEmployeeSmartMessageSound(delivery.sound_type);
     }
 
-    // ربط الإغلاق
+    // أزرار الإغلاق
     $("smartEmployeeMessageClose").onclick =
       closeEmployeeSmartMessage;
 
@@ -6514,138 +6637,16 @@ async function showEmployeeSmartMessage(eventKey) {
 
     console.error("Show employee smart message error:", error);
 
-    // لا نوقف عملية الحضور بسبب مشكلة في الرسالة
+  } finally {
+
+    // لا نترك قائمة الرسائل معلقة عند تعذر عرض رسالة
+    if (!messageOpened && !employeeSmartMessageIsShowing) {
+      await showNextQueuedEmployeeSmartMessage();
+    }
+
   }
 }
     
-async function performAttendanceAction(action, buttonId) {
-  if (employeePreviewMode) {
-    showMessage("المعاينة للعرض فقط. لا يمكن تنفيذ عمليات الحضور أو الانصراف.");
-    return;
-  }
-// تجهيز الصوت بعد تفاعل الموظف مع زر الحضور
-primeEmployeeSmartMessageAudio();
-  const button = $(buttonId);
-  const status = $("attendanceStatus");
-  const locationStatus = $("attendanceLocationStatus");
-
-  const labels = {
-    check_in: "تسجيل الحضور",
-    break_start: "بدء الراحة",
-    break_end: "إنهاء الراحة",
-    check_out: "تسجيل الانصراف"
-  };
-
-  const successLabels = {
-    check_in: "تم تسجيل الحضور بنجاح",
-    break_start: "تم بدء الراحة بنجاح",
-    break_end: "تم إنهاء الراحة بنجاح",
-    check_out: "تم تسجيل الانصراف بنجاح"
-  };
-
-  let succeeded = false;
-
-  button.disabled = true;
-  button.textContent = "⏳ جارٍ تحديد الموقع...";
-  button.style.backgroundColor = "#2563eb";
-  button.style.color = "#ffffff";
-
-  status.textContent = "⏳ جارٍ تنفيذ العملية...";
-  status.style.color = "#2563eb";
-
-  try {
-    if (!navigator.geolocation) {
-      throw new Error("المتصفح لا يدعم تحديد الموقع.");
-    }
-
-    const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        resolve,
-        error => {
-          reject(new Error(
-            error.code === 1
-              ? "يجب السماح للموقع بالوصول إلى GPS."
-              : "تعذر تحديد موقعك. حاول مرة أخرى."
-          ));
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 20000,
-          maximumAge: 0
-        }
-      );
-    });
-
-    locationStatus.textContent =
-      "📍 تم تحديد موقعك، جارٍ تسجيل العملية...";
-
-    button.textContent = "⏳ جارٍ التسجيل...";
-
-    const { data, error } = await db.functions.invoke(
-      "employee-attendance",
-      {
-        body: {
-          action,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy
-        }
-      }
-    );
-
-    if (error) throw error;
-
-    if (!data?.success) {
-      throw new Error(data?.error || "تعذر تنفيذ العملية.");
-    }
-
-    succeeded = true;
-
-    button.textContent = "✓ " + successLabels[action];
-    button.style.backgroundColor = "#15803d";
-    button.style.color = "#ffffff";
-
-    status.textContent = "✅ " + data.message;
-    status.style.color = "#15803d";
-
-    locationStatus.textContent =
-      "📍 المسافة من مقر الشركة: " +
-      data.distance_meters + " متر";
-
-    showMessage(data.message);
-// عرض الرسالة الشخصية بعد نجاح العملية
-await showEmployeeSmartMessage(action);
-  } catch (error) {
-    console.error(error);
-
-    let message = error.message ||
-      "حدث خطأ أثناء تسجيل العملية.";
-
-    if (error.context && typeof error.context.json === "function") {
-      try {
-        const details = await error.context.json();
-        message = details.error || message;
-      } catch (_) {}
-    }
-
-    button.textContent = "↻ إعادة المحاولة - " + labels[action];
-    button.style.backgroundColor = "#b91c1c";
-    button.style.color = "#ffffff";
-
-    status.textContent = "❌ " + message;
-    status.style.color = "#b91c1c";
-
-    locationStatus.textContent = "لم يتم تأكيد تسجيل العملية.";
-
-    showMessage(message);
-
-  } finally {
-    if (!succeeded) {
-      button.disabled = false;
-    }
-  }
-}
-
 // ربط أزرار لوحة الموظف
 $("checkInButton").addEventListener("click", () => {
   performAttendanceAction("check_in", "checkInButton");
@@ -7946,7 +7947,45 @@ if (!leaves || leaves.length === 0) {
 $("employeeSalesMessage").textContent =
   data ? "يتم تحديث بيانات المبيعات تلقائيًا عند تسجيل الدخول." :
   "لا توجد مبيعات مسجلة لك خلال هذا الشهر حتى الآن.";
+// ==========================================
+// EMPLOYEE MONTHLY TARGET MILESTONES
+// ==========================================
 
+if (
+  !employeePreviewMode &&
+  profile.employee_code !== "EMP002"
+) {
+
+  const target = Number(sales.target_amount || 0);
+
+  const achievement = Number(
+    sales.achievement_percentage || 0
+  );
+
+  if (target > 0) {
+
+    const milestoneEvents = [];
+
+    if (achievement >= 50) {
+      milestoneEvents.push("target_50");
+    }
+
+    if (achievement >= 70) {
+      milestoneEvents.push("target_70");
+    }
+
+    if (achievement >= 100) {
+      milestoneEvents.push("target_100");
+    }
+
+    // عرض الرسائل بالترتيب، ومنع ظهورها فوق بعضها
+    for (const eventKey of milestoneEvents) {
+      await showEmployeeSmartMessage(eventKey);
+    }
+
+  }
+}
+    
   } catch (error) {
     console.error("Employee sales dashboard error:", error);
 
