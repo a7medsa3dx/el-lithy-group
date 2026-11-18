@@ -6819,6 +6819,10 @@ $("manageSalesButton").addEventListener("click", () => {
   loadMonthlySalesPerformance();
 });
 
+    // العودة من إدارة المبيعات إلى لوحة المدير
+$("backFromSalesButton").addEventListener("click", () => {
+  showSection("dashboardSection");
+});
     
 // فتح الملفات الوظيفية
 $("openEmploymentTermsButton").addEventListener("click", async () => {
