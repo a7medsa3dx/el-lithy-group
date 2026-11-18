@@ -3064,7 +3064,7 @@ async function loadManagerEmploymentResponse(employeeId) {
 
     const formatDate = value =>
       value
-        ? new Date(value).toLocaleString("ar-EG")
+       ? new Date(value).toLocaleString("ar-EG-u-nu-latn")
         : "غير متاح";
 
     details.textContent =
@@ -3579,7 +3579,7 @@ function previewEmploymentTerms() {
 
   const formatDate = value => {
     if (!value) return "غير محدد";
-    return new Date(value + "T00:00:00").toLocaleDateString("ar-EG");
+    return new Date(value + "T00:00:00").toLocaleDateString("ar-EG-u-nu-latn");
   };
 
   const safe = value =>
@@ -3801,7 +3801,7 @@ async function loadEmploymentTermsHistory(employeeId) {
     const formatDate = value => {
       if (!value) return "غير محدد";
 
-      return new Date(value).toLocaleDateString("ar-EG", {
+      return new Date(value).toLocaleDateString("ar-EG-u-nu-latn", {
         year: "numeric",
         month: "long",
         day: "numeric"
@@ -4090,7 +4090,7 @@ async function loadEmploymentTermsHistory(employeeId) {
         addInfo(
           ackGrid,
           "تاريخ ووقت الإقرار",
-          new Date(ack.acknowledged_at).toLocaleString("ar-EG")
+          new Date(ack.acknowledged_at).toLocaleString("ar-EG-u-nu-latn")
         );
 
         addInfo(
@@ -4203,7 +4203,7 @@ async function loadEmployeeEmploymentTerms(profile) {
     const formatMoney = value =>
       value == null
         ? "غير محدد"
-        : new Intl.NumberFormat("ar-EG").format(Number(value)) + " جنيه";
+        : new Intl.NumberFormat("ar-EG-u-nu-latn").format(Number(value)) + " جنيه";
 
     const addDetail = (label, value) => {
       const item = document.createElement("div");
@@ -4251,7 +4251,7 @@ async function loadEmployeeEmploymentTerms(profile) {
         "لقد قمت بقبول هذا الاتفاق الوظيفي وتوقيعه.";
       message.textContent =
         "تاريخ القبول: " +
-        new Date(acknowledgement.acknowledged_at).toLocaleDateString("ar-EG");
+        new Date(acknowledgement.acknowledged_at).toLocaleDateString("ar-EG-u-nu-latn");
     } else if (response) {
       statusBadge.textContent =
         response.response_type === "objection" ? "تم إرسال اعتراض" : "تم الرفض";
@@ -4944,7 +4944,7 @@ async function loadSalesList() {
     if (salesError) throw salesError;
 
     const formatMoney = amount =>
-      Number(amount || 0).toLocaleString("ar-EG") + " جنيه";
+      Number(amount || 0).toLocaleString("ar-EG-u-nu-latn") + " جنيه";
 
     const totalSales = (sales || []).reduce(
       (sum, sale) => sum + Number(sale.amount || 0),
@@ -4963,7 +4963,7 @@ async function loadSalesList() {
     summary.textContent =
       "الموظف: " + selectedEmployee.full_name +
       " | إجمالي العمليات: " +
-      Number(sales?.length || 0).toLocaleString("ar-EG") +
+      Number(sales?.length || 0).toLocaleString("ar-EG-u-nu-latn") +
       " | إجمالي المبيعات: " + formatMoney(totalSales) +
       " | Plus: " + formatMoney(plusSales) +
       " | Triple Zero: " + formatMoney(tripleSales);
@@ -5150,7 +5150,7 @@ async function loadMonthlySalesPerformance() {
   const monthStart = month + "-01";
 
   const formatMoney = amount =>
-    Number(amount || 0).toLocaleString("ar-EG") + " جنيه";
+    Number(amount || 0).toLocaleString("ar-EG-u-nu-latn") + " جنيه";
 
   try {
     const { data: company, error: companyError } = await db
@@ -5203,11 +5203,11 @@ async function loadMonthlySalesPerformance() {
 
     $("monthlyPlusTotal").textContent = formatMoney(monthlyPlusTotal);
     $("monthlyPlusCount").textContent =
-      `${monthlyPlusCount.toLocaleString("ar-EG")} عملية`;
+      `${monthlyPlusCount.toLocaleString("ar-EG-u-nu-latn")} عملية`;
 
     $("monthlyTripleTotal").textContent = formatMoney(monthlyTripleTotal);
     $("monthlyTripleCount").textContent =
-      `${monthlyTripleCount.toLocaleString("ar-EG")} عملية`;
+      `${monthlyTripleCount.toLocaleString("ar-EG-u-nu-latn")} عملية`;
 
     if (company) {
       $("companyMonthlyTarget").textContent =
@@ -5217,7 +5217,7 @@ async function loadMonthlySalesPerformance() {
         formatMoney(company.total_sales);
 
       $("companyAchievement").textContent =
-        Number(company.achievement_percentage || 0).toLocaleString("ar-EG") + "%";
+        Number(company.achievement_percentage || 0).toLocaleString("ar-EG-u-nu-latn") + "%";
 
       const companyProgress = Math.max(
   0,
@@ -5302,9 +5302,9 @@ const values = [
   employee.full_name,
   formatMoney(employee.total_sales),
 
-  `${formatMoney(employee.plus_sales)} (${Number(employee.plus_count || 0).toLocaleString("ar-EG")} عملية)`,
+  `${formatMoney(employee.plus_sales)} (${Number(employee.plus_count || 0).toLocaleString("ar-EG-u-nu-latn")} عملية)`,
 
-  `${formatMoney(employee.triple_zero_sales)} (${Number(employee.triple_zero_count || 0).toLocaleString("ar-EG")} عملية)`,
+  `${formatMoney(employee.triple_zero_sales)} (${Number(employee.triple_zero_count || 0).toLocaleString("ar-EG-u-nu-latn")} عملية)`,
 
   employee.target_amount
     ? formatMoney(employee.target_amount)
@@ -5312,7 +5312,7 @@ const values = [
 
   employee.achievement_percentage == null
     ? "—"
-    : Number(employee.achievement_percentage).toLocaleString("ar-EG") + "%",
+    : Number(employee.achievement_percentage).toLocaleString("ar-EG-u-nu-latn") + "%",
 
   formatMoney(employee.commission_amount)
 ];
@@ -5338,7 +5338,7 @@ const values = [
 
     const label = document.createElement("div");
     label.textContent =
-      percentage.toLocaleString("ar-EG") + "%";
+      percentage.toLocaleString("ar-EG-u-nu-latn") + "%";
     label.style.fontWeight = "bold";
     label.style.marginBottom = "8px";
     label.style.color = percentage >= 100 ? "#16865f" : "#3478c8";
@@ -5436,7 +5436,7 @@ async function loadEmployeeSalesDashboard(profile) {
 
     const monthStart = cairoDate.slice(0, 7) + "-01";
 
-    const monthName = new Intl.DateTimeFormat("ar-EG", {
+    const monthName = new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
       timeZone: "Africa/Cairo",
       month: "long",
       year: "numeric"
@@ -5462,7 +5462,7 @@ async function loadEmployeeSalesDashboard(profile) {
     const commission = Number(sales.commission_amount || 0);
 
     const formatMoney = (amount) =>
-      new Intl.NumberFormat("ar-EG", {
+      new Intl.NumberFormat("ar-EG-u-nu-latn", {
         maximumFractionDigits: 0
       }).format(amount) + " جنيه";
 
@@ -5727,7 +5727,7 @@ section.inert = true;
       const formatTime = value => {
         if (!value) return "";
 
-        return new Date(value).toLocaleTimeString("ar-EG", {
+        return new Date(value).toLocaleTimeString("ar-EG-u-nu-latn", {
           timeZone: "Africa/Cairo",
           hour: "2-digit",
           minute: "2-digit"
@@ -5791,7 +5791,7 @@ section.inert = true;
 function reportFormatTime(value) {
   if (!value) return "—";
 
-  return new Date(value).toLocaleTimeString("ar-EG", {
+  return new Date(value).toLocaleTimeString("ar-EG-u-nu-latn", {
     timeZone: "Africa/Cairo",
     hour: "2-digit",
     minute: "2-digit",
