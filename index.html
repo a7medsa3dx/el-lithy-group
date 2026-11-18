@@ -1335,8 +1335,8 @@
 /* ===== EL-LITHY Modern Employee Performance Table ===== */
 
 #monthlyEmployeePerformanceTable {
-  width: 100%;
-  min-width: 1120px;
+  width: 100% !important;
+  min-width: 0 !important;
   table-layout: fixed;
   direction: rtl;
   border-collapse: separate !important;
@@ -1350,25 +1350,26 @@
 #monthlyEmployeePerformanceTable thead th {
   background: linear-gradient(120deg, #102b3f, #176477) !important;
   color: #ffffff !important;
-  padding: 17px 11px !important;
-  font-size: 13px;
+  padding: 14px 7px !important;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.7;
   text-align: center;
   vertical-align: middle;
   white-space: normal;
+  overflow-wrap: anywhere;
   border: none;
 }
 
 #monthlyEmployeePerformanceTable tbody td {
-  padding: 16px 11px !important;
+  padding: 13px 7px !important;
   text-align: center !important;
   vertical-align: middle;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.8;
   color: #334155;
   border-bottom: 1px solid #edf1f5;
-  overflow-wrap: normal;
+  overflow-wrap: anywhere;
 }
 
 #monthlyEmployeePerformanceTable tbody tr {
@@ -1383,10 +1384,11 @@
   background: #eaf4f7 !important;
 }
 
-/* توزيع الأعمدة */
+/* توزيع الأعمدة - اسم الموظف أصغر */
+
 #monthlyEmployeePerformanceTable th:nth-child(1),
 #monthlyEmployeePerformanceTable td:nth-child(1) {
-  width: 14%;
+  width: 9%;
   text-align: right !important;
   font-weight: 700;
   color: #102b3f;
@@ -1394,7 +1396,7 @@
 
 #monthlyEmployeePerformanceTable th:nth-child(2),
 #monthlyEmployeePerformanceTable td:nth-child(2) {
-  width: 16%;
+  width: 15%;
   font-weight: 700;
 }
 
@@ -1405,7 +1407,7 @@
 
 #monthlyEmployeePerformanceTable th:nth-child(4),
 #monthlyEmployeePerformanceTable td:nth-child(4) {
-  width: 18%;
+  width: 20%;
 }
 
 #monthlyEmployeePerformanceTable th:nth-child(5),
@@ -1415,33 +1417,34 @@
 
 #monthlyEmployeePerformanceTable th:nth-child(6),
 #monthlyEmployeePerformanceTable td:nth-child(6) {
-  width: 14%;
+  width: 15%;
 }
 
 #monthlyEmployeePerformanceTable th:nth-child(7),
 #monthlyEmployeePerformanceTable td:nth-child(7) {
-  width: 10%;
+  width: 13%;
   font-weight: 700;
 }
 
-/* تحسين وضوح الأرقام */
-#monthlyEmployeePerformanceTable tbody td {
+/* تحسين عرض الأرقام */
+
+#monthlyEmployeePerformanceTable td {
   font-feature-settings: "tnum";
 }
 
-/* الهواتف والأجهزة الصغيرة */
+/* الموبايل: تمرير أفقي مع الحفاظ على وضوح البيانات */
 @media (max-width: 600px) {
   #monthlyEmployeePerformanceTable {
-    min-width: 1120px;
+    min-width: 950px !important;
   }
 
   #monthlyEmployeePerformanceTable thead th {
-    padding: 13px 9px !important;
+    padding: 12px 7px !important;
     font-size: 12px;
   }
 
   #monthlyEmployeePerformanceTable tbody td {
-    padding: 13px 9px !important;
+    padding: 12px 7px !important;
     font-size: 12px;
   }
 }
