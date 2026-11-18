@@ -1521,6 +1521,75 @@
     min-height: auto;
   }
 }
+
+    /* ===== EL-LITHY Employee Message Responsive Design ===== */
+
+#smartEmployeeMessageOverlay {
+  box-sizing: border-box;
+}
+
+#smartEmployeeMessageWindow {
+  width: min(680px, calc(100vw - 36px));
+  max-height: calc(100vh - 36px);
+}
+
+@media (max-width: 600px) {
+
+  #smartEmployeeMessageOverlay {
+    padding: 12px !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #smartEmployeeMessageWindow {
+    width: 100% !important;
+    min-height: clamp(300px, 62dvh, 420px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 55px 18px 24px !important;
+    border-radius: 20px !important;
+    border-width: 2px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  #smartEmployeeMessageIcon {
+    font-size: clamp(38px, 12vw, 54px) !important;
+    margin-bottom: 12px !important;
+  }
+
+  #smartEmployeeMessageTitle {
+    font-size: clamp(21px, 6vw, 27px) !important;
+    line-height: 1.55 !important;
+    margin-bottom: 13px !important;
+    overflow-wrap: anywhere;
+  }
+
+  #smartEmployeeMessageBody {
+    font-size: clamp(15px, 4.2vw, 18px) !important;
+    line-height: 1.9 !important;
+  }
+
+  #smartEmployeeMessageDismiss {
+    width: 100% !important;
+    max-width: 280px !important;
+    min-height: 50px !important;
+    margin-top: 22px !important;
+    font-size: 16px !important;
+  }
+
+  #smartEmployeeMessageClose {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  #smartEmployeeMessageWindow {
+    min-height: 250px !important;
+    max-height: calc(100dvh - 16px) !important;
+    padding-top: 48px !important;
+  }
+}
     
 </style>
 </head>
@@ -2930,9 +2999,153 @@
     
 <section id="employeeDashboardSection" class="hidden">
 
+    <!-- EL-LITHY Employee Smart Message -->
+<div id="smartEmployeeMessageOverlay"
+     class="hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="smartEmployeeMessageTitle"
+     style="
+       position:fixed;
+       inset:0;
+       z-index:999999;
+       display:none;
+       align-items:center;
+       justify-content:center;
+       padding:18px;
+       background:rgba(8,22,35,.78);
+       backdrop-filter:blur(7px);
+       -webkit-backdrop-filter:blur(7px);
+     ">
 
+  <div id="smartEmployeeMessageWindow"
+       style="
+         position:relative;
+         width:min(680px,100%);
+         min-height:340px;
+         max-height:90vh;
+         overflow:hidden;
+         overflow-y:auto;
+         padding:38px 28px;
+         box-sizing:border-box;
+         border:2px solid #1c7890;
+         border-radius:24px;
+         background:#ffffff;
+         box-shadow:0 25px 80px rgba(0,0,0,.30);
+         text-align:center;
+         display:flex;
+         flex-direction:column;
+         align-items:center;
+         justify-content:center;
+       ">
+
+    <!-- مساحة الرسوم المتحركة -->
+    <div id="smartEmployeeMessageDecorations"
+         aria-hidden="true"
+         style="
+           position:absolute;
+           inset:0;
+           overflow:hidden;
+           pointer-events:none;
+           z-index:1;
+         ">
+    </div>
+
+    <!-- زر الإغلاق -->
+    <button id="smartEmployeeMessageClose"
+            type="button"
+            aria-label="إغلاق الرسالة"
+            style="
+              position:absolute;
+              top:12px;
+              left:12px;
+              z-index:5;
+              width:40px;
+              height:40px;
+              margin:0;
+              padding:0;
+              border:0;
+              border-radius:50%;
+              background:#edf2f7;
+              color:#334155;
+              font-size:25px;
+              cursor:pointer;
+            ">
+      ×
+    </button>
+
+    <!-- محتوى الرسالة -->
+    <div id="smartEmployeeMessageContent"
+         style="
+           position:relative;
+           z-index:2;
+           width:100%;
+         ">
+
+      <div id="smartEmployeeMessageIcon"
+           style="font-size:55px;margin-bottom:18px">
+        ✨
+      </div>
+
+      <h2 id="smartEmployeeMessageTitle"
+          style="
+            margin:0 0 18px;
+            color:#102b3f;
+            font-size:27px;
+            line-height:1.6;
+          ">
+        عنوان الرسالة
+      </h2>
+
+      <p id="smartEmployeeMessageBody"
+         style="
+           margin:0;
+           color:#526779;
+           font-size:18px;
+           line-height:2;
+           white-space:pre-wrap;
+           overflow-wrap:anywhere;
+         ">
+        نص الرسالة سيظهر هنا.
+      </p>
+
+      <div style="
+        margin-top:25px;
+        color:#82919c;
+        font-size:11px;
+        letter-spacing:1px;
+      ">
+        EL-LITHY GROUP
+      </div>
+
+    </div>
+
+    <!-- زر تأكيد القراءة والإغلاق -->
+    <button id="smartEmployeeMessageDismiss"
+            type="button"
+            style="
+              position:relative;
+              z-index:3;
+              width:min(260px,100%);
+              margin:28px 0 0;
+              padding:14px 20px;
+              border:0;
+              border-radius:12px;
+              background:#102b3f;
+              color:white;
+              font-size:15px;
+              font-weight:bold;
+              cursor:pointer;
+            ">
+      شكرًا ❤️
+    </button>
+
+  </div>
+</div>
+<!-- End EL-LITHY Employee Smart Message -->
 
   <div style="background:#f1f7fa;padding:18px;border-radius:12px;margin-top:20px">
+
     <h3>بيانات الموظف</h3>
     
     <p>الاسم: <strong id="staffName"></strong></p>
@@ -5822,13 +6035,479 @@ showMessage("تم تسجيل الدخول بنجاح.");
     });
 // تنفيذ عمليات الحضور والانصراف والراحة
 
+// ==========================================
+// EMPLOYEE SMART MESSAGE ENGINE
+// ==========================================
 
+let employeeSmartMessageAudioContext = null;
+let activeEmployeeSmartMessageDeliveryId = null;
+
+
+// تجهيز الصوت عند تفاعل الموظف
+function primeEmployeeSmartMessageAudio() {
+
+  try {
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) return;
+
+    if (!employeeSmartMessageAudioContext) {
+      employeeSmartMessageAudioContext =
+        new AudioContextClass();
+    }
+
+    if (employeeSmartMessageAudioContext.state === "suspended") {
+      employeeSmartMessageAudioContext.resume().catch(console.warn);
+    }
+
+  } catch (error) {
+    console.warn("Audio initialization:", error);
+  }
+}
+
+
+// تشغيل صوت الرسالة
+async function playEmployeeSmartMessageSound(soundType) {
+
+  try {
+
+    primeEmployeeSmartMessageAudio();
+
+    const audio = employeeSmartMessageAudioContext;
+
+    if (!audio) return;
+
+    if (audio.state === "suspended") {
+      await audio.resume();
+    }
+
+    const notes = {
+      soft: [659],
+      motivation: [523, 659, 784],
+      celebration: [523, 659, 784, 1046]
+    };
+
+    const frequencies = notes[soundType] || notes.soft;
+
+    frequencies.forEach((frequency, index) => {
+
+      const startTime = audio.currentTime + index * 0.17;
+
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+
+      gain.gain.setValueAtTime(0.0001, startTime);
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.10,
+        startTime + 0.03
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        startTime + 0.22
+      );
+
+      oscillator.connect(gain);
+      gain.connect(audio.destination);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.23);
+
+    });
+
+  } catch (error) {
+    console.warn("Employee message sound:", error);
+  }
+}
+
+
+// إغلاق الرسالة وتسجيل مشاهدتها
+async function closeEmployeeSmartMessage() {
+
+  const overlay = $("smartEmployeeMessageOverlay");
+
+  overlay.style.display = "none";
+  overlay.classList.add("hidden");
+
+  const deliveryId = activeEmployeeSmartMessageDeliveryId;
+  activeEmployeeSmartMessageDeliveryId = null;
+
+  if (!deliveryId) return;
+
+  try {
+
+    const { data: authData } = await db.auth.getUser();
+
+    if (!authData?.user) return;
+
+    const { error } = await db
+      .from("employee_smart_message_deliveries")
+      .update({
+        seen_at: new Date().toISOString()
+      })
+      .eq("id", deliveryId)
+      .eq("employee_id", authData.user.id);
+
+    if (error) throw error;
+
+  } catch (error) {
+    console.warn("Message seen status:", error);
+  }
+}
+
+
+// تشغيل الرسوم المتحركة داخل نافذة الموظف
+function animateEmployeeSmartMessage(animationType) {
+
+  const messageWindow = $("smartEmployeeMessageWindow");
+  const decorations = $("smartEmployeeMessageDecorations");
+
+  decorations.replaceChildren();
+
+  const entranceAnimations = {
+
+    fade: [
+      { opacity: 0.15 },
+      { opacity: 1 }
+    ],
+
+    slide: [
+      { opacity: 0, transform: "translateY(40px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ],
+
+    zoom: [
+      { opacity: 0, transform: "scale(.72)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    pulse: [
+      { transform: "scale(.95)" },
+      { transform: "scale(1.035)" },
+      { transform: "scale(1)" }
+    ],
+
+    confetti: [
+      { opacity: 0, transform: "scale(.9)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    bounce: [
+      { opacity: 0, transform: "translateY(-25px)" },
+      { opacity: 1, transform: "translateY(7px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ],
+
+    fireworks: [
+      { opacity: 0, transform: "scale(.85)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    stars: [
+      { opacity: .3, transform: "scale(.94)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    hearts: [
+      { opacity: 0, transform: "scale(.8)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    balloons: [
+      { opacity: 0, transform: "translateY(25px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ],
+
+    sparkles: [
+      { opacity: .3, transform: "scale(.9)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    ribbons: [
+      { opacity: 0, transform: "rotate(-3deg)" },
+      { opacity: 1, transform: "rotate(0)" }
+    ],
+
+    bubbles: [
+      { opacity: 0, transform: "translateY(20px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ]
+
+  };
+
+  messageWindow.animate(
+    entranceAnimations[animationType] || entranceAnimations.fade,
+    {
+      duration: 1250,
+      easing: "cubic-bezier(.22,.75,.25,1)"
+    }
+  );
+
+  const decorationSets = {
+
+    confetti: ["🎊","🎉","✨","🎈","⭐","🎊","🎉","✨","🌟","🎈","🎊","⭐"],
+
+    fireworks: ["🎆","✨","💥","🌟","🎇","⭐","✨","🎆","💫","🎇","⭐","💥"],
+
+    stars: ["⭐","🌟","✨","✦","💫","🌠","⭐","✨","🌟","💫","✦","⭐"],
+
+    hearts: ["💖","💗","💕","💓","❤️","💞","💘","💝","💖","💕","💗","💞"],
+
+    balloons: ["🎈","🎈","🎉","🎈","⭐","🎈","🎊","🎈","🎈","🎉","🎈","🎈"],
+
+    sparkles: ["✨","🌟","💫","✦","✨","⭐","🌟","💫","✨","✧","⭐","🌟"],
+
+    ribbons: ["🎀","🎗️","🎀","✨","🎊","🎗️","🎀","🎉","🎗️","🎀","✨","🎀"],
+
+    bubbles: ["🫧","○","◦","🫧","○","◦","🫧","○","🫧","◦","○","🫧"]
+
+  };
+
+  const symbols = decorationSets[animationType];
+
+  if (!symbols) return;
+
+  const positions = [
+    [5,12],[17,42],[27,18],
+    [75,13],[87,45],[94,19],
+    [9,76],[22,83],[79,78],
+    [92,72],[40,9],[62,12]
+  ];
+
+  const mobile = window.matchMedia("(max-width:600px)").matches;
+
+  symbols.forEach((symbol, index) => {
+
+    const particle = document.createElement("span");
+    const position = positions[index];
+
+    particle.textContent = symbol;
+
+    particle.style.cssText = `
+      position:absolute;
+      left:${position[0]}%;
+      top:${position[1]}%;
+      font-size:${mobile ? 21 : 29}px;
+      pointer-events:none;
+      user-select:none;
+    `;
+
+    decorations.appendChild(particle);
+
+    const isFloating =
+      animationType === "balloons" ||
+      animationType === "bubbles";
+
+    particle.animate(
+      [
+        {
+          opacity: 0,
+          transform: "translateY(10px) scale(.6) rotate(0deg)"
+        },
+        {
+          opacity: 1,
+          offset: .2,
+          transform: "translateY(-10px) scale(1.1) rotate(20deg)"
+        },
+        {
+          opacity: .9,
+          offset: .7,
+          transform: `translateY(${isFloating ? -65 : -35}px) rotate(100deg)`
+        },
+        {
+          opacity: 0,
+          transform: `translateY(${isFloating ? -120 : -75}px) scale(.7) rotate(180deg)`
+        }
+      ],
+      {
+        duration: isFloating ? 2200 : 1900,
+        delay: (index % 6) * 90,
+        easing: "ease-out",
+        fill: "forwards"
+      }
+    );
+
+  });
+}
+
+
+// عرض الرسالة الخاصة بالموظف
+async function showEmployeeSmartMessage(eventKey) {
+
+  try {
+
+    const { data: authData, error: authError } =
+      await db.auth.getUser();
+
+    if (authError) throw authError;
+
+    const user = authData?.user;
+
+    if (!user) return;
+
+    // تحميل رسالة الموظف لهذه المناسبة
+    const { data: message, error } = await db
+      .from("employee_smart_messages")
+      .select("*")
+      .eq("employee_id", user.id)
+      .eq("event_key", eventKey)
+      .eq("enabled", true)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!message || !message.message_body.trim()) return;
+
+    // تحديد فترة منع التكرار بتوقيت القاهرة
+    const cairoDate = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Africa/Cairo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date());
+
+    const periodKey = cairoDate;
+
+    // حفظ سجل ظهور الرسالة مرة واحدة فقط
+    const deliveryData = {
+      employee_id: user.id,
+      event_key: eventKey,
+      period_key: periodKey,
+      message_title: message.message_title,
+      message_body: message.message_body,
+      visual_style: message.visual_style,
+      animation: message.animation,
+      message_size: message.message_size,
+      accent_color: message.accent_color,
+      sound_enabled: message.sound_enabled,
+      sound_type: message.sound_type
+    };
+
+    const { data: delivery, error: deliveryError } = await db
+      .from("employee_smart_message_deliveries")
+      .insert(deliveryData)
+      .select("id")
+      .single();
+
+    // الرسالة سبق تسجيل ظهورها اليوم
+    if (deliveryError?.code === "23505") {
+      return;
+    }
+
+    if (deliveryError) throw deliveryError;
+
+    activeEmployeeSmartMessageDeliveryId = delivery.id;
+
+    // تجهيز عناصر النافذة
+    const overlay = $("smartEmployeeMessageOverlay");
+    const messageWindow = $("smartEmployeeMessageWindow");
+
+    const title = $("smartEmployeeMessageTitle");
+    const body = $("smartEmployeeMessageBody");
+    const icon = $("smartEmployeeMessageIcon");
+    const decorations = $("smartEmployeeMessageDecorations");
+
+    const backgrounds = {
+      success: "#e7f7ed",
+      bright: "#e5f2ff",
+      motivation: "#fff3df",
+      celebration: "#fff8e7",
+      glass: "rgba(255,255,255,.96)"
+    };
+
+    const icons = {
+      success: "✓",
+      bright: "★",
+      motivation: "🚀",
+      celebration: "🏆",
+      glass: "✨"
+    };
+
+    const color = message.accent_color || "#1c7890";
+
+    title.textContent = message.message_title;
+    body.textContent = message.message_body;
+
+    icon.textContent = icons[message.visual_style] || "✨";
+
+    messageWindow.style.background =
+      backgrounds[message.visual_style] || "#ffffff";
+
+    messageWindow.style.borderColor = color;
+
+    $("smartEmployeeMessageDismiss").style.background = color;
+
+    const mobile = window.matchMedia("(max-width:600px)").matches;
+
+    const sizes = {
+      large: { width: "680px", height: "340px" },
+      xlarge: { width: "760px", height: "390px" },
+      celebrate: { width: "820px", height: "440px" }
+    };
+
+    const selectedSize =
+      sizes[message.message_size] || sizes.large;
+
+    messageWindow.style.width = mobile
+      ? "calc(100vw - 24px)"
+      : `min(${selectedSize.width}, calc(100vw - 36px))`;
+
+    messageWindow.style.minHeight = mobile
+      ? "clamp(300px, 62dvh, 440px)"
+      : selectedSize.height;
+
+    messageWindow.style.maxHeight = "90dvh";
+
+    messageWindow.style.backdropFilter =
+      message.visual_style === "glass"
+        ? "blur(15px)"
+        : "none";
+
+    title.style.color = color;
+    title.style.fontSize = mobile ? "23px" : "28px";
+
+    body.style.fontSize = mobile ? "16px" : "19px";
+
+    decorations.replaceChildren();
+
+    // إظهار النافذة
+    overlay.classList.remove("hidden");
+    overlay.style.display = "flex";
+
+    animateEmployeeSmartMessage(message.animation);
+
+    // تشغيل الصوت إذا اختاره المدير
+    if (message.sound_enabled) {
+      playEmployeeSmartMessageSound(message.sound_type);
+    }
+
+    // ربط الإغلاق
+    $("smartEmployeeMessageClose").onclick =
+      closeEmployeeSmartMessage;
+
+    $("smartEmployeeMessageDismiss").onclick =
+      closeEmployeeSmartMessage;
+
+  } catch (error) {
+
+    console.error("Show employee smart message error:", error);
+
+    // لا نوقف عملية الحضور بسبب مشكلة في الرسالة
+  }
+}
+    
 async function performAttendanceAction(action, buttonId) {
   if (employeePreviewMode) {
     showMessage("المعاينة للعرض فقط. لا يمكن تنفيذ عمليات الحضور أو الانصراف.");
     return;
   }
-
+// تجهيز الصوت بعد تفاعل الموظف مع زر الحضور
+primeEmployeeSmartMessageAudio();
   const button = $(buttonId);
   const status = $("attendanceStatus");
   const locationStatus = $("attendanceLocationStatus");
@@ -5917,7 +6596,8 @@ async function performAttendanceAction(action, buttonId) {
       data.distance_meters + " متر";
 
     showMessage(data.message);
-
+// عرض الرسالة الشخصية بعد نجاح العملية
+await showEmployeeSmartMessage(action);
   } catch (error) {
     console.error(error);
 
