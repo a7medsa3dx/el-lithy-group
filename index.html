@@ -2064,12 +2064,11 @@
         <th style="padding:14px">الهدف</th>
         <th style="padding:14px">نسبة التحقيق</th>
         <th style="padding:14px">العمولة</th>
-        <th style="padding:14px">إجراءات</th>
       </tr>
     </thead>
     <tbody id="monthlySalesBody">
       <tr>
-        <td colspan="8" style="padding:15px;text-align:center">
+        <td colspan="7" style="padding:15px;text-align:center">
           جارٍ تحميل الأداء الشهري...
         </td>
       </tr>
@@ -2077,6 +2076,122 @@
   </table>
 </div>
 </div>
+      <!-- إدارة أهداف الموظفين -->
+<div id="employeeTargetManagementPanel" style="
+  margin-top:25px;
+  padding:22px;
+  background:#ffffff;
+  border:1px solid #dce6ef;
+  border-radius:16px;
+  box-shadow:0 5px 18px rgba(16,43,63,.05);
+">
+
+  <h3 style="margin:0 0 8px;color:#102b3f">
+    🎯 إدارة أهداف الموظفين
+  </h3>
+
+  <p style="margin:0 0 20px;color:#718096;font-size:13px;line-height:1.8">
+    اختر الموظف وحدد هدفه الشهري. سيتم تطبيق التعديل على الشهر المحدد في لوحة المبيعات.
+  </p>
+
+  <div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+  ">
+
+    <div>
+      <label for="employeeTargetManagerSelect">
+        <strong>اختيار الموظف</strong>
+      </label>
+
+      <select id="employeeTargetManagerSelect"
+        style="
+          width:100%;
+          padding:13px;
+          margin-top:8px;
+          border:1px solid #dce4eb;
+          border-radius:10px;
+          background:#f8fafc;
+          font-size:14px;
+        ">
+        <option value="">اختر الموظف</option>
+      </select>
+    </div>
+
+    <div>
+      <label>
+        <strong>الهدف الشهري الحالي</strong>
+      </label>
+
+      <div id="employeeTargetManagerCurrent"
+        style="
+          padding:13px;
+          margin-top:8px;
+          background:#f1f7fa;
+          border:1px solid #e1eaf0;
+          border-radius:10px;
+          color:#173b55;
+          font-weight:bold;
+          min-height:45px;
+        ">
+        اختر الموظف أولاً
+      </div>
+    </div>
+
+    <div>
+      <label for="employeeTargetManagerAmount">
+        <strong>الهدف الشهري الجديد بالجنيه</strong>
+      </label>
+
+      <input
+        id="employeeTargetManagerAmount"
+        type="number"
+        min="0.01"
+        step="0.01"
+        placeholder="أدخل الهدف الجديد"
+        style="
+          width:100%;
+          padding:13px;
+          margin-top:8px;
+          border:1px solid #dce4eb;
+          border-radius:10px;
+          font-size:14px;
+        ">
+    </div>
+
+  </div>
+
+  <button
+    id="saveEmployeeTargetManagerButton"
+    type="button"
+    style="
+      width:100%;
+      margin-top:20px;
+      padding:14px;
+      background:linear-gradient(135deg,#102b3f,#1c7890);
+      color:white;
+      border:0;
+      border-radius:10px;
+      font-size:15px;
+      font-weight:bold;
+      cursor:pointer;
+    ">
+    حفظ الهدف
+  </button>
+
+  <p id="employeeTargetManagerStatus"
+    style="
+      margin:12px 0 0;
+      text-align:center;
+      font-size:13px;
+      line-height:1.8;
+      color:#718096;
+    ">
+  </p>
+
+</div>
+<!-- نهاية إدارة أهداف الموظفين -->
 <!-- مراجعة مبيعات الموظفين -->
 <div id="employeeSalesReviewPanel" style="
   margin-top:28px;
@@ -5168,7 +5283,149 @@ async function loadMonthlySalesPerformance() {
       .order("employee_code");
 
     if (employeesError) throw employeesError;
+// تجهيز صندوق إدارة أهداف الموظفين
+const targetSelect = $("employeeTargetManagerSelect");
+const targetCurrent = $("employeeTargetManagerCurrent");
+const targetInput = $("employeeTargetManagerAmount");
+const targetStatus = $("employeeTargetManagerStatus");
+const targetSaveButton = $("saveEmployeeTargetManagerButton");
 
+// استبعاد أحمد حجازي وفق النظام السابق
+const eligibleEmployees = (employees || []).filter(
+  employee => employee.employee_code !== "EMP002"
+);
+
+// الاحتفاظ بالموظف المختار عند تحديث البيانات
+const previousEmployeeId = targetSelect.value;
+
+// تجهيز قائمة الموظفين
+targetSelect.replaceChildren();
+
+const defaultOption = document.createElement("option");
+defaultOption.value = "";
+defaultOption.textContent = "اختر الموظف";
+targetSelect.appendChild(defaultOption);
+
+eligibleEmployees.forEach(employee => {
+  const option = document.createElement("option");
+
+  option.value = employee.employee_id;
+  option.textContent =
+    employee.employee_code + " - " + employee.full_name;
+
+  targetSelect.appendChild(option);
+});
+
+if (eligibleEmployees.some(
+  employee => String(employee.employee_id) === previousEmployeeId
+)) {
+  targetSelect.value = previousEmployeeId;
+}
+
+// عرض الهدف الحالي عند اختيار الموظف
+function updateEmployeeTargetFields() {
+  const employee = eligibleEmployees.find(
+    item => String(item.employee_id) === targetSelect.value
+  );
+
+  if (!employee) {
+    targetCurrent.textContent = "اختر الموظف أولاً";
+    targetInput.value = "";
+    return;
+  }
+
+  const currentTarget = Number(employee.target_amount || 0);
+
+  targetCurrent.textContent =
+    currentTarget > 0
+      ? formatMoney(currentTarget)
+      : "لا يوجد هدف محدد لهذا الشهر";
+
+  targetInput.value =
+    currentTarget > 0 ? currentTarget : "";
+}
+
+targetSelect.onchange = () => {
+  updateEmployeeTargetFields();
+  targetStatus.textContent = "";
+};
+
+updateEmployeeTargetFields();
+
+// حفظ الهدف الشهري
+targetSaveButton.onclick = async () => {
+
+  const employee = eligibleEmployees.find(
+    item => String(item.employee_id) === targetSelect.value
+  );
+
+  const selectedMonth = $("salesMonth").value;
+  const amount = Number(targetInput.value);
+
+  if (!employee) {
+    targetStatus.textContent = "من فضلك اختر الموظف أولاً.";
+    targetStatus.style.color = "#c0392b";
+    return;
+  }
+
+  if (!selectedMonth) {
+    targetStatus.textContent = "اختر الشهر المطلوب أولاً.";
+    targetStatus.style.color = "#c0392b";
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    targetStatus.textContent =
+      "أدخل هدفًا صحيحًا أكبر من صفر.";
+
+    targetStatus.style.color = "#c0392b";
+    return;
+  }
+
+  targetSaveButton.disabled = true;
+  targetSaveButton.textContent = "جارٍ حفظ الهدف...";
+
+  try {
+
+    const { error } = await db
+      .from("monthly_employee_targets")
+      .upsert(
+        {
+          employee_id: employee.employee_id,
+          month_start: selectedMonth + "-01",
+          target_amount: amount
+        },
+        {
+          onConflict: "employee_id,month_start"
+        }
+      );
+
+    if (error) throw error;
+
+    await loadMonthlySalesPerformance();
+
+    targetStatus.textContent =
+      "تم تحديث هدف " + employee.full_name + " بنجاح.";
+
+    targetStatus.style.color = "#16865f";
+
+    showMessage("تم تحديث هدف الموظف بنجاح.");
+
+  } catch (error) {
+
+    console.error("Employee target update error:", error);
+
+    targetStatus.textContent =
+      error.message || "تعذر حفظ الهدف.";
+
+    targetStatus.style.color = "#c0392b";
+
+  } finally {
+
+    targetSaveButton.disabled = false;
+    targetSaveButton.textContent = "حفظ الهدف";
+  }
+};
     // حساب مبيعات Plus وTriple Zero للشهر المختار
     const [year, monthNumber] = month.split("-").map(Number);
 
@@ -5298,27 +5555,28 @@ if (employeeTargetsTotal === companyTarget) {
 employees.forEach(employee => {
   const row = body.insertRow();
 
-const values = [
-  employee.full_name,
-  formatMoney(employee.total_sales),
+  const values = [
+    employee.full_name,
+    formatMoney(employee.total_sales),
 
-  `${formatMoney(employee.plus_sales)} (${Number(employee.plus_count || 0).toLocaleString("ar-EG-u-nu-latn")} عملية)`,
+    `${formatMoney(employee.plus_sales)} (${Number(employee.plus_count || 0).toLocaleString("ar-EG-u-nu-latn")} عملية)`,
 
-  `${formatMoney(employee.triple_zero_sales)} (${Number(employee.triple_zero_count || 0).toLocaleString("ar-EG-u-nu-latn")} عملية)`,
+    `${formatMoney(employee.triple_zero_sales)} (${Number(employee.triple_zero_count || 0).toLocaleString("ar-EG-u-nu-latn")} عملية)`,
 
-  employee.target_amount
-    ? formatMoney(employee.target_amount)
-    : "بدون هدف",
+    employee.target_amount
+      ? formatMoney(employee.target_amount)
+      : "بدون هدف",
 
-  employee.achievement_percentage == null
-    ? "—"
-    : Number(employee.achievement_percentage).toLocaleString("ar-EG-u-nu-latn") + "%",
+    employee.achievement_percentage == null
+      ? "—"
+      : Number(employee.achievement_percentage).toLocaleString("ar-EG-u-nu-latn") + "%",
 
-  formatMoney(employee.commission_amount)
-];
+    formatMoney(employee.commission_amount)
+  ];
 
-    values.forEach((value, index) => {
+  values.forEach((value, index) => {
     const cell = row.insertCell();
+
     cell.style.padding = "12px";
     cell.style.textAlign = "center";
     cell.style.borderBottom = "1px solid #dce4eb";
@@ -5337,17 +5595,22 @@ const values = [
     const progress = Math.max(0, Math.min(100, percentage));
 
     const label = document.createElement("div");
+
     label.textContent =
       percentage.toLocaleString("ar-EG-u-nu-latn") + "%";
+
     label.style.fontWeight = "bold";
     label.style.marginBottom = "8px";
-    label.style.color = percentage >= 100 ? "#16865f" : "#3478c8";
+    label.style.color =
+      percentage >= 100 ? "#16865f" : "#3478c8";
 
     const track = document.createElement("div");
+
     track.style.cssText =
       "height:9px;background:#e8eef5;border-radius:20px;overflow:hidden;min-width:90px";
 
     const bar = document.createElement("div");
+
     bar.style.cssText =
       "height:100%;width:" + progress +
       "%;background:" +
@@ -5355,67 +5618,9 @@ const values = [
       ";border-radius:20px;transition:width .5s";
 
     track.appendChild(bar);
-    cell.appendChild(label);
-    cell.appendChild(track);
+    cell.append(label, track);
   });
-  const actionCell = row.insertCell();
-  actionCell.style.textAlign = "center";
-  actionCell.style.padding = "12px";
-
-  if (employee.employee_code !== "EMP002") {
-    const editButton = document.createElement("button");
-    editButton.textContent = "تعديل الهدف";
-    editButton.style.cssText =
-      "padding:8px 12px;background:#173b55;color:white;border:0;border-radius:7px;cursor:pointer";
-
-    editButton.addEventListener("click", async () => {
-      const newTarget = prompt(
-        "أدخل الهدف الشهري الجديد للموظف " + employee.full_name,
-        employee.target_amount || ""
-      );
-
-      if (newTarget === null) return;
-
-      const amount = Number(newTarget.replace(/,/g, ""));
-
-      if (!Number.isFinite(amount) || amount <= 0) {
-        showMessage("أدخل مبلغًا صحيحًا أكبر من صفر.");
-        return;
-      }
-
-      editButton.disabled = true;
-
-      try {
-        const { error } = await db
-          .from("monthly_employee_targets")
-          .upsert(
-            {
-              employee_id: employee.employee_id,
-              month_start: monthStart,
-              target_amount: amount
-            },
-            { onConflict: "employee_id,month_start" }
-          );
-
-        if (error) throw error;
-
-        await loadMonthlySalesPerformance();
-        showMessage("تم تحديث هدف الموظف بنجاح.");
-
-      } catch (error) {
-        console.error("Employee target update error:", error);
-        showMessage(error.message || "تعذر تحديث هدف الموظف.");
-      } finally {
-        editButton.disabled = false;
-      }
-    });
-
-    actionCell.appendChild(editButton);
-  } else {
-    actionCell.textContent = "بدون هدف";
-  }
 });
-
 
   } catch (error) {
     console.error("Monthly sales error:", error);
