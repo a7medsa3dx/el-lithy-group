@@ -6717,6 +6717,160 @@ async function loadEmployeeAttendanceSmartMessages(profile) {
 
   }
 }
+
+    // ==========================================
+// EMPLOYEE ATTENDANCE ACTION
+// ==========================================
+
+async function performAttendanceAction(action, buttonId) {
+
+  if (employeePreviewMode) {
+    showMessage("المعاينة للعرض فقط. لا يمكن تنفيذ عمليات الحضور أو الانصراف.");
+    return;
+  }
+
+  // تجهيز الصوت بعد تفاعل الموظف
+  primeEmployeeSmartMessageAudio();
+
+  const button = $(buttonId);
+  const status = $("attendanceStatus");
+  const locationStatus = $("attendanceLocationStatus");
+
+  const labels = {
+    check_in: "تسجيل الحضور",
+    break_start: "بدء الراحة",
+    break_end: "إنهاء الراحة",
+    check_out: "تسجيل الانصراف"
+  };
+
+  const successLabels = {
+    check_in: "تم تسجيل الحضور بنجاح",
+    break_start: "تم بدء الراحة بنجاح",
+    break_end: "تم إنهاء الراحة بنجاح",
+    check_out: "تم تسجيل الانصراف بنجاح"
+  };
+
+  let succeeded = false;
+
+  button.disabled = true;
+  button.textContent = "⏳ جارٍ تحديد الموقع...";
+  button.style.backgroundColor = "#2563eb";
+  button.style.color = "#ffffff";
+
+  status.textContent = "⏳ جارٍ تنفيذ العملية...";
+  status.style.color = "#2563eb";
+
+  try {
+
+    if (!navigator.geolocation) {
+      throw new Error("المتصفح لا يدعم تحديد الموقع.");
+    }
+
+    const position = await new Promise((resolve, reject) => {
+
+      navigator.geolocation.getCurrentPosition(
+        resolve,
+
+        error => {
+          reject(new Error(
+            error.code === 1
+              ? "يجب السماح للموقع بالوصول إلى GPS."
+              : "تعذر تحديد موقعك. حاول مرة أخرى."
+          ));
+        },
+
+        {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0
+        }
+      );
+
+    });
+
+    locationStatus.textContent =
+      "📍 تم تحديد موقعك، جارٍ تسجيل العملية...";
+
+    button.textContent = "⏳ جارٍ التسجيل...";
+
+    const { data, error } = await db.functions.invoke(
+      "employee-attendance",
+      {
+        body: {
+          action,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        }
+      }
+    );
+
+    if (error) throw error;
+
+    if (!data?.success) {
+      throw new Error(data?.error || "تعذر تنفيذ العملية.");
+    }
+
+    succeeded = true;
+
+    button.textContent = "✓ " + successLabels[action];
+    button.style.backgroundColor = "#15803d";
+    button.style.color = "#ffffff";
+
+    status.textContent = "✅ " + data.message;
+    status.style.color = "#15803d";
+
+    locationStatus.textContent =
+      "📍 المسافة من مقر الشركة: " +
+      data.distance_meters + " متر";
+
+    showMessage(data.message);
+
+    // عرض الرسالة الشخصية بعد نجاح التسجيل
+    await showEmployeeSmartMessage(action);
+
+  } catch (error) {
+
+    console.error("Attendance action error:", error);
+
+    let message = error.message ||
+      "حدث خطأ أثناء تسجيل العملية.";
+
+    if (
+      error.context &&
+      typeof error.context.json === "function"
+    ) {
+
+      try {
+        const details = await error.context.json();
+        message = details.error || message;
+      } catch (_) {}
+
+    }
+
+    button.textContent =
+      "↻ إعادة المحاولة - " + labels[action];
+
+    button.style.backgroundColor = "#b91c1c";
+    button.style.color = "#ffffff";
+
+    status.textContent = "❌ " + message;
+    status.style.color = "#b91c1c";
+
+    locationStatus.textContent =
+      "لم يتم تأكيد تسجيل العملية.";
+
+    showMessage(message);
+
+  } finally {
+
+    if (!succeeded) {
+      button.disabled = false;
+    }
+
+  }
+
+}
     
 // ربط أزرار لوحة الموظف
 $("checkInButton").addEventListener("click", () => {
