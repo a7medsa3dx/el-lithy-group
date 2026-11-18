@@ -2146,9 +2146,24 @@
   </div>
 
   <button id="backFromEmploymentTermsButton"
-          type="button" style="margin-top:20px">
-    العودة إلى لوحة المدير
-  </button>
+        type="button"
+        style="
+          display:block;
+          width:100%;
+          min-height:50px;
+          margin-top:20px;
+          padding:14px;
+          background:#64748b;
+          color:white;
+          border:0;
+          border-radius:10px;
+          cursor:pointer;
+          touch-action:manipulation;
+          position:relative;
+          z-index:10;
+        ">
+  العودة إلى لوحة المدير
+</button>
 
 </section>
 
@@ -6836,9 +6851,27 @@ $("openEmploymentTermsButton").addEventListener("click", async () => {
 
 });
 
-$("backFromEmploymentTermsButton").addEventListener("click", () => {
-  showSection("dashboardSection");
-});
+// الرجوع من العقود والاتفاقات الوظيفية
+const employmentBackButton = $("backFromEmploymentTermsButton");
+
+if (employmentBackButton) {
+
+  employmentBackButton.type = "button";
+
+  employmentBackButton.onclick = function(event) {
+
+    event.preventDefault();
+
+    showSection("dashboardSection");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  };
+
+}
     
 // ==========================================
 // EL-LITHY SMART MESSAGES - BUTTON EVENTS
