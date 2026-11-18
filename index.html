@@ -2976,7 +2976,24 @@
       ">
       💾 حفظ إعدادات الرسالة
     </button>
-
+    
+<button id="deleteSmartMessageButton"
+  type="button"
+  style="
+    width:100%;
+    margin-top:12px;
+    padding:14px;
+    background:#b91c1c;
+    color:white;
+    border:0;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+  🗑️ حذف الرسالة نهائيًا
+</button>
+    
     <p id="smartMessageStatus"
       style="margin:13px 0 0;text-align:center;color:#718096;font-size:13px;line-height:1.8">
     </p>
@@ -6803,6 +6820,87 @@ $("saveSmartMessageButton").addEventListener("click", async () => {
 
 });
 
+    // حذف رسالة الموظف المحدد
+$("deleteSmartMessageButton").addEventListener("click", async () => {
+
+  const employeeId = $("smartMessageEmployee").value;
+  const eventKey = $("smartMessageEvent").value;
+
+  const status = $("smartMessageStatus");
+  const button = $("deleteSmartMessageButton");
+
+  if (!employeeId || !eventKey) {
+    status.textContent = "اختر الموظف والمناسبة أولاً.";
+    status.style.color = "#c0392b";
+    return;
+  }
+
+  const employeeName =
+    $("smartMessageEmployee").selectedOptions[0].textContent;
+
+  if (!confirm(
+    "هل أنت متأكد من حذف الرسالة المحفوظة للموظف " +
+    employeeName +
+    " في هذه المناسبة نهائيًا؟"
+  )) {
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "جارٍ حذف الرسالة...";
+
+  try {
+
+    const { data, error } = await db
+      .from("employee_smart_messages")
+      .delete()
+      .eq("employee_id", employeeId)
+      .eq("event_key", eventKey)
+      .select("id");
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      status.textContent = "لا توجد رسالة محفوظة لحذفها.";
+      status.style.color = "#b7791f";
+      return;
+    }
+
+    // تفريغ بيانات الرسالة من لوحة الإدارة
+    $("smartMessageTitle").value = "";
+    $("smartMessageBody").value = "";
+
+    $("smartMessageEnabled").checked = true;
+    $("smartMessageStyle").value = "success";
+    $("smartMessageAnimation").value = "fade";
+    $("smartMessageSize").value = "large";
+    $("smartMessageColor").value = "#1c7890";
+    $("smartMessageSoundEnabled").checked = true;
+    $("smartMessageSoundType").value = "soft";
+
+    updateSmartMessagePreview();
+
+    status.textContent = "تم حذف إعداد الرسالة بنجاح.";
+    status.style.color = "#16865f";
+
+  } catch (error) {
+
+    console.error("Delete smart message error:", error);
+
+    status.textContent =
+      error.message || "تعذر حذف الرسالة.";
+
+    status.style.color = "#c0392b";
+
+  } finally {
+
+    button.disabled = false;
+    button.textContent = "🗑️ حذف الرسالة نهائيًا";
+
+  }
+
+});
+    
     // تعديل الهدف الشهري للشركة
 $("editCompanyTargetButton").addEventListener("click", async () => {
   const month = $("salesMonth").value;
