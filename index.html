@@ -2686,13 +2686,19 @@
         <select id="smartMessageAnimation"
           style="width:100%;padding:13px;border:1px solid #dce4eb;border-radius:10px">
 
-          <option value="fade">ظهور تدريجي</option>
-          <option value="slide">انزلاق أنيق</option>
-          <option value="zoom">تكبير سينمائي</option>
-          <option value="pulse">نبض مضيء</option>
-          <option value="confetti">احتفال بالقصاصات</option>
-          <option value="bounce">حركة ارتداد ناعمة</option>
-
+         <option value="fade">🌫️ ظهور تدريجي ناعم</option>
+<option value="slide">➡️ انزلاق أنيق</option>
+<option value="zoom">🔍 تكبير سينمائي</option>
+<option value="pulse">💓 نبض مضيء</option>
+<option value="confetti">🎊 قصاصات ملونة</option>
+<option value="bounce">✨ ارتداد ناعم</option>
+<option value="fireworks">🎆 ألعاب نارية</option>
+<option value="stars">⭐ نجوم متلألئة</option>
+<option value="hearts">💖 قلوب متحركة</option>
+<option value="balloons">🎈 بالونات احتفالية</option>
+<option value="sparkles">🌟 لمعات ذهبية</option>
+<option value="ribbons">🎀 شرائط احتفالية</option>
+<option value="bubbles">🫧 فقاعات متحركة</option>
         </select>
       </div>
 
@@ -2801,19 +2807,25 @@
     </p>
 
     <div id="smartMessagePreview"
-      style="
-        min-height:170px;
-        padding:25px;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        text-align:center;
-        background:white;
-        border:2px solid #1c7890;
-        border-radius:18px;
-        box-shadow:0 8px 25px rgba(16,43,63,.08);
-      ">
+    style="
+  position:relative;
+  width:100%;
+  min-height:320px;
+  padding:40px 25px;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  background:white;
+  border:2px solid #1c7890;
+  border-radius:22px;
+  box-shadow:0 10px 35px rgba(16,43,63,.10);
+  overflow:hidden;
+  isolation:isolate;
+"
+      >
 
       <div style="font-size:38px;margin-bottom:12px">
         ✨
@@ -3574,30 +3586,48 @@ function updateSmartMessagePreview() {
   iconsContainer.textContent = icons[style] || "✨";
 
   previewTitle.textContent = title || "عنوان الرسالة";
-  previewBody.textContent = body || "ستظهر معاينة نص الرسالة هنا.";
+  previewBody.textContent =
+    body || "ستظهر معاينة نص الرسالة هنا.";
 
-  preview.style.background = backgrounds[style] || "#ffffff";
+  preview.style.background =
+    backgrounds[style] || "#ffffff";
+
   preview.style.borderColor = color;
+
   preview.style.boxShadow =
-    "0 8px 28px " + color + "30";
+    "0 10px 35px " + color + "30";
+
+  const isMobile = window.matchMedia(
+    "(max-width: 600px)"
+  ).matches;
+
+  const heights = {
+    large: isMobile ? 280 : 340,
+    xlarge: isMobile ? 330 : 390,
+    celebrate: isMobile ? 370 : 440
+  };
 
   preview.style.minHeight =
-    size === "celebrate" ? "270px" :
-    size === "xlarge" ? "230px" : "170px";
+    (heights[size] || heights.large) + "px";
+
+  preview.style.padding =
+    isMobile ? "30px 17px" : "40px 25px";
 
   previewTitle.style.color = color;
+
   previewTitle.style.fontSize =
-    size === "celebrate" ? "30px" :
-    size === "xlarge" ? "26px" : "21px";
+    isMobile
+      ? (size === "celebrate" ? "25px" : "21px")
+      : (size === "celebrate" ? "32px" : "25px");
 
   previewBody.style.fontSize =
-    size === "celebrate" ? "18px" :
-    size === "xlarge" ? "16px" : "14px";
+    size === "celebrate" ? "17px" : "15px";
+
+  previewBody.style.lineHeight = "2";
 
   preview.style.borderRadius =
-    style === "glass" ? "25px" : "18px";
+    style === "glass" ? "25px" : "22px";
 }
-
 
 // تحريك معاينة الرسالة
 function animateSmartMessagePreview() {
@@ -3605,94 +3635,235 @@ function animateSmartMessagePreview() {
   const preview = $("smartMessagePreview");
   const animation = $("smartMessageAnimation").value;
 
-  const animations = {
+  // إزالة الرسوم السابقة
+  preview.querySelectorAll(".smart-message-decoration")
+    .forEach(element => element.remove());
+
+  preview.getAnimations().forEach(item => item.cancel());
+
+  // حركات دخول الرسالة
+  const entranceAnimations = {
+
     fade: [
-      { opacity: 0.2 },
+      { opacity: 0.15 },
       { opacity: 1 }
     ],
 
     slide: [
-      { opacity: 0, transform: "translateY(35px)" },
+      { opacity: 0, transform: "translateY(45px)" },
       { opacity: 1, transform: "translateY(0)" }
     ],
 
     zoom: [
-      { opacity: 0, transform: "scale(.65)" },
+      { opacity: 0, transform: "scale(.72)" },
       { opacity: 1, transform: "scale(1)" }
     ],
 
     pulse: [
-      { transform: "scale(.96)" },
-      { transform: "scale(1.04)" },
+      { transform: "scale(.95)" },
+      { transform: "scale(1.035)" },
       { transform: "scale(1)" }
     ],
 
     confetti: [
-      { opacity: 0, transform: "scale(.8) rotate(-3deg)" },
-      { opacity: 1, transform: "scale(1.04) rotate(2deg)" },
-      { opacity: 1, transform: "scale(1) rotate(0deg)" }
+      { opacity: 0, transform: "translateY(25px) scale(.92)" },
+      { opacity: 1, transform: "translateY(0) scale(1)" }
     ],
 
     bounce: [
       { opacity: 0, transform: "translateY(-30px)" },
-      { opacity: 1, transform: "translateY(8px)" },
+      { opacity: 1, transform: "translateY(7px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ],
+
+    fireworks: [
+      { opacity: 0, transform: "scale(.85)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    stars: [
+      { opacity: .3, transform: "scale(.94)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    hearts: [
+      { opacity: 0, transform: "translateY(20px) scale(.8)" },
+      { opacity: 1, transform: "translateY(0) scale(1)" }
+    ],
+
+    balloons: [
+      { opacity: 0, transform: "translateY(35px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ],
+
+    sparkles: [
+      { opacity: .3, transform: "scale(.9)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    ribbons: [
+      { opacity: 0, transform: "rotate(-3deg) scale(.92)" },
+      { opacity: 1, transform: "rotate(0) scale(1)" }
+    ],
+
+    bubbles: [
+      { opacity: 0, transform: "translateY(25px)" },
       { opacity: 1, transform: "translateY(0)" }
     ]
+
   };
 
+  // مدة دخول الرسالة: أهدأ وأكثر سلاسة
   preview.animate(
-    animations[animation] || animations.fade,
+    entranceAnimations[animation] || entranceAnimations.fade,
     {
-      duration: 700,
-      easing: "cubic-bezier(.2,.8,.2,1)"
+      duration: 1250,
+      easing: "cubic-bezier(.22,.75,.25,1)",
+      fill: "both"
     }
   );
 
-  // قصاصات احتفالية إضافية
-  if (animation === "confetti") {
+  // الرسوميات الخاصة بكل حركة
+  const decorationSets = {
 
-    const decorations = ["🎉", "✨", "🎊", "⭐", "🏆"];
+    confetti: [
+      "🎊","🎉","✨","🎈","⭐","🎊","🎉",
+      "✨","🌟","🎈","🎊","⭐","🎉","✨"
+    ],
 
-    decorations.forEach((symbol, index) => {
+    fireworks: [
+      "🎆","✨","💥","🌟","🎇","⭐",
+      "✨","🎆","💫","🎇","⭐","💥"
+    ],
 
-      const particle = document.createElement("span");
+    stars: [
+      "⭐","🌟","✨","✦","💫","🌠",
+      "⭐","✨","🌟","💫","✦","⭐"
+    ],
 
-      particle.textContent = symbol;
+    hearts: [
+      "💖","💗","💕","💓","❤️","💞",
+      "💘","💝","💖","💕","💗","💞"
+    ],
 
-      particle.style.cssText = `
-        position:absolute;
-        z-index:5;
-        pointer-events:none;
-        font-size:25px;
-        top:10px;
-        left:${10 + index * 17}%;
-      `;
+    balloons: [
+      "🎈","🎈","🎉","🎈","⭐","🎈",
+      "🎊","🎈","🎈","🎉","🎈","🎈"
+    ],
 
-      preview.style.position = "relative";
-      preview.appendChild(particle);
+    sparkles: [
+      "✨","🌟","💫","✦","✨","⭐",
+      "🌟","💫","✨","✧","⭐","🌟"
+    ],
 
-      particle.animate(
-        [
-          {
-            transform: "translateY(0) rotate(0)",
-            opacity: 1
-          },
-          {
-            transform: "translateY(100px) rotate(220deg)",
-            opacity: 0
-          }
-        ],
+    ribbons: [
+      "🎀","🎗️","🎀","✨","🎊","🎗️",
+      "🎀","🎉","🎗️","🎀","✨","🎀"
+    ],
+
+    bubbles: [
+      "🫧","○","◦","🫧","○","◦",
+      "🫧","○","🫧","◦","○","🫧"
+    ]
+
+  };
+
+  const symbols = decorationSets[animation];
+
+  if (!symbols) return;
+
+  // توزيع الرسوم داخل مساحة المعاينة
+  const positions = [
+    [5, 12], [16, 45], [26, 18],
+    [74, 13], [86, 48], [95, 18],
+    [8, 76], [21, 83], [79, 78],
+    [92, 72], [39, 9], [62, 12],
+    [35, 86], [66, 87], [13, 28],
+    [87, 28], [47, 7], [55, 90]
+  ];
+
+  const isMobile = window.matchMedia(
+    "(max-width: 600px)"
+  ).matches;
+
+  symbols.forEach((symbol, index) => {
+
+    const position = positions[index % positions.length];
+
+    const particle = document.createElement("span");
+
+    particle.className = "smart-message-decoration";
+    particle.textContent = symbol;
+    particle.setAttribute("aria-hidden", "true");
+
+    const side = index % 2 === 0 ? -1 : 1;
+
+    particle.style.cssText = `
+      position:absolute;
+      z-index:3;
+      pointer-events:none;
+      user-select:none;
+      left:${position[0]}%;
+      top:${position[1]}%;
+      font-size:${isMobile ? 19 + (index % 3) * 3 : 23 + (index % 3) * 5}px;
+      line-height:1;
+      will-change:transform,opacity;
+    `;
+
+    preview.appendChild(particle);
+
+    const duration =
+      animation === "fireworks" ? 1850 :
+      animation === "bubbles" ? 2100 :
+      animation === "balloons" ? 2200 :
+      1900;
+
+    const startDelay = (index % 6) * 75;
+
+    const finalX = side * (30 + (index % 4) * 13);
+
+    const finalY =
+      animation === "bubbles" || animation === "balloons"
+        ? -125 - (index % 4) * 12
+        : -80 - (index % 4) * 15;
+
+    particle.animate(
+      [
         {
-          duration: 1200,
-          easing: "ease-out"
+          opacity: 0,
+          transform: "translate(0,0) scale(.55) rotate(0deg)"
+        },
+        {
+          opacity: 1,
+          offset: .18,
+          transform: `translate(${side * 8}px,-12px) scale(1.1) rotate(15deg)`
+        },
+        {
+          opacity: .9,
+          offset: .7,
+          transform: `translate(${finalX * .65}px,${finalY * .65}px) scale(1.05) rotate(80deg)`
+        },
+        {
+          opacity: 0,
+          transform: `translate(${finalX}px,${finalY}px) scale(.7) rotate(150deg)`
         }
-      );
+      ],
+      {
+        duration,
+        delay: startDelay,
+        easing: "ease-out",
+        fill: "forwards"
+      }
+    );
 
-      setTimeout(() => particle.remove(), 1300);
-    });
-  }
+    // تنظيف الرسوم بعد انتهاء الحركة
+    setTimeout(() => {
+      particle.remove();
+    }, duration + startDelay + 100);
+
+  });
+
 }
-
 
 // تشغيل نغمة المعاينة
 async function playSmartMessageSound() {
