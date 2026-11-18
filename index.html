@@ -1332,7 +1332,193 @@
     font-size: 16px;
   }
 }
+/* ===== EL-LITHY Modern Employee Performance Table ===== */
 
+#monthlyEmployeePerformanceTable {
+  width: 100%;
+  min-width: 1120px;
+  table-layout: fixed;
+  direction: rtl;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+#monthlyEmployeePerformanceTable thead th {
+  background: linear-gradient(120deg, #102b3f, #176477) !important;
+  color: #ffffff !important;
+  padding: 17px 11px !important;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+  text-align: center;
+  vertical-align: middle;
+  white-space: normal;
+  border: none;
+}
+
+#monthlyEmployeePerformanceTable tbody td {
+  padding: 16px 11px !important;
+  text-align: center !important;
+  vertical-align: middle;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #334155;
+  border-bottom: 1px solid #edf1f5;
+  overflow-wrap: normal;
+}
+
+#monthlyEmployeePerformanceTable tbody tr {
+  transition: background .2s ease;
+}
+
+#monthlyEmployeePerformanceTable tbody tr:nth-child(even) {
+  background: #f7fafc;
+}
+
+#monthlyEmployeePerformanceTable tbody tr:hover {
+  background: #eaf4f7 !important;
+}
+
+/* توزيع الأعمدة */
+#monthlyEmployeePerformanceTable th:nth-child(1),
+#monthlyEmployeePerformanceTable td:nth-child(1) {
+  width: 14%;
+  text-align: right !important;
+  font-weight: 700;
+  color: #102b3f;
+}
+
+#monthlyEmployeePerformanceTable th:nth-child(2),
+#monthlyEmployeePerformanceTable td:nth-child(2) {
+  width: 16%;
+  font-weight: 700;
+}
+
+#monthlyEmployeePerformanceTable th:nth-child(3),
+#monthlyEmployeePerformanceTable td:nth-child(3) {
+  width: 15%;
+}
+
+#monthlyEmployeePerformanceTable th:nth-child(4),
+#monthlyEmployeePerformanceTable td:nth-child(4) {
+  width: 18%;
+}
+
+#monthlyEmployeePerformanceTable th:nth-child(5),
+#monthlyEmployeePerformanceTable td:nth-child(5) {
+  width: 13%;
+}
+
+#monthlyEmployeePerformanceTable th:nth-child(6),
+#monthlyEmployeePerformanceTable td:nth-child(6) {
+  width: 14%;
+}
+
+#monthlyEmployeePerformanceTable th:nth-child(7),
+#monthlyEmployeePerformanceTable td:nth-child(7) {
+  width: 10%;
+  font-weight: 700;
+}
+
+/* تحسين وضوح الأرقام */
+#monthlyEmployeePerformanceTable tbody td {
+  font-feature-settings: "tnum";
+}
+
+/* الهواتف والأجهزة الصغيرة */
+@media (max-width: 600px) {
+  #monthlyEmployeePerformanceTable {
+    min-width: 1120px;
+  }
+
+  #monthlyEmployeePerformanceTable thead th {
+    padding: 13px 9px !important;
+    font-size: 12px;
+  }
+
+  #monthlyEmployeePerformanceTable tbody td {
+    padding: 13px 9px !important;
+    font-size: 12px;
+  }
+}
+    /* ===== Employee Target Fields Alignment ===== */
+
+.employee-target-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.employee-target-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.employee-target-field label {
+  display: flex;
+  align-items: flex-end;
+  min-height: 42px;
+  margin: 0 0 9px !important;
+  color: #405b6b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.employee-target-field select,
+.employee-target-field input,
+#employeeTargetManagerCurrent {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  margin: 0 !important;
+  padding: 0 13px !important;
+  box-sizing: border-box;
+  border: 1px solid #dce4eb;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #173b55;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.employee-target-field select,
+.employee-target-field input {
+  display: block;
+}
+
+#employeeTargetManagerCurrent {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  font-weight: 700;
+}
+
+.employee-target-field input:focus,
+.employee-target-field select:focus {
+  outline: none;
+  border-color: #1c7890;
+  box-shadow: 0 0 0 3px #1c789018;
+}
+
+@media (max-width: 700px) {
+  .employee-target-fields-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .employee-target-field label {
+    min-height: auto;
+  }
+}
+    
 </style>
 </head>
 <body>
@@ -2054,7 +2240,8 @@
   <h3 style="margin-top:28px">أداء الموظفين الشهري</h3>
 
 <div style="overflow-x:auto;background:white;border-radius:14px;border:1px solid #e5edf2">
-  <table style="width:100%;border-collapse:collapse;min-width:1100px">
+  <table id="monthlyEmployeePerformanceTable"
+  style="width:100%;border-collapse:collapse;min-width:1120px">
     <thead>
       <tr style="background:#102b3f;color:white">
         <th style="padding:14px">الموظف</th>
@@ -2094,74 +2281,47 @@
     اختر الموظف وحدد هدفه الشهري. سيتم تطبيق التعديل على الشهر المحدد في لوحة المبيعات.
   </p>
 
-  <div style="
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:16px;
-  ">
+ <div class="employee-target-fields-grid">
 
-    <div>
-      <label for="employeeTargetManagerSelect">
-        <strong>اختيار الموظف</strong>
-      </label>
+  <!-- اختيار الموظف -->
+  <div class="employee-target-field">
+    <label for="employeeTargetManagerSelect">
+      اختيار الموظف
+    </label>
 
-      <select id="employeeTargetManagerSelect"
-        style="
-          width:100%;
-          padding:13px;
-          margin-top:8px;
-          border:1px solid #dce4eb;
-          border-radius:10px;
-          background:#f8fafc;
-          font-size:14px;
-        ">
-        <option value="">اختر الموظف</option>
-      </select>
-    </div>
-
-    <div>
-      <label>
-        <strong>الهدف الشهري الحالي</strong>
-      </label>
-
-      <div id="employeeTargetManagerCurrent"
-        style="
-          padding:13px;
-          margin-top:8px;
-          background:#f1f7fa;
-          border:1px solid #e1eaf0;
-          border-radius:10px;
-          color:#173b55;
-          font-weight:bold;
-          min-height:45px;
-        ">
-        اختر الموظف أولاً
-      </div>
-    </div>
-
-    <div>
-      <label for="employeeTargetManagerAmount">
-        <strong>الهدف الشهري الجديد بالجنيه</strong>
-      </label>
-
-      <input
-        id="employeeTargetManagerAmount"
-        type="number"
-        min="0.01"
-        step="0.01"
-        placeholder="أدخل الهدف الجديد"
-        style="
-          width:100%;
-          padding:13px;
-          margin-top:8px;
-          border:1px solid #dce4eb;
-          border-radius:10px;
-          font-size:14px;
-        ">
-    </div>
-
+    <select id="employeeTargetManagerSelect">
+      <option value="">اختر الموظف</option>
+    </select>
   </div>
 
+  <!-- الهدف الحالي -->
+  <div class="employee-target-field">
+    <label>
+      الهدف الشهري الحالي
+    </label>
+
+    <div id="employeeTargetManagerCurrent">
+      اختر الموظف أولاً
+    </div>
+  </div>
+
+  <!-- الهدف الجديد -->
+  <div class="employee-target-field">
+    <label for="employeeTargetManagerAmount">
+      الهدف الشهري الجديد بالجنيه
+    </label>
+
+    <input
+      id="employeeTargetManagerAmount"
+      type="number"
+      min="0.01"
+      step="0.01"
+      placeholder="أدخل الهدف الجديد"
+    >
+  </div>
+
+</div>
+  
   <button
     id="saveEmployeeTargetManagerButton"
     type="button"
