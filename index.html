@@ -6872,6 +6872,8 @@ async function performAttendanceAction(action, buttonId) {
 
 }
     
+    window.performAttendanceAction = performAttendanceAction;
+    
 // ربط أزرار لوحة الموظف
 $("checkInButton").addEventListener("click", () => {
   performAttendanceAction("check_in", "checkInButton");
