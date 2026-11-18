@@ -1609,6 +1609,18 @@
   </button>
 </div>
 
+    <div class="admin-card">
+  <strong>💬 إدارة الرسائل الذكية</strong>
+
+  <p>
+    تخصيص رسائل يومية وتحفيزية لكل موظف، مع اختيار الألوان
+    والحركات والصوت ومتابعة رسائل تحقيق التارجت.
+  </p>
+
+  <button id="openSmartMessagesButton" type="button">
+    فتح إدارة الرسائل الذكية
+  </button>
+</div>
     
 <div class="admin-card">
   <strong>الملفات الوظيفية والعمولات</strong>
@@ -2448,6 +2460,461 @@
 </button>
 
 </section>
+
+    <!-- ===================================== -->
+<!-- EL-LITHY SMART MESSAGES MANAGEMENT -->
+<!-- ===================================== -->
+
+<section id="smartMessagesSection" class="hidden"
+  style="width:100%;">
+
+  <div style="
+    padding:26px;
+    margin-bottom:22px;
+    border-radius:18px;
+    background:linear-gradient(120deg,#102b3f,#176477);
+    color:white;
+    box-shadow:0 8px 24px rgba(16,43,63,.14);
+  ">
+
+    <div style="font-size:28px;margin-bottom:10px">💬</div>
+
+    <h2 style="margin:0 0 10px;color:white;font-size:25px">
+      إدارة الرسائل الذكية
+    </h2>
+
+    <p style="margin:0;color:#d7e8ee;font-size:14px;line-height:1.9">
+      خصّص رسائل مستقلة لكل موظف، وحدد مناسبة ظهورها وشكلها وحركتها وصوت التنبيه.
+    </p>
+
+    <div style="
+      display:inline-block;
+      margin-top:14px;
+      padding:7px 13px;
+      border:1px solid rgba(255,255,255,.3);
+      border-radius:30px;
+      font-size:11px;
+      color:#e3f1f4;
+    ">
+      EL-LITHY GROUP · SMART MESSAGES
+    </div>
+  </div>
+
+  <!-- إعدادات الرسالة -->
+  <div style="
+    padding:22px;
+    background:white;
+    border:1px solid #e1eaf0;
+    border-radius:18px;
+    box-shadow:0 5px 20px rgba(16,43,63,.05);
+  ">
+
+    <h3 style="margin:0 0 8px;color:#102b3f">
+      ⚙️ إعداد الرسالة
+    </h3>
+
+    <p style="margin:0 0 22px;color:#718096;font-size:13px;line-height:1.8">
+      اختر الموظف والمناسبة، ثم خصّص محتوى الرسالة وطريقة ظهورها.
+    </p>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:17px;
+    ">
+
+      <!-- الموظف -->
+      <div>
+        <label for="smartMessageEmployee">
+          <strong>اختيار الموظف</strong>
+        </label>
+
+        <select id="smartMessageEmployee"
+          style="
+            width:100%;
+            height:48px;
+            padding:10px;
+            border:1px solid #dce4eb;
+            border-radius:10px;
+            background:#f8fafc;
+          ">
+          <option value="">جارٍ تحميل الموظفين...</option>
+        </select>
+      </div>
+
+      <!-- المناسبة -->
+      <div>
+        <label for="smartMessageEvent">
+          <strong>مناسبة ظهور الرسالة</strong>
+        </label>
+
+        <select id="smartMessageEvent"
+          style="
+            width:100%;
+            height:48px;
+            padding:10px;
+            border:1px solid #dce4eb;
+            border-radius:10px;
+            background:#f8fafc;
+          ">
+
+          <option value="">اختر المناسبة</option>
+          <option value="check_in">🌅 تسجيل الحضور</option>
+          <option value="break_start">☕ بدء الراحة</option>
+          <option value="break_end">⚡ إنهاء الراحة</option>
+          <option value="check_out">🌙 تسجيل الانصراف</option>
+          <option value="target_50">🎯 تحقيق 50% من التارجت</option>
+          <option value="target_70">🚀 تحقيق 70% من التارجت</option>
+          <option value="target_100">🏆 تحقيق 100% من التارجت</option>
+
+        </select>
+      </div>
+
+    </div>
+
+    <div style="
+      margin-top:20px;
+      padding:15px;
+      border-radius:12px;
+      background:#f3f7fb;
+    ">
+
+      <label for="smartMessageEnabled"
+        style="display:flex;align-items:center;gap:10px;margin:0;cursor:pointer">
+
+        <input id="smartMessageEnabled"
+          type="checkbox"
+          checked
+          style="width:19px;height:19px;margin:0">
+
+        <strong style="color:#173b55">
+          تفعيل ظهور هذه الرسالة
+        </strong>
+
+      </label>
+
+    </div>
+
+    <div style="margin-top:22px">
+
+      <label for="smartMessageTitle">
+        <strong>عنوان الرسالة</strong>
+      </label>
+
+      <input id="smartMessageTitle"
+        type="text"
+        maxlength="100"
+        placeholder="مثال: صباح الخير يا أحمد 🌟"
+        style="
+          width:100%;
+          padding:13px;
+          border:1px solid #dce4eb;
+          border-radius:10px;
+          background:#f8fafc;
+        ">
+    </div>
+
+    <div style="margin-top:17px">
+
+      <label for="smartMessageBody">
+        <strong>نص الرسالة</strong>
+      </label>
+
+      <textarea id="smartMessageBody"
+        rows="5"
+        maxlength="1000"
+        placeholder="اكتب الرسالة الخاصة بهذا الموظف..."
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:14px;
+          border:1px solid #dce4eb;
+          border-radius:10px;
+          background:#f8fafc;
+          resize:vertical;
+          line-height:1.9;
+          font-family:Arial,sans-serif;
+          font-size:14px;
+        "></textarea>
+
+    </div>
+
+  </div>
+
+  <!-- تصميم الرسالة -->
+  <div style="
+    margin-top:20px;
+    padding:22px;
+    background:white;
+    border:1px solid #e1eaf0;
+    border-radius:18px;
+    box-shadow:0 5px 20px rgba(16,43,63,.05);
+  ">
+
+    <h3 style="margin:0 0 20px;color:#102b3f">
+      🎨 تصميم وحركة الرسالة
+    </h3>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:17px;
+    ">
+
+      <div>
+        <label for="smartMessageStyle">
+          <strong>شكل الرسالة</strong>
+        </label>
+
+        <select id="smartMessageStyle"
+          style="width:100%;padding:13px;border:1px solid #dce4eb;border-radius:10px">
+
+          <option value="success">رسالة نجاح أنيقة</option>
+          <option value="bright">رسالة ملونة ومضيئة</option>
+          <option value="motivation">رسالة تحفيزية</option>
+          <option value="celebration">رسالة احتفالية</option>
+          <option value="glass">تصميم زجاجي مضيء</option>
+
+        </select>
+      </div>
+
+      <div>
+        <label for="smartMessageAnimation">
+          <strong>حركة ظهور الرسالة</strong>
+        </label>
+
+        <select id="smartMessageAnimation"
+          style="width:100%;padding:13px;border:1px solid #dce4eb;border-radius:10px">
+
+          <option value="fade">ظهور تدريجي</option>
+          <option value="slide">انزلاق أنيق</option>
+          <option value="zoom">تكبير سينمائي</option>
+          <option value="pulse">نبض مضيء</option>
+          <option value="confetti">احتفال بالقصاصات</option>
+          <option value="bounce">حركة ارتداد ناعمة</option>
+
+        </select>
+      </div>
+
+      <div>
+        <label for="smartMessageSize">
+          <strong>حجم الرسالة</strong>
+        </label>
+
+        <select id="smartMessageSize"
+          style="width:100%;padding:13px;border:1px solid #dce4eb;border-radius:10px">
+
+          <option value="large">كبير</option>
+          <option value="xlarge">كبير جدًا</option>
+          <option value="celebrate">حجم احتفالي</option>
+
+        </select>
+      </div>
+
+      <div>
+        <label for="smartMessageColor">
+          <strong>اللون الأساسي للرسالة</strong>
+        </label>
+
+        <input id="smartMessageColor"
+          type="color"
+          value="#1c7890"
+          style="
+            display:block;
+            width:100%;
+            height:48px;
+            padding:4px;
+            border:1px solid #dce4eb;
+            border-radius:10px;
+            background:white;
+          ">
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- إعدادات الصوت -->
+  <div style="
+    margin-top:20px;
+    padding:22px;
+    background:white;
+    border:1px solid #e1eaf0;
+    border-radius:18px;
+    box-shadow:0 5px 20px rgba(16,43,63,.05);
+  ">
+
+    <h3 style="margin:0 0 18px;color:#102b3f">
+      🔔 صوت التنبيه
+    </h3>
+
+    <label for="smartMessageSoundEnabled"
+      style="display:flex;align-items:center;gap:10px;cursor:pointer">
+
+      <input id="smartMessageSoundEnabled"
+        type="checkbox"
+        checked
+        style="width:19px;height:19px;margin:0">
+
+      <strong>تشغيل صوت مع ظهور الرسالة</strong>
+
+    </label>
+
+    <div style="margin-top:17px">
+
+      <label for="smartMessageSoundType">
+        <strong>اختيار نوع الصوت</strong>
+      </label>
+
+      <select id="smartMessageSoundType"
+        style="width:100%;padding:13px;border:1px solid #dce4eb;border-radius:10px">
+
+        <option value="soft">🔔 رنة ناعمة قصيرة</option>
+        <option value="motivation">✨ نغمة تحفيزية</option>
+        <option value="celebration">🎉 صوت احتفالي</option>
+
+      </select>
+
+    </div>
+
+    <p style="color:#84949c;font-size:12px;line-height:1.8">
+      يمكن أن يتطلب تشغيل الصوت تفاعل الموظف مع التطبيق أولًا، وفقًا لإعدادات المتصفح والجهاز.
+    </p>
+
+  </div>
+
+  <!-- المعاينة -->
+  <div style="
+    margin-top:20px;
+    padding:22px;
+    background:#f1f5f9;
+    border:1px solid #dce4eb;
+    border-radius:18px;
+  ">
+
+    <h3 style="margin:0 0 8px;color:#102b3f">
+      👁️ معاينة الرسالة
+    </h3>
+
+    <p style="margin:0 0 17px;color:#718096;font-size:13px">
+      شاهد شكل الرسالة قبل حفظ إعداداتها.
+    </p>
+
+    <div id="smartMessagePreview"
+      style="
+        min-height:170px;
+        padding:25px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        background:white;
+        border:2px solid #1c7890;
+        border-radius:18px;
+        box-shadow:0 8px 25px rgba(16,43,63,.08);
+      ">
+
+      <div style="font-size:38px;margin-bottom:12px">
+        ✨
+      </div>
+
+      <h3 id="smartMessagePreviewTitle"
+        style="margin:0 0 10px;color:#102b3f">
+        عنوان الرسالة
+      </h3>
+
+      <p id="smartMessagePreviewBody"
+        style="margin:0;color:#526779;font-size:14px;line-height:1.9">
+        ستظهر معاينة نص الرسالة هنا.
+      </p>
+
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:10px;
+      margin-top:18px;
+    ">
+
+      <button id="previewSmartMessageButton"
+        type="button"
+        style="
+          margin:0;
+          padding:13px;
+          background:#64748b;
+          color:white;
+          border:0;
+          border-radius:10px;
+          font-weight:bold;
+        ">
+        تجربة المعاينة
+      </button>
+
+      <button id="previewSmartMessageSoundButton"
+        type="button"
+        style="
+          margin:0;
+          padding:13px;
+          background:#3478c8;
+          color:white;
+          border:0;
+          border-radius:10px;
+          font-weight:bold;
+        ">
+        تجربة الصوت
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- حفظ -->
+  <div style="
+    margin-top:20px;
+    padding:20px;
+    background:white;
+    border:1px solid #e1eaf0;
+    border-radius:16px;
+  ">
+
+    <button id="saveSmartMessageButton"
+      type="button"
+      style="
+        margin:0;
+        width:100%;
+        padding:16px;
+        background:linear-gradient(120deg,#102b3f,#176477);
+        color:white;
+        border:0;
+        border-radius:12px;
+        font-size:16px;
+        font-weight:bold;
+        cursor:pointer;
+      ">
+      💾 حفظ إعدادات الرسالة
+    </button>
+
+    <p id="smartMessageStatus"
+      style="margin:13px 0 0;text-align:center;color:#718096;font-size:13px;line-height:1.8">
+    </p>
+
+  </div>
+
+  <button id="backFromSmartMessagesButton"
+    type="button"
+    style="
+      margin-top:20px;
+      background:#64748b;
+    ">
+    العودة إلى لوحة المدير
+  </button>
+
+</section>
+
+<!-- نهاية صفحة الرسائل الذكية -->
+
     
 <section id="employeeDashboardSection" class="hidden">
 
@@ -3037,7 +3504,7 @@ $("submitEmployeeTermsResponse").onclick = async () => {
 
 
 function showSection(section) {
-  [
+  const sections = [
     "loginSection",
     "recoverySection",
     "dashboardSection",
@@ -3047,14 +3514,507 @@ function showSection(section) {
     "passwordChangeSection",
     "employeeDaysOffSection",
     "accountSettingsSection",
-    "employmentTermsSection"
-  ].forEach(id => $(id).classList.add("hidden"));
+    "employmentTermsSection",
+    "smartMessagesSection"
+  ];
 
-  $(section).classList.remove("hidden");
+  sections.forEach(id => {
+    const element = $(id);
+    if (element) {
+      element.classList.add("hidden");
+    }
+  });
+
+  const target = $(section);
+
+  if (target) {
+    target.classList.remove("hidden");
+  }
 }
 
 
+// ==========================================
+// EL-LITHY SMART MESSAGES - ADMIN CONTROLS
+// ==========================================
 
+let smartMessageAudioContext = null;
+
+
+// تحديث معاينة الرسالة
+function updateSmartMessagePreview() {
+
+  const title = $("smartMessageTitle").value.trim();
+  const body = $("smartMessageBody").value.trim();
+  const style = $("smartMessageStyle").value;
+  const size = $("smartMessageSize").value;
+  const color = $("smartMessageColor").value;
+
+  const preview = $("smartMessagePreview");
+  const previewTitle = $("smartMessagePreviewTitle");
+  const previewBody = $("smartMessagePreviewBody");
+
+  const backgrounds = {
+    success: "#e7f7ed",
+    bright: "#e5f2ff",
+    motivation: "#fff3df",
+    celebration: "#fff8e7",
+    glass: "#edf5f7"
+  };
+
+  const icons = {
+    success: "✓",
+    bright: "★",
+    motivation: "🚀",
+    celebration: "🏆",
+    glass: "✨"
+  };
+
+  const iconsContainer = preview.querySelector("div");
+
+  iconsContainer.textContent = icons[style] || "✨";
+
+  previewTitle.textContent = title || "عنوان الرسالة";
+  previewBody.textContent = body || "ستظهر معاينة نص الرسالة هنا.";
+
+  preview.style.background = backgrounds[style] || "#ffffff";
+  preview.style.borderColor = color;
+  preview.style.boxShadow =
+    "0 8px 28px " + color + "30";
+
+  preview.style.minHeight =
+    size === "celebrate" ? "270px" :
+    size === "xlarge" ? "230px" : "170px";
+
+  previewTitle.style.color = color;
+  previewTitle.style.fontSize =
+    size === "celebrate" ? "30px" :
+    size === "xlarge" ? "26px" : "21px";
+
+  previewBody.style.fontSize =
+    size === "celebrate" ? "18px" :
+    size === "xlarge" ? "16px" : "14px";
+
+  preview.style.borderRadius =
+    style === "glass" ? "25px" : "18px";
+}
+
+
+// تحريك معاينة الرسالة
+function animateSmartMessagePreview() {
+
+  const preview = $("smartMessagePreview");
+  const animation = $("smartMessageAnimation").value;
+
+  const animations = {
+    fade: [
+      { opacity: 0.2 },
+      { opacity: 1 }
+    ],
+
+    slide: [
+      { opacity: 0, transform: "translateY(35px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ],
+
+    zoom: [
+      { opacity: 0, transform: "scale(.65)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+
+    pulse: [
+      { transform: "scale(.96)" },
+      { transform: "scale(1.04)" },
+      { transform: "scale(1)" }
+    ],
+
+    confetti: [
+      { opacity: 0, transform: "scale(.8) rotate(-3deg)" },
+      { opacity: 1, transform: "scale(1.04) rotate(2deg)" },
+      { opacity: 1, transform: "scale(1) rotate(0deg)" }
+    ],
+
+    bounce: [
+      { opacity: 0, transform: "translateY(-30px)" },
+      { opacity: 1, transform: "translateY(8px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ]
+  };
+
+  preview.animate(
+    animations[animation] || animations.fade,
+    {
+      duration: 700,
+      easing: "cubic-bezier(.2,.8,.2,1)"
+    }
+  );
+
+  // قصاصات احتفالية إضافية
+  if (animation === "confetti") {
+
+    const decorations = ["🎉", "✨", "🎊", "⭐", "🏆"];
+
+    decorations.forEach((symbol, index) => {
+
+      const particle = document.createElement("span");
+
+      particle.textContent = symbol;
+
+      particle.style.cssText = `
+        position:absolute;
+        z-index:5;
+        pointer-events:none;
+        font-size:25px;
+        top:10px;
+        left:${10 + index * 17}%;
+      `;
+
+      preview.style.position = "relative";
+      preview.appendChild(particle);
+
+      particle.animate(
+        [
+          {
+            transform: "translateY(0) rotate(0)",
+            opacity: 1
+          },
+          {
+            transform: "translateY(100px) rotate(220deg)",
+            opacity: 0
+          }
+        ],
+        {
+          duration: 1200,
+          easing: "ease-out"
+        }
+      );
+
+      setTimeout(() => particle.remove(), 1300);
+    });
+  }
+}
+
+
+// تشغيل نغمة المعاينة
+async function playSmartMessageSound() {
+
+  try {
+
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+      throw new Error("المتصفح لا يدعم تشغيل الصوت.");
+    }
+
+    if (!smartMessageAudioContext) {
+      smartMessageAudioContext =
+        new AudioContextClass();
+    }
+
+    if (smartMessageAudioContext.state === "suspended") {
+      await smartMessageAudioContext.resume();
+    }
+
+    const soundType = $("smartMessageSoundType").value;
+
+    const notes = {
+      soft: [659],
+      motivation: [523, 659, 784],
+      celebration: [523, 659, 784, 1046]
+    };
+
+    const frequencies = notes[soundType] || notes.soft;
+
+    frequencies.forEach((frequency, index) => {
+
+      const startTime =
+        smartMessageAudioContext.currentTime + index * 0.16;
+
+      const oscillator =
+        smartMessageAudioContext.createOscillator();
+
+      const gain =
+        smartMessageAudioContext.createGain();
+
+      oscillator.type = "sine";
+
+      oscillator.frequency.setValueAtTime(
+        frequency,
+        startTime
+      );
+
+      gain.gain.setValueAtTime(0.0001, startTime);
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.12,
+        startTime + 0.025
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        startTime + 0.15
+      );
+
+      oscillator.connect(gain);
+      gain.connect(smartMessageAudioContext.destination);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.17);
+
+    });
+
+  } catch (error) {
+
+    console.error("Smart message sound error:", error);
+
+    $("smartMessageStatus").textContent =
+      error.message || "تعذر تشغيل الصوت.";
+  }
+}
+
+
+// تحميل رسالة الموظف والمناسبة
+async function loadSelectedSmartMessage() {
+
+  const employeeId = $("smartMessageEmployee").value;
+  const eventKey = $("smartMessageEvent").value;
+
+  $("smartMessageStatus").textContent = "";
+
+  if (!employeeId || !eventKey) {
+
+    $("smartMessageTitle").value = "";
+    $("smartMessageBody").value = "";
+
+    $("smartMessageEnabled").checked = true;
+    $("smartMessageStyle").value = "success";
+    $("smartMessageAnimation").value = "fade";
+    $("smartMessageSize").value = "large";
+    $("smartMessageColor").value = "#1c7890";
+    $("smartMessageSoundEnabled").checked = true;
+    $("smartMessageSoundType").value = "soft";
+
+    updateSmartMessagePreview();
+
+    return;
+  }
+
+  $("smartMessageStatus").textContent =
+    "جارٍ تحميل إعدادات الرسالة...";
+
+  try {
+
+    const { data: message, error } = await db
+      .from("employee_smart_messages")
+      .select("*")
+      .eq("employee_id", employeeId)
+      .eq("event_key", eventKey)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (message) {
+
+      $("smartMessageTitle").value =
+        message.message_title || "";
+
+      $("smartMessageBody").value =
+        message.message_body || "";
+
+      $("smartMessageEnabled").checked =
+        message.enabled;
+
+      $("smartMessageStyle").value =
+        message.visual_style;
+
+      $("smartMessageAnimation").value =
+        message.animation;
+
+      $("smartMessageSize").value =
+        message.message_size;
+
+      $("smartMessageColor").value =
+        message.accent_color || "#1c7890";
+
+      $("smartMessageSoundEnabled").checked =
+        message.sound_enabled;
+
+      $("smartMessageSoundType").value =
+        message.sound_type;
+
+      $("smartMessageStatus").textContent =
+        "تم تحميل الرسالة المحفوظة بنجاح.";
+
+    } else {
+
+      $("smartMessageTitle").value = "";
+      $("smartMessageBody").value = "";
+
+      $("smartMessageEnabled").checked = true;
+      $("smartMessageStyle").value = "success";
+      $("smartMessageAnimation").value = "fade";
+      $("smartMessageSize").value = "large";
+      $("smartMessageColor").value = "#1c7890";
+      $("smartMessageSoundEnabled").checked = true;
+      $("smartMessageSoundType").value = "soft";
+
+      $("smartMessageStatus").textContent =
+        "لا توجد رسالة محفوظة لهذه المناسبة. يمكنك إنشاء رسالة جديدة.";
+    }
+
+    updateSmartMessagePreview();
+
+  } catch (error) {
+
+    console.error("Load smart message error:", error);
+
+    $("smartMessageStatus").textContent =
+      error.message || "تعذر تحميل الرسالة.";
+  }
+}
+
+
+// تحميل قائمة الموظفين
+async function loadSmartMessageEmployees() {
+
+  const select = $("smartMessageEmployee");
+
+  select.innerHTML =
+    '<option value="">جارٍ تحميل الموظفين...</option>';
+
+  try {
+
+    const { data: employees, error } = await db
+      .from("profiles")
+      .select("id, employee_code, full_name")
+      .eq("role", "employee")
+      .order("employee_code");
+
+    if (error) throw error;
+
+    select.replaceChildren();
+
+    const placeholder = document.createElement("option");
+
+    placeholder.value = "";
+    placeholder.textContent = "اختر الموظف";
+
+    select.appendChild(placeholder);
+
+    (employees || []).forEach(employee => {
+
+      const option = document.createElement("option");
+
+      option.value = employee.id;
+
+      option.textContent =
+        employee.employee_code + " - " +
+        employee.full_name;
+
+      select.appendChild(option);
+
+    });
+
+    $("smartMessageStatus").textContent =
+      "تم تحميل الموظفين. اختر الموظف والمناسبة.";
+
+  } catch (error) {
+
+    console.error("Load smart message employees error:", error);
+
+    $("smartMessageStatus").textContent =
+      "تعذر تحميل الموظفين: " + error.message;
+  }
+}
+
+
+// حفظ إعدادات الرسالة
+async function saveSmartMessage() {
+
+  const employeeId = $("smartMessageEmployee").value;
+  const eventKey = $("smartMessageEvent").value;
+
+  const title = $("smartMessageTitle").value.trim();
+  const body = $("smartMessageBody").value.trim();
+
+  const status = $("smartMessageStatus");
+  const button = $("saveSmartMessageButton");
+
+  if (!employeeId || !eventKey) {
+
+    status.textContent =
+      "اختر الموظف ومناسبة ظهور الرسالة أولاً.";
+
+    status.style.color = "#c0392b";
+    return;
+  }
+
+  if (!title || !body) {
+
+    status.textContent =
+      "اكتب عنوان الرسالة ونصها قبل الحفظ.";
+
+    status.style.color = "#c0392b";
+    return;
+  }
+
+  const messageData = {
+
+    employee_id: employeeId,
+    event_key: eventKey,
+
+    enabled: $("smartMessageEnabled").checked,
+
+    message_title: title,
+    message_body: body,
+
+    visual_style: $("smartMessageStyle").value,
+    animation: $("smartMessageAnimation").value,
+    message_size: $("smartMessageSize").value,
+
+    accent_color: $("smartMessageColor").value,
+
+    sound_enabled: $("smartMessageSoundEnabled").checked,
+    sound_type: $("smartMessageSoundType").value,
+
+    updated_at: new Date().toISOString()
+  };
+
+  button.disabled = true;
+  button.textContent = "جارٍ حفظ الرسالة...";
+
+  try {
+
+    const { error } = await db
+      .from("employee_smart_messages")
+      .upsert(
+        messageData,
+        { onConflict: "employee_id,event_key" }
+      );
+
+    if (error) throw error;
+
+    status.textContent =
+      "تم حفظ إعدادات الرسالة بنجاح.";
+
+    status.style.color = "#16865f";
+
+  } catch (error) {
+
+    console.error("Save smart message error:", error);
+
+    status.textContent =
+      error.message || "تعذر حفظ إعدادات الرسالة.";
+
+    status.style.color = "#c0392b";
+
+  } finally {
+
+    button.disabled = false;
+    button.textContent = "💾 حفظ إعدادات الرسالة";
+  }
+}
+    
 async function loadEmployeeList() {
   const select = $("selectedEmployee");
   const details = $("selectedEmployeeDetails");
@@ -4900,24 +5860,96 @@ $("manageSalesButton").addEventListener("click", () => {
 });
 
     
+// فتح الملفات الوظيفية
 $("openEmploymentTermsButton").addEventListener("click", async () => {
+
   showSection("employmentTermsSection");
 
   $("employmentTermsStatus").textContent =
     "جارٍ تحميل بيانات الموظفين...";
 
   await loadTermsEmployees();
+
 });
 
 
-$("backFromSalesButton").addEventListener("click", () => {
+// ==========================================
+// EL-LITHY SMART MESSAGES - BUTTON EVENTS
+// ==========================================
+
+// فتح إدارة الرسائل الذكية
+$("openSmartMessagesButton").addEventListener("click", async () => {
+
+  showSection("smartMessagesSection");
+
+  await loadSmartMessageEmployees();
+
+});
+
+
+// العودة إلى لوحة المدير
+$("backFromSmartMessagesButton").addEventListener("click", () => {
+
   showSection("dashboardSection");
-});
- 
 
-    
-$("salesMonth").addEventListener("change", () => {
-  loadMonthlySalesPerformance();
+});
+
+
+// تغيير الموظف
+$("smartMessageEmployee").addEventListener("change", () => {
+
+  loadSelectedSmartMessage();
+
+});
+
+
+// تغيير المناسبة
+$("smartMessageEvent").addEventListener("change", () => {
+
+  loadSelectedSmartMessage();
+
+});
+
+
+// تحديث المعاينة عند تعديل المحتوى
+[
+  "smartMessageTitle",
+  "smartMessageBody",
+  "smartMessageStyle",
+  "smartMessageSize",
+  "smartMessageColor"
+].forEach(id => {
+
+  $(id).addEventListener("input", updateSmartMessagePreview);
+
+  $(id).addEventListener("change", updateSmartMessagePreview);
+
+});
+
+
+// معاينة الحركة
+$("previewSmartMessageButton").addEventListener("click", () => {
+
+  updateSmartMessagePreview();
+
+  animateSmartMessagePreview();
+
+});
+
+
+// تجربة الصوت
+$("previewSmartMessageSoundButton").addEventListener("click", async () => {
+
+  await playSmartMessageSound();
+
+});
+
+
+// حفظ الرسالة
+$("saveSmartMessageButton").addEventListener("click", async () => {
+
+  await saveSmartMessage();
+
 });
 
     // تعديل الهدف الشهري للشركة
