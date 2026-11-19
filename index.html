@@ -8932,6 +8932,15 @@ console.log("EMPLOYEE SESSION:", {
 
   if (data.session) {
     try {
+      const { data: checkUser, error: checkError } =
+  await db.auth.getUser();
+
+console.log("RESTORED USER:", {
+  exists: !!checkUser.user,
+  id: checkUser.user?.id,
+  error: checkError?.message || null
+});
+      
       await showDashboard();
     } catch (error) {
       showSection("loginSection");
