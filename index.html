@@ -8907,7 +8907,12 @@ async function initializeApp() {
     queryParams.get("type") === "recovery";
 
   const { data, error } = await db.auth.getSession();
-
+console.log("EMPLOYEE SESSION:", {
+  exists: !!data.session,
+  userId: data.session?.user?.id,
+  error: error?.message || null
+});
+  
   if (error) {
     showSection("loginSection");
     showMessage("تعذر استعادة جلسة الدخول.");
