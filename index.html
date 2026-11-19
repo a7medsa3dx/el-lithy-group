@@ -8905,6 +8905,10 @@ async function initializeApp() {
     queryParams.get("type") === "recovery";
 
   const { data, error } = await db.auth.getSession();
+  alert(
+  "حالة الجلسة: " + (!!data.session) +
+  "\nخطأ: " + (error ? error.message : "لا يوجد")
+);
 
   if (error) {
     showSection("loginSection");
