@@ -5976,8 +5976,7 @@ if (profile.role === "owner") {
 await loadEmployeeAttendanceSmartMessages(profile);
 
 // بدء متابعة تحقيق التارجت أثناء العمل
-startEmployeeTargetMonitor(profile);
-
+// تم إيقاف استدعاء دالة المتابعة غير الموجودة مؤقتًا
 await loadEmployeeEmploymentTerms(profile);
 }
       
