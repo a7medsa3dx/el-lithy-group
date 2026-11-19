@@ -8927,9 +8927,24 @@ async function initializeApp() {
     return;
   }
 
-  if (data.session) {
-    try {
-      await showDashboard();
+ if (data.session) {
+  try {
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
+
+    alert(
+      "فحص المستخدم: " + (!!userData.user) +
+      "\nالخطأ: " + (userError ? userError.message : "لا يوجد")
+    );
+
+    await showDashboard();
+
+  } catch (error) {
+    alert("خطأ فتح اللوحة: " + error.message);
+    showSection("loginSection");
+    showMessage(error.message || "تعذر فتح لوحة التحكم.");
+  }
+}
     } catch (error) {
       showSection("loginSection");
       showMessage(error.message || "تعذر فتح لوحة التحكم.");
