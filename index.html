@@ -6030,17 +6030,6 @@ $("loginForm").addEventListener("submit", async event => {
 });
 
 
-        if (sessionError) throw sessionError;
-alert("4 - جاري فتح لوحة الموظف");
-        await showDashboard();
-
-      } catch (error) {
-        showMessage(error.message || "حدث خطأ أثناء تسجيل الدخول.");
-      } finally {
-        $("loginButton").disabled = false;
-      }
-    });
-
     $("recoveryForm").addEventListener("submit", async event => {
       event.preventDefault();
 
