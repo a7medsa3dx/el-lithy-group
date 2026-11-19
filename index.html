@@ -8899,7 +8899,12 @@ $("dayOffDate").value = cairoToday;
         hashParams.get("type") === "recovery" ||
         queryParams.get("type") === "recovery";
 
-      const { data } = await db.auth.getSession();
+      const { data } = await db.auth.getSession();const { data, error } = await db.auth.getSession();
+
+alert(
+  "Session: " + (!!data.session) +
+  "\nError: " + (error ? error.message : "لا يوجد")
+);
 
       if (isRecoveryLink) {
         if (data.session) {
