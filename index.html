@@ -1604,7 +1604,7 @@
     <p class="subtitle">Internal Operations</p>
 
     <section id="loginSection">
-      <form id="loginForm" onsubmit="alert('النموذج يعمل'); return false;">
+      <form id="loginForm">
         <label for="username">كود الموظف</label>
         <input id="username" type="text" placeholder="مثال: EMP001"
           autocomplete="username" required>
@@ -5983,33 +5983,52 @@ await loadEmployeeEmploymentTerms(profile);
       
 showMessage("تم تسجيل الدخول بنجاح.");
 }
-    $("loginForm").addEventListener("submit", async event => {
-      event.preventDefault();
+  
+$("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
 
-      const employee_code = $("username").value.trim().toUpperCase();
-      const password = $("password").value;
+  const employee_code = $("username").value.trim().toUpperCase();
+  const password = $("password").value;
 
-      $("loginButton").disabled = true;
-      showMessage("جارٍ التحقق من بيانات الدخول...");
-      alert("1 - بدأ تسجيل الدخول");
-      try {
-        const { data, error } = await db.functions.invoke(
-          alert("2 - انتهى التحقق من بيانات الموظف");
-          "employee-login",
-          { body: { employee_code, password } }
-        );
+  $("loginButton").disabled = true;
+  showMessage("جارٍ التحقق من بيانات الدخول...");
 
-        if (error || !data || !data.success || !data.session) {
-          throw new Error(
-            data?.error || error?.message || "كود الموظف أو كلمة المرور غير صحيحة."
-          );
-        }
+  try {
+    alert("1 - بدأ تسجيل الدخول");
 
-        const { error: sessionError } = await db.auth.setSession({
-          alert("3 - تم حفظ جلسة الدخول");
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token
-        });
+    const { data, error } = await db.functions.invoke(
+      "employee-login",
+      { body: { employee_code, password } }
+    );
+
+    alert("2 - انتهى التحقق من بيانات الموظف");
+
+    if (error || !data || !data.success || !data.session) {
+      throw new Error(
+        data?.error || error?.message || "كود الموظف أو كلمة المرور غير صحيحة."
+      );
+    }
+
+    const { error: sessionError } = await db.auth.setSession({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token
+    });
+
+    alert("3 - تم حفظ جلسة الدخول");
+
+    if (sessionError) throw sessionError;
+
+    alert("4 - جاري فتح لوحة الموظف");
+
+    await showDashboard();
+
+  } catch (error) {
+    showMessage(error.message || "حدث خطأ أثناء تسجيل الدخول.");
+  } finally {
+    $("loginButton").disabled = false;
+  }
+});
+
 
         if (sessionError) throw sessionError;
 alert("4 - جاري فتح لوحة الموظف");
