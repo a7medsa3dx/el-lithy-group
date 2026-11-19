@@ -8942,10 +8942,12 @@ console.log("RESTORED USER:", {
 });
       
       await showDashboard();
-    } catch (error) {
-      showSection("loginSection");
-      showMessage(error.message || "تعذر فتح لوحة التحكم.");
-    }
+  } catch (error) {
+  console.error("SHOW DASHBOARD ERROR:", error);
+
+  showSection("loginSection");
+  showMessage(error.message || "تعذر فتح لوحة التحكم.");
+}
   } else {
     showSection("loginSection");
     showMessage("أدخل كود الموظف وكلمة المرور لتسجيل الدخول.");
