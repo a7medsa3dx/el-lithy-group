@@ -8897,10 +8897,12 @@ $("dayOffDate").value = cairoToday;
       }
     });
 
-   async function initializeApp() {
+
+async function initializeApp() {
   const hashParams = new URLSearchParams(
     window.location.hash.substring(1)
   );
+
   const queryParams = new URLSearchParams(
     window.location.search
   );
@@ -8916,34 +8918,35 @@ $("dayOffDate").value = cairoToday;
     "\nError: " + (error ? error.message : "لا يوجد")
   );
 
-        if (isRecoveryLink) {
-        if (data.session) {
-          showSection("recoverySection");
-          showMessage("أدخل كلمة المرور الجديدة مرتين.");
-        } else {
-          showSection("loginSection");
-          showMessage("رابط الاستعادة غير صالح أو انتهت صلاحيته. اطلب رابطًا جديدًا.");
-        }
-        return;
-      }
-
-if (data.session) {
-  alert("الجلسة موجودة. جاري فتح لوحة الموظف.");
-
-  try {
-    await showDashboard();
-
-    alert("تم تنفيذ showDashboard بنجاح.");
+  if (isRecoveryLink) {
+    if (data.session) {
+      showSection("recoverySection");
+      showMessage("أدخل كلمة المرور الجديدة مرتين.");
+    } else {
+      showSection("loginSection");
+      showMessage("رابط الاستعادة غير صالح أو انتهت صلاحيته. اطلب رابطًا جديدًا.");
+    }
+    return;
   }
-  catch (error) {
-    alert("خطأ أثناء فتح لوحة الموظف:\n" + error.message);
 
+  if (data.session) {
+    alert("الجلسة موجودة. جاري فتح لوحة الموظف.");
+
+    try {
+      await showDashboard();
+      alert("تم تنفيذ showDashboard بنجاح.");
+    } catch (error) {
+      alert("خطأ أثناء فتح لوحة الموظف:\n" + error.message);
+      showSection("loginSection");
+      showMessage(error.message);
+    }
+  } else {
     showSection("loginSection");
-    showMessage(error.message);
+    showMessage("أدخل كود الموظف وكلمة المرور لتسجيل الدخول.");
   }
 }
 
-    initializeApp();
+initializeApp();
   </script>
   <script>
   if ("serviceWorker" in navigator) {
