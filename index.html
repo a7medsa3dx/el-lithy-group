@@ -8887,26 +8887,26 @@ $("dayOffDate").value = cairoToday;
       }
     });
 
-    async function initializeApp() {
-      const hashParams = new URLSearchParams(
-        window.location.hash.substring(1)
-      );
-      const queryParams = new URLSearchParams(
-        window.location.search
-      );
+   async function initializeApp() {
+  const hashParams = new URLSearchParams(
+    window.location.hash.substring(1)
+  );
+  const queryParams = new URLSearchParams(
+    window.location.search
+  );
 
-      const isRecoveryLink =
-        hashParams.get("type") === "recovery" ||
-        queryParams.get("type") === "recovery";
+  const isRecoveryLink =
+    hashParams.get("type") === "recovery" ||
+    queryParams.get("type") === "recovery";
 
-      const { data } = await db.auth.getSession();const { data, error } = await db.auth.getSession();
+  const { data, error } = await db.auth.getSession();
 
-alert(
-  "Session: " + (!!data.session) +
-  "\nError: " + (error ? error.message : "لا يوجد")
-);
+  alert(
+    "Session: " + (!!data.session) +
+    "\nError: " + (error ? error.message : "لا يوجد")
+  );
 
-      if (isRecoveryLink) {
+        if (isRecoveryLink) {
         if (data.session) {
           showSection("recoverySection");
           showMessage("أدخل كلمة المرور الجديدة مرتين.");
