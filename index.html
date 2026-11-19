@@ -8891,6 +8891,8 @@ $("dayOffDate").value = cairoToday;
     });
 
 
+
+
 async function initializeApp() {
   const hashParams = new URLSearchParams(
     window.location.hash.substring(1)
@@ -8905,10 +8907,6 @@ async function initializeApp() {
     queryParams.get("type") === "recovery";
 
   const { data, error } = await db.auth.getSession();
-  alert(
-  "حالة الجلسة: " + (!!data.session) +
-  "\nخطأ: " + (error ? error.message : "لا يوجد")
-);
 
   if (error) {
     showSection("loginSection");
@@ -8927,24 +8925,9 @@ async function initializeApp() {
     return;
   }
 
- if (data.session) {
-  try {
-    const { data: userData, error: userError } =
-      await db.auth.getUser();
-
-    alert(
-      "فحص المستخدم: " + (!!userData.user) +
-      "\nالخطأ: " + (userError ? userError.message : "لا يوجد")
-    );
-
-    await showDashboard();
-
-  } catch (error) {
-    alert("خطأ فتح اللوحة: " + error.message);
-    showSection("loginSection");
-    showMessage(error.message || "تعذر فتح لوحة التحكم.");
-  }
-}
+  if (data.session) {
+    try {
+      await showDashboard();
     } catch (error) {
       showSection("loginSection");
       showMessage(error.message || "تعذر فتح لوحة التحكم.");
