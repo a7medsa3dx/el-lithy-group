@@ -6892,6 +6892,7 @@ $("breakEndButton").addEventListener("click", () => {
 $("checkOutButton").addEventListener("click", () => {
   performAttendanceAction("check_out", "checkOutButton");
 });
+
 $("employeeLogoutButton").addEventListener("click", async () => {
 
   if (employeePreviewMode) {
@@ -6901,12 +6902,15 @@ $("employeeLogoutButton").addEventListener("click", async () => {
 
   try {
 
+    // إنهاء جلسة الموظف
     const { error } = await db.auth.signOut();
 
     if (error) throw error;
 
-    // إيقاف مراقبة التارجت
-    stopEmployeeTargetMonitor();
+    // إيقاف مراقبة التارجت إذا كانت الدالة موجودة
+    if (typeof stopEmployeeTargetMonitor === "function") {
+      stopEmployeeTargetMonitor();
+    }
 
     // تنظيف قائمة الرسائل عند تسجيل الخروج
     employeeSmartMessageQueue = [];
@@ -6923,8 +6927,10 @@ $("employeeLogoutButton").addEventListener("click", async () => {
     // الاحتفاظ بالرسالة غير المقروءة لإعادتها عند الدخول التالي
     activeEmployeeSmartMessageDeliveryId = null;
 
+    // تنظيف نموذج الدخول
     $("loginForm").reset();
 
+    // إظهار شاشة تسجيل الدخول فورًا
     showSection("loginSection");
 
     showMessage("تم تسجيل الخروج بنجاح.");
@@ -6938,6 +6944,7 @@ $("employeeLogoutButton").addEventListener("click", async () => {
   }
 
 });
+
 $("manageEmployeesButton").addEventListener("click", () => {
   showSection("employeesSection");
 });
