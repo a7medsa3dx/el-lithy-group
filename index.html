@@ -8917,18 +8917,21 @@ $("dayOffDate").value = cairoToday;
         return;
       }
 
-      if (data.session) {
-        try {
-          await showDashboard();
-        } catch (error) {
-          showSection("loginSection");
-          showMessage(error.message);
-        }
-      } else {
-        showSection("loginSection");
-        showMessage("أدخل كود الموظف وكلمة المرور لتسجيل الدخول.");
-      }
-    }
+if (data.session) {
+  alert("الجلسة موجودة. جاري فتح لوحة الموظف.");
+
+  try {
+    await showDashboard();
+
+    alert("تم تنفيذ showDashboard بنجاح.");
+  }
+  catch (error) {
+    alert("خطأ أثناء فتح لوحة الموظف:\n" + error.message);
+
+    showSection("loginSection");
+    showMessage(error.message);
+  }
+}
 
     initializeApp();
   </script>
