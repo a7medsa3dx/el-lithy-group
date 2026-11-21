@@ -1591,6 +1591,156 @@
   }
 }
     
+
+/* ===== EL-LITHY Dashboard Refresh ===== */
+#dashboardSection > .notice {
+  position:relative; overflow:hidden; padding:23px 26px !important;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 12px 28px rgba(16,43,63,.16);
+  text-align:right; font-weight:700;
+}
+#dashboardSection > .notice::after {
+  content:"EL"; position:absolute; left:22px; top:50%;
+  transform:translateY(-50%); color:rgba(255,255,255,.10);
+  font-size:58px; font-weight:900; letter-spacing:-5px; pointer-events:none;
+}
+#dashboardSection > div[style*="margin-top:30px"] > h3 {
+  display:flex; align-items:center; gap:10px; margin:30px 0 17px; font-size:20px;
+}
+#dashboardSection > div[style*="margin-top:30px"] > h3::before {
+  content:""; width:5px; height:25px; border-radius:8px;
+  background:linear-gradient(180deg,#1c9aaa,#176477);
+}
+.admin-grid {
+  display:grid; grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:18px; align-items:stretch; margin-top:18px;
+}
+.admin-card {
+  --card-accent:#176477; --card-tint:#e9f5f7;
+  position:relative; display:flex; flex-direction:column; align-items:stretch;
+  min-width:0; min-height:232px; grid-column:span 2;
+  padding:22px !important; overflow:hidden;
+  border:1px solid #e3ebf0 !important; border-radius:19px !important;
+  background:linear-gradient(155deg,#fff 0%,#fbfdff 100%) !important;
+  box-shadow:0 7px 22px rgba(16,43,63,.055) !important;
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+.admin-card::before {
+  content:""; position:absolute; inset:0 0 auto; height:4px; background:var(--card-accent);
+}
+.admin-card::after {
+  content:""; position:absolute; width:125px; height:125px; left:-48px; bottom:-64px;
+  border-radius:50%; background:var(--card-tint); opacity:.8; pointer-events:none;
+}
+.admin-card:hover {
+  transform:translateY(-5px);
+  border-color:var(--card-accent) !important;
+  box-shadow:0 15px 32px rgba(16,43,63,.11) !important;
+}
+.admin-card:nth-child(4) { grid-column:2 / span 2; }
+.admin-card:nth-child(5) { grid-column:4 / span 2; }
+.admin-card .admin-card-icon {
+  display:grid; place-items:center; width:54px; height:54px; margin-bottom:18px;
+  border:1px solid rgba(23,100,119,.12); border-radius:16px;
+  background:var(--card-tint); color:var(--card-accent);
+  font-size:29px; font-weight:800; line-height:1;
+}
+.admin-card .admin-card-content { flex:1; }
+.admin-card strong {
+  position:relative; z-index:1; color:#17384d !important;
+  font-size:17px !important; line-height:1.6;
+}
+.admin-card p {
+  position:relative; z-index:1; min-height:48px; margin:9px 0 16px !important;
+  color:#718393 !important; font-size:13px !important; line-height:1.85 !important;
+}
+.admin-card button {
+  position:relative; z-index:2; display:flex; align-items:center;
+  justify-content:space-between; gap:8px; width:100%; min-height:44px;
+  margin:auto 0 0 !important; padding:11px 14px !important;
+  border:0; border-radius:11px !important; background:var(--card-accent) !important;
+  color:#fff !important; font-size:13px !important;
+}
+.admin-card button span { font-size:18px; transition:transform .2s ease; }
+.admin-card button:hover span { transform:translateX(-3px); }
+.admin-card-employees { --card-accent:#2476b8; --card-tint:#eaf3fc; }
+.admin-card-leaves { --card-accent:#159477; --card-tint:#e8f7f1; }
+.admin-card-sales { --card-accent:#b7791f; --card-tint:#fff5df; }
+.admin-card-messages { --card-accent:#7956b3; --card-tint:#f2edfb; }
+.admin-card-hr { --card-accent:#d16a43; --card-tint:#fff0e9; }
+
+/* Shared modern profile cards */
+.profile-card {
+  position:relative; isolation:isolate; margin-top:20px; padding:22px; overflow:hidden;
+  border:1px solid #dce8ee; border-radius:20px;
+  background:linear-gradient(135deg,#fff 0%,#f5fafc 100%);
+  box-shadow:0 9px 26px rgba(16,43,63,.075);
+}
+.profile-card::after {
+  content:""; position:absolute; z-index:-1; width:210px; height:210px;
+  left:-90px; top:-115px; border-radius:50%; background:rgba(28,120,144,.075);
+}
+.profile-card-top {
+  display:flex; align-items:center; gap:15px; padding-bottom:19px;
+  border-bottom:1px solid #e7eef2;
+}
+.profile-avatar {
+  display:grid; place-items:center; flex:0 0 62px; width:62px; height:62px;
+  border-radius:19px; background:linear-gradient(145deg,#153c54,#1c7890);
+  color:#fff; font-size:29px; box-shadow:0 7px 16px rgba(16,43,63,.16);
+}
+.employee-avatar { background:linear-gradient(145deg,#167b79,#29a69a); }
+.profile-heading { min-width:0; }
+.profile-eyebrow {
+  display:block; margin-bottom:4px; color:#8a9aa5; font-size:9px;
+  font-weight:800; letter-spacing:1.5px; direction:ltr; text-align:right;
+}
+.profile-heading h3 { margin:0 0 7px !important; color:#173d52 !important; font-size:18px !important; }
+.profile-status {
+  display:inline-flex; align-items:center; gap:6px; padding:5px 10px;
+  border-radius:20px; background:#e9f7f0; color:#16805d; font-size:11px; font-weight:700;
+}
+.profile-status i {
+  width:7px; height:7px; border-radius:50%; background:#20a675;
+  box-shadow:0 0 0 3px rgba(32,166,117,.12);
+}
+.profile-brand-mark {
+  display:grid; place-items:center; width:43px; height:43px; margin-right:auto;
+  border:1px solid #dce9ee; border-radius:13px; color:#176477;
+  background:rgba(255,255,255,.8); font-size:15px; font-weight:900;
+}
+.profile-details-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; padding-top:17px; }
+.profile-detail {
+  display:flex; flex-direction:column; gap:7px; min-width:0; padding:12px 14px;
+  border:1px solid #e7eef2; border-radius:12px; background:rgba(255,255,255,.82);
+}
+.profile-detail span { color:#8797a2; font-size:11px; }
+.profile-detail strong { overflow-wrap:anywhere; color:#1b4055; font-size:14px; }
+.profile-detail-wide { grid-column:1 / -1; }
+#dashboardSection .profile-card p { margin:0; }
+
+@media (max-width:900px) {
+  .admin-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .admin-card:nth-child(4),.admin-card:nth-child(5) { grid-column:auto; }
+  .admin-card:nth-child(5) { grid-column:1 / -1; width:calc(50% - 9px); justify-self:center; }
+}
+@media (max-width:600px) {
+  .admin-grid { grid-template-columns:1fr; gap:13px; }
+  .admin-card,.admin-card:nth-child(4),.admin-card:nth-child(5) {
+    grid-column:1; width:100%; min-height:0; padding:18px !important;
+  }
+  .admin-card .admin-card-icon { width:48px; height:48px; margin-bottom:13px; }
+  .admin-card p { min-height:0; }
+  .profile-card { padding:17px; border-radius:17px; }
+  .profile-avatar { flex-basis:52px; width:52px; height:52px; border-radius:16px; }
+  .profile-details-grid { grid-template-columns:1fr; }
+  .profile-detail-wide { grid-column:auto; }
+  .profile-brand-mark { width:37px; height:37px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .admin-card,.admin-card button span { transition:none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -1640,66 +1790,71 @@
     مرحبًا بك في نظام EL-LITHY GROUP
   </div>
 
-  <div style="background:#f1f7fa;padding:18px;border-radius:12px;margin-top:20px">
-    <h3 style="margin-top:0">بيانات المدير</h3>
-    <p>الاسم: <strong id="employeeName"></strong></p>
-    <p>كود الموظف: <strong id="employeeCode"></strong></p>
-    <p>المسمى الوظيفي: <strong id="employeeRole"></strong></p>
-  </div>
+  <section class="profile-card manager-profile-card" aria-label="بيانات المدير">
+    <div class="profile-card-top">
+      <div class="profile-avatar manager-avatar" aria-hidden="true">👨‍💼</div>
+      <div class="profile-heading">
+        <span class="profile-eyebrow">ADMINISTRATOR PROFILE</span>
+        <h3>بيانات المدير</h3>
+        <span class="profile-status"><i></i> حساب المدير</span>
+      </div>
+      <div class="profile-brand-mark" aria-hidden="true">EL</div>
+    </div>
+    <div class="profile-details-grid">
+      <div class="profile-detail"><span>الاسم</span><strong id="employeeName"></strong></div>
+      <div class="profile-detail"><span>كود الموظف</span><strong id="employeeCode"></strong></div>
+      <div class="profile-detail profile-detail-wide"><span>المسمى الوظيفي</span><strong id="employeeRole"></strong></div>
+    </div>
+  </section>
 
   <div style="margin-top:30px">
     <h3>إدارة الشركة</h3>
 
   <div class="admin-grid">
-
-  <div class="admin-card">
-    <strong>إدارة الموظفين</strong>
-    <p>إضافة الموظفين وتعديل بياناتهم وحساباتهم.</p>
-    <button id="manageEmployeesButton" type="button">
-      فتح إدارة الموظفين
-    </button>
+  <div class="admin-card admin-card-employees">
+    <div class="admin-card-icon" aria-hidden="true">♙</div>
+    <div class="admin-card-content">
+      <strong>إدارة الموظفين</strong>
+      <p>إضافة الموظفين وتعديل بياناتهم وحساباتهم.</p>
+    </div>
+    <button id="manageEmployeesButton" type="button">فتح إدارة الموظفين <span aria-hidden="true">←</span></button>
   </div>
 
+  <div class="admin-card admin-card-leaves">
+    <div class="admin-card-icon" aria-hidden="true">▣</div>
+    <div class="admin-card-content">
+      <strong>إدارة الإجازات</strong>
+      <p>إضافة إجازات الموظفين ومراجعة الإجازات المسجلة وإلغاؤها.</p>
+    </div>
+    <button id="openEmployeeDaysOffButton" type="button">فتح إدارة الإجازات <span aria-hidden="true">←</span></button>
+  </div>
 
-<div class="admin-card">
-  <strong>إدارة الإجازات</strong>
-  <p>إضافة إجازات الموظفين ومراجعة الإجازات المسجلة وإلغاؤها.</p>
-  <button id="openEmployeeDaysOffButton" type="button">
-    فتح إدارة الإجازات
-  </button>
-</div>
+  <div class="admin-card admin-card-sales">
+    <div class="admin-card-icon" aria-hidden="true">↗</div>
+    <div class="admin-card-content">
+      <strong>إدارة المبيعات وأهداف الشركة</strong>
+      <p>تحديد هدف الشركة ومتابعة مبيعات الموظفين ونسب تحقيق التارجت والعمولات.</p>
+    </div>
+    <button id="manageSalesButton" type="button">فتح إدارة المبيعات <span aria-hidden="true">←</span></button>
+  </div>
 
-    
-<div class="admin-card">
-  <strong>إدارة المبيعات وأهداف الشركة</strong>
-  <p>تحديد هدف الشركة ومتابعة مبيعات الموظفين ونسب تحقيق التارجت والعمولات.</p>
-  <button id="manageSalesButton" type="button">
-    فتح إدارة المبيعات
-  </button>
-</div>
+  <div class="admin-card admin-card-messages">
+    <div class="admin-card-icon" aria-hidden="true">✉</div>
+    <div class="admin-card-content">
+      <strong>إدارة الرسائل الذكية</strong>
+      <p>تخصيص رسائل يومية وتحفيزية لكل موظف، مع اختيار الألوان والحركات والصوت ومتابعة رسائل تحقيق التارجت.</p>
+    </div>
+    <button id="openSmartMessagesButton" type="button">فتح إدارة الرسائل الذكية <span aria-hidden="true">←</span></button>
+  </div>
 
-    <div class="admin-card">
-  <strong>💬 إدارة الرسائل الذكية</strong>
-
-  <p>
-    تخصيص رسائل يومية وتحفيزية لكل موظف، مع اختيار الألوان
-    والحركات والصوت ومتابعة رسائل تحقيق التارجت.
-  </p>
-
-  <button id="openSmartMessagesButton" type="button">
-    فتح إدارة الرسائل الذكية
-  </button>
-</div>
-    
-<div class="admin-card">
-  <strong>الملفات الوظيفية والعمولات</strong>
-  <p>إدارة الرواتب والتارجت ونسب العمولات وشروط العمل والإقرارات والتوقيعات.</p>
-  <button id="openEmploymentTermsButton" type="button">
-    فتح الملفات الوظيفية
-  </button>
-</div>
-
-
+  <div class="admin-card admin-card-hr">
+    <div class="admin-card-icon" aria-hidden="true">▤</div>
+    <div class="admin-card-content">
+      <strong>الملفات الوظيفية والعمولات</strong>
+      <p>إدارة الرواتب والتارجت ونسب العمولات وشروط العمل والإقرارات والتوقيعات.</p>
+    </div>
+    <button id="openEmploymentTermsButton" type="button">فتح الملفات الوظيفية <span aria-hidden="true">←</span></button>
+  </div>
 </div>
 
 <!-- تقرير الحضور والانصراف للمدير -->
@@ -3176,14 +3331,22 @@
 </div>
 <!-- End EL-LITHY Employee Smart Message -->
 
-  <div style="background:#f1f7fa;padding:18px;border-radius:12px;margin-top:20px">
-
-    <h3>بيانات الموظف</h3>
-    
-    <p>الاسم: <strong id="staffName"></strong></p>
-    <p>كود الموظف: <strong id="staffCode"></strong></p>
-    <p>المسمى الوظيفي: <strong id="staffJobTitle"></strong></p>
-  </div>
+  <section class="profile-card employee-profile-card" aria-label="بيانات الموظف">
+    <div class="profile-card-top">
+      <div class="profile-avatar employee-avatar" aria-hidden="true">👤</div>
+      <div class="profile-heading">
+        <span class="profile-eyebrow">EMPLOYEE PROFILE</span>
+        <h3>بيانات الموظف</h3>
+        <span class="profile-status"><i></i> الملف الشخصي</span>
+      </div>
+      <div class="profile-brand-mark" aria-hidden="true">EL</div>
+    </div>
+    <div class="profile-details-grid">
+      <div class="profile-detail"><span>الاسم</span><strong id="staffName"></strong></div>
+      <div class="profile-detail"><span>كود الموظف</span><strong id="staffCode"></strong></div>
+      <div class="profile-detail profile-detail-wide"><span>المسمى الوظيفي</span><strong id="staffJobTitle"></strong></div>
+    </div>
+  </section>
 
   <div style="margin-top:20px;padding:18px;border:1px solid #dce4eb;border-radius:12px">
   <h3>الحضور والانصراف</h3>
