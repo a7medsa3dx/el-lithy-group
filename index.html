@@ -1741,6 +1741,29 @@
   .admin-card,.admin-card button span { transition:none !important; }
 }
 
+
+/* EL-LITHY laptop layout: keep all manager sections inside the visible viewport */
+@media (min-width:981px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body[data-mode="manager"] main.container{width:calc(100% - var(--sidebar));max-width:none;margin-inline-start:var(--sidebar);margin-inline-end:0;min-width:0;overflow-x:clip}
+  body[data-mode="manager"] #mgrContent{width:100%;max-width:100%;padding:clamp(14px,1.55vw,24px) clamp(16px,1.8vw,28px) 0;min-width:0}
+  #mgrContent > section{width:100%;max-width:none;min-width:0}
+  #mgrContent .grid,#mgrContent .form-grid,#mgrContent .tile-grid{min-width:0}
+  #mgrContent .grid>* ,#mgrContent .form-grid>* ,#mgrContent .tile-grid>*{min-width:0;max-width:100%}
+  #mgrContent table{max-width:100%}
+  #mgrContent [style*="min-width:650px"],#mgrContent [style*="min-width:620px"]{min-width:0!important}
+  #mgrContent .home-attendance-table{min-width:0;width:100%;table-layout:fixed}
+  #mgrContent .home-attendance-table th,#mgrContent .home-attendance-table td{padding:10px 7px;overflow-wrap:anywhere;font-size:12px}
+}
+.home-attendance-table-wrap{width:100%;max-width:100%;overflow-x:auto;border:1px solid #e5edf2;border-radius:12px}
+.home-attendance-table{width:100%;min-width:700px;border-collapse:collapse;background:#fff}
+.home-attendance-table th{padding:12px 9px;background:#f1f6f8!important;color:#496271!important;font-size:12px;white-space:nowrap;text-align:right}
+.home-attendance-table td{padding:12px 9px;border-top:1px solid #edf2f5;text-align:right;font-size:13px;white-space:nowrap}
+.home-attendance-table tbody tr:hover{background:#f8fbfc}
+#employeeSalesHistory #employeeSalesOlderList::-webkit-scrollbar{width:8px}
+#employeeSalesHistory #employeeSalesOlderList::-webkit-scrollbar-thumb{background:#b8cbd5;border-radius:10px}
+@media(max-width:980px){.home-attendance-table{min-width:680px}}
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
 <style id="newDesign">
@@ -2347,12 +2370,6 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
       <select id="dayOffHistoryEmployee" style="width:100%;max-width:460px;padding:12px;border:1px solid #d8e2e9;border-radius:10px"><option value="">اختر الموظف لعرض سجله</option></select>
       <div id="dayOffHistorySummary" style="margin:12px 0;color:#526b7b">اختر موظفاً لعرض الإجازات المعتمدة التي انتهى يومها.</div>
       <div style="overflow-x:auto"><table style="width:100%;min-width:440px;border-collapse:collapse"><thead><tr><th>التاريخ</th><th>السبب</th><th>الحالة</th></tr></thead><tbody id="dayOffHistoryBody"><tr><td colspan="3">لم يتم اختيار موظف.</td></tr></tbody></table></div>
-    </div>
-
-    <div class="dayoff-replies-panel" style="margin-top:24px;padding:18px;background:#f4f8fb;border:1px solid #dce8ee;border-radius:14px">
-      <h3 style="margin-top:0">💬 ردود الموظفين على رسائل الإدارة</h3>
-      <p style="color:#647887;font-size:13px">تظهر هنا الردود النصية أو تأكيد «شكراً ❤️» بعد إرسالها.</p>
-      <div id="managerSmartMessageReplies"><p>جارٍ تحميل الردود...</p></div>
     </div>
 
     <button id="backFromEmployeeDaysOffButton" type="button"
@@ -3226,6 +3243,11 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
           <option value="motivation">رسالة تحفيزية</option>
           <option value="celebration">رسالة احتفالية</option>
           <option value="glass">تصميم زجاجي مضيء</option>
+          <option value="executive">بطاقة إدارية رسمية</option>
+          <option value="minimal">تصميم بسيط وهادئ</option>
+          <option value="gradient">خلفية متدرجة عصرية</option>
+          <option value="ribbon">رسالة بإطار وشريط جانبي</option>
+          <option value="neon">إضاءة ليلية مميزة</option>
 
         </select>
       </div>
@@ -3486,6 +3508,15 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
       style="margin:13px 0 0;text-align:center;color:#718096;font-size:13px;line-height:1.8">
     </p>
 
+  </div>
+
+
+  <div class="smart-replies-panel" style="margin:22px 0;padding:20px;background:#f4f8fb;border:1px solid #dce8ee;border-radius:16px;box-shadow:0 5px 18px rgba(16,43,63,.05)">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <h3 style="margin:0;color:#173f53">💬 صندوق ردود الموظفين</h3>
+      <span style="font-size:12px;color:#647887">تظهر الردود الجديدة هنا وفي إدارة التنبيهات</span>
+    </div>
+    <div id="managerSmartMessageReplies" style="margin-top:12px"><p>جارٍ تحميل الردود...</p></div>
   </div>
 
   <button id="backFromSmartMessagesButton"
@@ -3759,8 +3790,16 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
     📋 سجل مبيعاتي
   </h3>
 
-  <div id="employeeSalesHistoryList">
-    جاري تحميل سجل المبيعات...
+  <div style="margin-bottom:12px;padding:14px;background:#f4f8fb;border:1px solid #e2ebf1;border-radius:13px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <strong style="color:#173b55">آخر 5 عمليات بيع</strong><span style="font-size:11px;color:#718096">الأحدث أولاً</span>
+    </div>
+    <div id="employeeSalesRecentList">جاري تحميل سجل المبيعات...</div>
+  </div>
+  <div id="employeeSalesOlderWrap" style="display:none;padding:14px;background:#fbfcfd;border:1px solid #e2ebf1;border-radius:13px">
+    <strong style="display:block;margin-bottom:10px;color:#526b7b">باقي عمليات الشهر</strong>
+    <div id="employeeSalesOlderList" style="max-height:260px;overflow-y:auto;overflow-x:hidden;padding-inline-end:5px;overscroll-behavior:contain">
+    </div>
   </div>
 </div>
   
@@ -4294,19 +4333,17 @@ function updateSmartMessagePreview() {
   const previewBody = $("smartMessagePreviewBody");
 
   const backgrounds = {
-    success: "#e7f7ed",
-    bright: "#e5f2ff",
-    motivation: "#fff3df",
-    celebration: "#fff8e7",
-    glass: "#edf5f7"
+    success: "#e7f7ed", bright: "#e5f2ff", motivation: "#fff3df",
+    celebration: "#fff8e7", glass: "rgba(255,255,255,.82)",
+    executive: "linear-gradient(135deg,#edf3f7,#dce8ef)",
+    minimal: "#fbfcfd", gradient: "linear-gradient(135deg,#e5f4f2,#e8edff)",
+    ribbon: "linear-gradient(115deg,#fff 0%,#fff 88%,#e5f1f4 88%,#e5f1f4 100%)",
+    neon: "linear-gradient(135deg,#172b45,#294c68)"
   };
 
   const icons = {
-    success: "✓",
-    bright: "★",
-    motivation: "🚀",
-    celebration: "🏆",
-    glass: "✨"
+    success: "✓", bright: "★", motivation: "🚀", celebration: "🏆", glass: "✨",
+    executive: "▣", minimal: "✦", gradient: "✧", ribbon: "◆", neon: "✺"
   };
 
   const iconsContainer = preview.querySelector("div");
@@ -4341,7 +4378,10 @@ function updateSmartMessagePreview() {
   preview.style.padding =
     isMobile ? "30px 17px" : "40px 25px";
 
-  previewTitle.style.color = color;
+  previewTitle.style.color = style === "neon" ? "#ffffff" : color;
+  previewBody.style.color = style === "neon" ? "#e5f2f7" : "#526779";
+  preview.style.borderRight = style === "ribbon" ? "8px solid " + color : "1px solid " + color;
+  preview.style.color = style === "neon" ? "#ffffff" : "#526779";
 
   previewTitle.style.fontSize =
     isMobile
@@ -7087,19 +7127,17 @@ async function showEmployeeSmartMessage(eventKey) {
     const decorations = $("smartEmployeeMessageDecorations");
 
     const backgrounds = {
-      success: "#e7f7ed",
-      bright: "#e5f2ff",
-      motivation: "#fff3df",
-      celebration: "#fff8e7",
-      glass: "rgba(255,255,255,.96)"
+      success: "#e7f7ed", bright: "#e5f2ff", motivation: "#fff3df",
+      celebration: "#fff8e7", glass: "rgba(255,255,255,.96)",
+      executive: "linear-gradient(135deg,#edf3f7,#dce8ef)",
+      minimal: "#fbfcfd", gradient: "linear-gradient(135deg,#e5f4f2,#e8edff)",
+      ribbon: "linear-gradient(115deg,#fff 0%,#fff 88%,#e5f1f4 88%,#e5f1f4 100%)",
+      neon: "linear-gradient(135deg,#172b45,#294c68)"
     };
 
     const icons = {
-      success: "✓",
-      bright: "★",
-      motivation: "🚀",
-      celebration: "🏆",
-      glass: "✨"
+      success: "✓", bright: "★", motivation: "🚀", celebration: "🏆", glass: "✨",
+      executive: "▣", minimal: "✦", gradient: "✧", ribbon: "◆", neon: "✺"
     };
 
     const color = delivery.accent_color || "#1c7890";
@@ -7147,7 +7185,10 @@ async function showEmployeeSmartMessage(eventKey) {
         ? "blur(15px)"
         : "none";
 
-    title.style.color = color;
+    title.style.color = delivery.visual_style === "neon" ? "#ffffff" : color;
+    body.style.color = delivery.visual_style === "neon" ? "#e5f2f7" : "#526779";
+    messageWindow.style.borderRight = delivery.visual_style === "ribbon" ? "9px solid " + color : "1px solid " + color;
+    messageWindow.style.boxShadow = delivery.visual_style === "neon" ? "0 22px 70px rgba(9,24,43,.45)" : "0 18px 55px rgba(16,43,63,.18)";
     title.style.fontSize = mobile ? "23px" : "28px";
 
     body.style.fontSize = mobile ? "16px" : "19px";
@@ -7569,6 +7610,7 @@ $("openSmartMessagesButton").addEventListener("click", async () => {
   showSection("smartMessagesSection");
 
   await loadSmartMessageEmployees();
+  await loadManagerSmartMessageReplies("managerSmartMessageReplies");
 
 });
 
@@ -8699,32 +8741,37 @@ const { data: history, error: historyError } = await db
 
 if (historyError) throw historyError;
 
-const historyList = $("employeeSalesHistoryList");
-historyList.replaceChildren();
+const recentSalesList = $("employeeSalesRecentList");
+const olderSalesList = $("employeeSalesOlderList");
+const olderSalesWrap = $("employeeSalesOlderWrap");
+recentSalesList.replaceChildren();
+olderSalesList.replaceChildren();
+
+const renderSaleCard = (sale, index) => {
+  const item = document.createElement("article");
+  item.style.cssText = "padding:12px;margin-bottom:9px;background:#fff;border:1px solid #e3ebf0;border-radius:11px;border-right:4px solid " + (sale.sale_type === "plus" ? "#2476b8" : "#20a675");
+  const top = document.createElement("div");
+  top.style.cssText = "display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap";
+  const customer = document.createElement("strong");
+  customer.style.color = "#173b55";
+  customer.textContent = (index < 5 ? (index + 1) + ". " : "") + (sale.customer_name || "بدون اسم عميل");
+  const amount = document.createElement("b");
+  amount.style.color = sale.sale_type === "plus" ? "#2476b8" : "#16865f";
+  amount.textContent = formatMoney(Number(sale.amount));
+  const details = document.createElement("p");
+  details.style.cssText = "margin:7px 0 0;color:#64748b;font-size:12px";
+  details.textContent = `${sale.sale_type === "plus" ? "Plus" : "Triple Zero"} | ${sale.sale_date}`;
+  top.append(customer, amount); item.append(top, details); return item;
+};
 
 if (!history || history.length === 0) {
-  historyList.textContent = "لا توجد عمليات بيع مسجلة هذا الشهر.";
+  recentSalesList.textContent = "لا توجد عمليات بيع مسجلة هذا الشهر.";
+  olderSalesWrap.style.display = "none";
 } else {
-  history.forEach(sale => {
-    const item = document.createElement("div");
-
-    item.style.cssText =
-      "padding:13px;margin-bottom:10px;background:#f3f7fb;border-radius:10px;border-right:4px solid #20a675";
-
-  
-const customer = document.createElement("strong");
-    customer.textContent = sale.customer_name || "بدون اسم عميل";
-
-    const details = document.createElement("p");
-    details.style.cssText = "margin:7px 0 0;color:#64748b";
-
-    details.textContent =
-      `${sale.sale_type === "plus" ? "Plus" : "Triple Zero"} | ` +
-      `${formatMoney(Number(sale.amount))} | ${sale.sale_date}`;
-
-    item.append(customer, details);
-    historyList.appendChild(item);
-  });
+  history.slice(0, 5).forEach((sale, index) => recentSalesList.appendChild(renderSaleCard(sale, index)));
+  const older = history.slice(5);
+  olderSalesWrap.style.display = older.length ? "block" : "none";
+  older.forEach((sale, index) => olderSalesList.appendChild(renderSaleCard(sale, index + 5)));
 }
 
 // تحميل الإجازات المعتمدة للموظف
@@ -9237,29 +9284,35 @@ async function renderDayOffHistory() {
   body.innerHTML = rows.length ? rows.map(r => `<tr><td>${escapeDayOffText(r.leave_date)}</td><td>${escapeDayOffText(r.reason || '—')}</td><td><span class="pill p-green">معتمدة ومنتهية</span></td></tr>`).join("") : '<tr><td colspan="3">لا توجد إجازات معتمدة سابقة لهذا الموظف.</td></tr>';
 }
 
-async function loadManagerSmartMessageReplies() {
-  const host = $("managerSmartMessageReplies");
+async function loadManagerSmartMessageReplies(hostId = "managerSmartMessageReplies") {
+  const host = $(hostId);
   if (!host) return;
   host.innerHTML = '<p>جارٍ تحميل الردود...</p>';
   const { data, error } = await db.from("employee_smart_message_deliveries").select("id,employee_id,message_title,message_body,employee_reply,employee_thanks,employee_replied_at,manager_reply_seen").or("employee_reply.not.is.null,employee_thanks.eq.true").order("employee_replied_at",{ascending:false}).limit(100);
   if (error) { host.innerHTML = `<p style="color:#b3302f">تعذر تحميل الردود: ${escapeDayOffText(error.message)}</p>`; return; }
-  if (!data?.length) { host.innerHTML = '<p>لا توجد ردود حتى الآن.</p>'; return; }
+  if (!data?.length) { host.innerHTML = '<div style="padding:16px;text-align:center;color:#718096;background:#fff;border:1px dashed #d6e2e9;border-radius:12px">لا توجد ردود من الموظفين حتى الآن.</div>'; return; }
   const employeeIds = [...new Set(data.map(r => r.employee_id))];
   const { data: profiles, error: profileError } = await db.from("profiles").select("id,full_name,employee_code").in("id",employeeIds);
   if (profileError) { host.innerHTML = `<p style="color:#b3302f">تعذر تحميل أسماء الموظفين: ${escapeDayOffText(profileError.message)}</p>`; return; }
   const profileMap = new Map((profiles || []).map(p => [p.id,p]));
-  host.innerHTML = data.map(r => { const employee = profileMap.get(r.employee_id); return `<article style="padding:14px;margin:10px 0;background:#fff;border:1px solid #e0eaf0;border-radius:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong>${escapeDayOffText(employee?.full_name || 'موظف')}</strong><span class="pill ${r.manager_reply_seen ? 'p-gray':'p-amber'}">${r.manager_reply_seen ? 'تمت المراجعة':'رد جديد'}</span><span style="margin-inline-start:auto;color:#82919c;font-size:11px">${escapeDayOffText(r.employee_replied_at || '')}</span></div><p style="margin:8px 0;color:#607583;font-size:12px">${escapeDayOffText(r.message_title || 'رسالة الإدارة')}</p><div style="padding:10px;background:#f5f8fa;border-radius:9px;font-size:13px">${escapeDayOffText(r.employee_reply || (r.employee_thanks ? 'شكراً ❤️' : ''))}</div>${r.manager_reply_seen ? '' : `<button type="button" data-reply-seen="${escapeDayOffText(r.id)}" style="margin-top:10px;padding:8px 14px;width:auto">تمت المراجعة</button>`}</article>`; }).join("");
+  host.innerHTML = data.map(r => {
+    const employee = profileMap.get(r.employee_id);
+    const dateText = r.employee_replied_at ? new Date(r.employee_replied_at).toLocaleString('ar-EG-u-nu-latn',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    return `<article style="padding:14px;margin:10px 0;background:#fff;border:1px solid #e0eaf0;border-radius:12px;box-shadow:0 4px 14px rgba(16,43,63,.04)"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong>${escapeDayOffText(employee?.full_name || 'موظف')}</strong><span class="pill ${r.manager_reply_seen ? 'p-gray':'p-amber'}">${r.manager_reply_seen ? 'تمت المراجعة':'رد جديد'}</span><span style="margin-inline-start:auto;color:#82919c;font-size:11px">${escapeDayOffText(dateText)}</span></div><p style="margin:8px 0;color:#607583;font-size:12px">${escapeDayOffText(r.message_title || 'رسالة الإدارة')}</p><div style="padding:11px;background:#f5f8fa;border-radius:9px;font-size:13px;line-height:1.8;white-space:pre-wrap">${escapeDayOffText(r.employee_reply || (r.employee_thanks ? 'شكراً ❤️' : ''))}</div>${r.manager_reply_seen ? '' : `<button type="button" data-reply-seen="${escapeDayOffText(r.id)}" style="margin-top:10px;padding:8px 14px;width:auto">تمت المراجعة</button>`}</article>`;
+  }).join("");
+  host.onclick = async ev => {
+    const btn = ev.target.closest("[data-reply-seen]"); if (!btn) return;
+    btn.disabled = true; btn.textContent = "جارٍ الحفظ...";
+    const { error: updateError } = await db.from("employee_smart_message_deliveries").update({manager_reply_seen:true}).eq("id",btn.dataset.replySeen);
+    if (updateError) { showMessage(updateError.message); btn.disabled=false; btn.textContent="تمت المراجعة"; return; }
+    await loadManagerSmartMessageReplies("managerSmartMessageReplies");
+    await loadManagerSmartMessageReplies("managerSmartMessageRepliesAlerts");
+    if (window.Owner?.refreshBell) await Owner.refreshBell();
+  };
 }
 
-$("dayOffHistoryEmployee")?.addEventListener("change", renderDayOffHistory);
-$("managerSmartMessageReplies")?.addEventListener("click", async ev => {
-  const btn = ev.target.closest("[data-reply-seen]"); if (!btn) return;
-  btn.disabled = true;
-  const { error } = await db.from("employee_smart_message_deliveries").update({manager_reply_seen:true}).eq("id",btn.dataset.replySeen);
-  if (error) { showMessage(error.message); btn.disabled=false; return; }
-  await loadManagerSmartMessageReplies();
-});
 
+$("dayOffHistoryEmployee")?.addEventListener("change", renderDayOffHistory);
 // تحميل الإجازات المسجلة
 async function loadDayOffRecords() {
   const body = $("dayOffTableBody");
@@ -9403,7 +9456,6 @@ async function initializeDayOffSection() {
     await loadDayOffEmployees();
     await loadDayOffRecords();
     await loadDayOffHistory();
-    await loadManagerSmartMessageReplies();
     $("dayOffStatus").textContent = "يمكنك الآن إدارة إجازات الموظفين.";
   } catch (error) {
     console.error(error);
@@ -9923,6 +9975,20 @@ Owner.renderHome = async function () {
 
   let html = '<div class="page-head"><div class="sp"><h2>مرحباً بك في لوحة التحكم</h2><p>' + new Date().toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) + '</p></div>' +
     '<button class="btn sec" id="homeRefresh">' + icon('refresh', 18) + 'تحديث</button></div>';
+  const timeOnly = value => value ? new Date(value).toLocaleTimeString('ar-EG-u-nu-latn', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit' }) : '—';
+  const attendanceRows = E.map(emp => {
+    const r = rec.get(emp.id);
+    let state = 'لم يسجل الحضور', tone = 'p-gray';
+    if (r?.check_out) { state = 'انصرف'; tone = 'p-gray'; }
+    else if (r?.break_start && !r?.break_end) { state = 'في الاستراحة'; tone = 'p-amber'; }
+    else if (r?.break_end) { state = 'عاد من الاستراحة'; tone = 'p-blue'; }
+    else if (r?.check_in) { state = 'حاضر'; tone = 'p-green'; }
+    return '<tr><td><b>' + esc(emp.full_name) + '</b></td><td>' + timeOnly(r?.check_in) + '</td><td>' + timeOnly(r?.break_start) + '</td><td>' + timeOnly(r?.break_end) + '</td><td>' + timeOnly(r?.check_out) + '</td><td><span class="pill ' + tone + '">' + state + '</span></td></tr>';
+  }).join('');
+  html += '<section class="card home-attendance-board" style="margin:14px 0 18px;padding:20px;border:1px solid #dce8ee;border-top:4px solid #168a75;border-radius:18px;box-shadow:0 8px 24px rgba(16,43,63,.06)">' +
+    '<div class="row" style="align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div class="sp"><h3 style="margin:0;color:#173b55">🕘 متابعة الحضور والانصراف اليوم</h3><p class="muted small" style="margin:5px 0 0">' + today + ' · يتم عرض التوقيت الفعلي المسجل لكل موظف</p></div><span class="pill p-green">' + here + ' حاضر الآن</span><span class="pill p-amber">' + onBreak + ' في الاستراحة</span></div>' +
+    '<div class="home-attendance-table-wrap"><table class="home-attendance-table"><thead><tr><th>الموظف</th><th>الحضور</th><th>بداية الاستراحة</th><th>نهاية الاستراحة</th><th>الانصراف</th><th>الحالة الحالية</th></tr></thead><tbody>' + (attendanceRows || '<tr><td colspan="6">لا يوجد موظفون مسجلون.</td></tr>') + '</tbody></table></div></section>';
+
   html += '<div class="grid g-auto">' +
     kpi('c-green', 'clock', 'الحاضرون الآن', here + ' <small>من ' + E.length + '</small>', onBreak + ' في فترة راحة') +
     kpi('c-blue', 'trend', 'مبيعات الشهر', num(c.total_sales || 0) + ' <small>جنيه</small>', num(pct.toFixed(1)) + '% من هدف الشركة') +
@@ -9988,19 +10054,25 @@ function alertItem(a, compact) {
 }
 function alertGo(key) { const it = BUILTIN.find(b => b.key === key); if (it) { if (key === 'customers') Owner.cTab = 'inbox'; it.go(); } }
 Owner.refreshBell = async function () {
-  const r = await safe(db.from('manager_alerts').select('id', { count: 'exact', head: true }).eq('is_read', false));
-  const n = r.count || 0;
+  const [alertsCount, repliesCount] = await Promise.all([
+    safe(db.from('manager_alerts').select('id', { count: 'exact', head: true }).eq('is_read', false)),
+    safe(db.from('employee_smart_message_deliveries').select('id', { count: 'exact', head: true }).eq('manager_reply_seen', false).or('employee_reply.not.is.null,employee_thanks.eq.true'))
+  ]);
+  const n = (alertsCount.count || 0) + (repliesCount.count || 0);
   const d = $('bellDot'); if (d) { d.textContent = n > 99 ? '99+' : n; d.classList.toggle('hide-me', !n); }
-  const s = $('sbAlertBadge'); if (s) { s.textContent = n; s.classList.toggle('hide-me', !n); }
+  const s = $('sbAlertBadge'); if (s) { s.textContent = n > 99 ? '99+' : n; s.classList.toggle('hide-me', !n); }
 };
 Owner.renderAlerts = async function () {
   const sec = $('alertsSection');
-  sec.innerHTML = pageHead(lab('nav.alerts'), 'رقم غير مصري، تقارير جديدة أو معدّلة، وردود الموظفين على الأرقام الموزعة.', '<button class="btn sec" id="alReadAll">تمت قراءة الكل</button>') + '<div id="alList" class="stack"><div class="empty">جارٍ التحميل...</div></div>';
+  sec.innerHTML = pageHead(lab('nav.alerts'), 'كل التنبيهات الجديدة، بما فيها ردود الموظفين على الرسائل الذكية.', '<button class="btn sec" id="alReadAll">تمت قراءة الكل</button>') +
+    '<div class="card" style="margin-bottom:16px"><div class="row" style="gap:10px;flex-wrap:wrap"><h3 style="margin:0" class="sp">💬 ردود الموظفين على الرسائل الذكية</h3><span class="pill p-blue">تحديث مباشر عند فتح القسم</span></div><div id="managerSmartMessageRepliesAlerts" style="margin-top:12px"><div class="empty">جارٍ تحميل الردود...</div></div></div>' +
+    '<div class="card"><h3 style="margin:0 0 12px">التنبيهات الأخرى</h3><div id="alList" class="stack"><div class="empty">جارٍ التحميل...</div></div></div>';
   const load = async () => {
     const r = await safe(db.from('manager_alerts').select('*').order('created_at', { ascending: false }).limit(120));
     const box = $('alList');
     if (r.error) { box.innerHTML = sqlWarn; return; }
-    box.innerHTML = (r.data || []).length ? r.data.map(a => alertItem(a)).join('') : '<div class="empty">لا توجد تنبيهات.</div>';
+    box.innerHTML = (r.data || []).length ? r.data.map(a => alertItem(a)).join('') : '<div class="empty">لا توجد تنبيهات أخرى.</div>';
+    await loadManagerSmartMessageReplies("managerSmartMessageRepliesAlerts");
     Owner.refreshBell();
   };
   $('alReadAll').onclick = e => guard(e.currentTarget, async () => { const r = await db.from('manager_alerts').update({ is_read: true }).eq('is_read', false); if (r.error) throw r.error; await load(); });
