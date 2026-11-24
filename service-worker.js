@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "el-lithy-group-v4";
+const CACHE_NAME = "el-lithy-group-v5";
 
 const FILES_TO_CACHE = [
   "/",
