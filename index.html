@@ -1757,7 +1757,7 @@
   --red:#D9625E; --red-l:#FDE9E8; --red-t:#B3302F;
   --gray-l:#EEF1F5; --gray-t:#4A5D6D;
   --r:18px; --shadow:0 6px 18px rgba(15,42,61,.06);
-  --sidebar:264px;
+  --sidebar:288px;
 }
 html{-webkit-text-size-adjust:100%}
 body{font-family:'Cairo',system-ui,-apple-system,'Segoe UI',Tahoma,Arial,sans-serif !important;background:var(--bg) !important;color:var(--ink);display:block !important;padding:0 !important;min-height:100vh;font-variant-numeric:lining-nums}
@@ -1991,6 +1991,46 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 @media print{#mgrSidebar,#mgrTopbar,#empNav{display:none !important}body[data-mode="manager"] main.container{margin:0}}
 
+
+/* EL-LITHY responsive refinement and department color accents */
+:root{--sidebar:288px;--page-gutter:clamp(14px,2.2vw,32px)}
+#mgrContent{padding-inline:var(--page-gutter);min-width:0}
+#mgrContent>section,#mgrContent .card,#mgrContent .admin-card{min-width:0;max-width:100%}
+#mgrContent table{max-width:100%}
+#mgrContent .tbl-wrap,#mgrContent [style*="overflow-x:auto"]{max-width:100%;overscroll-behavior-inline:contain}
+.sb-user{min-width:0;flex-wrap:nowrap}.sb-user .sp{min-width:0}.sb-user b{overflow-wrap:anywhere;line-height:1.4}
+#mgrSidebar{width:var(--sidebar)}
+#dashboardSection #attendanceReportSection{overflow:hidden}
+#mgrContent input,#mgrContent select,#mgrContent textarea{max-width:100%;min-width:0}
+#employeeDashboardSection{width:100%;max-width:820px;margin-inline:auto;padding-inline:clamp(12px,3vw,22px);padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+#employeeDashboardSection *{min-width:0}
+#empNav{padding-bottom:calc(6px + env(safe-area-inset-bottom))}
+#smartEmployeeMessageWindow{width:min(680px,calc(100vw - 36px));max-width:100%;overflow-x:hidden;overscroll-behavior:contain}
+#smartEmployeeReplyArea textarea{font-size:16px;line-height:1.6}
+#employeeDaysOffSection .dayoff-history-panel th,#employeeDaysOffSection .dayoff-replies-panel h3{background:#173f53;color:#fff;padding:11px;border-radius:8px}
+#employeeDaysOffSection .dayoff-history-panel td{padding:11px;border-bottom:1px solid #e7eef3}
+#employeeDaysOffSection .dayoff-replies-panel article{box-shadow:0 4px 14px rgba(16,43,63,.045)}
+#mgrContent [id*="sales"] .admin-card{border-top:3px solid #3d83b7}
+#mgrContent #employeeDaysOffSection .dayoff-history-panel{border-top:4px solid #299477!important}
+#mgrContent #smartMessagesSection{border-top:4px solid #6c72b8}
+#mgrContent #employmentTermsSection{border-top:4px solid #b28a50}
+#mgrContent #customersSection{border-top:4px solid #42a5b8}
+#mgrContent #campaignsSection{border-top:4px solid #d18b4c}
+@media(max-width:980px){:root{--sidebar:288px}#mgrContent{padding:14px 14px 0}#mgrTopbar{padding-inline:14px}body[data-mode="manager"] main.container{margin-inline-start:0}}
+@media(max-width:600px){
+  body{overflow-x:hidden}#mgrContent{padding:12px 10px 0}#mgrContent>section{width:100%;max-width:100%;overflow-wrap:anywhere}
+  #employeesSection,#employeeDaysOffSection,#accountSettingsSection,#passwordChangeSection,#salesManagementSection,#smartMessagesSection,#employmentTermsSection{padding:14px!important;border-radius:16px!important}
+  #mgrTopbar{gap:8px;padding:10px 12px}#mgrTopbar h2{font-size:16px}
+  .admin-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.admin-card{padding:14px;min-width:0}
+  .sb-user{gap:7px}.sb-user .icon-btn{flex:0 0 34px!important;width:34px!important;height:34px!important}
+  #employeeDashboardSection{padding-inline:12px;padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+  .emp-hero{margin-inline:-12px;padding-inline:14px}.emp-hero b{font-size:16px}
+  #smartEmployeeMessageWindow{padding-inline:15px!important}
+  #smartEmployeeReplyArea>div{flex-direction:column}#smartEmployeeReplyArea button{width:100%!important}
+  .employment-history-grid{grid-template-columns:1fr}
+}
+@media(max-width:380px){.admin-grid{grid-template-columns:1fr}.emp-hero{gap:8px}.emp-hero .date{font-size:10px}}
+@media(hover:none){.admin-card:hover{transform:none}}
 </style>
 </head>
 <body data-mode="auth">
@@ -2299,6 +2339,20 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="dayoff-history-panel" style="margin-top:24px;padding:18px;background:#fff;border:1px solid #dce8ee;border-radius:14px">
+      <h3 style="margin-top:0">📅 سجل الإجازات السابقة لكل موظف</h3>
+      <label for="dayOffHistoryEmployee">اختر الموظف</label>
+      <select id="dayOffHistoryEmployee" style="width:100%;max-width:460px;padding:12px;border:1px solid #d8e2e9;border-radius:10px"><option value="">اختر الموظف لعرض سجله</option></select>
+      <div id="dayOffHistorySummary" style="margin:12px 0;color:#526b7b">اختر موظفاً لعرض الإجازات المعتمدة التي انتهى يومها.</div>
+      <div style="overflow-x:auto"><table style="width:100%;min-width:440px;border-collapse:collapse"><thead><tr><th>التاريخ</th><th>السبب</th><th>الحالة</th></tr></thead><tbody id="dayOffHistoryBody"><tr><td colspan="3">لم يتم اختيار موظف.</td></tr></tbody></table></div>
+    </div>
+
+    <div class="dayoff-replies-panel" style="margin-top:24px;padding:18px;background:#f4f8fb;border:1px solid #dce8ee;border-radius:14px">
+      <h3 style="margin-top:0">💬 ردود الموظفين على رسائل الإدارة</h3>
+      <p style="color:#647887;font-size:13px">تظهر هنا الردود النصية أو تأكيد «شكراً ❤️» بعد إرسالها.</p>
+      <div id="managerSmartMessageReplies"><p>جارٍ تحميل الردود...</p></div>
     </div>
 
     <button id="backFromEmployeeDaysOffButton" type="button"
@@ -3274,7 +3328,12 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
         style="width:100%;padding:13px;border:1px solid #dce4eb;border-radius:10px">
 
         <option value="soft">🔔 رنة ناعمة قصيرة</option>
+        <option value="double">🔔🔔 إشعار مزدوج</option>
+        <option value="official">🎵 نغمة رسمية هادئة</option>
         <option value="motivation">✨ نغمة تحفيزية</option>
+        <option value="success">🏆 نغمة نجاح وإنجاز</option>
+        <option value="reminder">⏰ تذكير لطيف</option>
+        <option value="important">📣 رسالة مهمة</option>
         <option value="celebration">🎉 صوت احتفالي</option>
 
       </select>
@@ -3574,25 +3633,15 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 
     </div>
 
-    <!-- زر تأكيد القراءة والإغلاق -->
-    <button id="smartEmployeeMessageDismiss"
-            type="button"
-            style="
-              position:relative;
-              z-index:3;
-              width:min(260px,100%);
-              margin:28px 0 0;
-              padding:14px 20px;
-              border:0;
-              border-radius:12px;
-              background:#102b3f;
-              color:white;
-              font-size:15px;
-              font-weight:bold;
-              cursor:pointer;
-            ">
-      شكرًا ❤️
-    </button>
+    <div id="smartEmployeeReplyArea" style="position:relative;z-index:3;width:100%;max-width:560px;margin-top:22px;text-align:right">
+      <label for="smartEmployeeReplyText" style="display:block;margin-bottom:8px;font-weight:700;color:#405b6b">رد على رسالة الإدارة (اختياري)</label>
+      <textarea id="smartEmployeeReplyText" rows="3" maxlength="1500" placeholder="اكتب ردك هنا..." style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #d5e2e9;border-radius:12px;background:#fff;font:inherit;resize:vertical"></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px">
+        <button id="smartEmployeeSendReply" type="button" style="width:auto;min-height:44px;margin:0;padding:10px 20px;border:0;border-radius:11px;background:#176477;color:#fff;font-weight:700">إرسال الرد</button>
+        <button id="smartEmployeeMessageDismiss" type="button" style="width:auto;min-height:44px;margin:0;padding:10px 20px;border:0;border-radius:11px;background:#e8f3f4;color:#14566a;font-weight:700">شكراً ❤️</button>
+      </div>
+      <div id="smartEmployeeReplyStatus" role="status" style="margin-top:8px;text-align:center;font-size:12px;color:#647887"></div>
+    </div>
 
   </div>
 </div>
@@ -4569,7 +4618,12 @@ async function playSmartMessageSound() {
 
     const notes = {
       soft: [659],
+      double: [740, 740],
+      official: [587, 659],
       motivation: [523, 659, 784],
+      success: [523, 659, 784, 988],
+      reminder: [784, 659],
+      important: [880, 698, 880],
       celebration: [523, 659, 784, 1046]
     };
 
@@ -6564,7 +6618,12 @@ async function playEmployeeSmartMessageSound(soundType) {
 
     const notes = {
       soft: [659],
+      double: [740, 740],
+      official: [587, 659],
       motivation: [523, 659, 784],
+      success: [523, 659, 784, 988],
+      reminder: [784, 659],
+      important: [880, 698, 880],
       celebration: [523, 659, 784, 1046]
     };
 
@@ -6605,6 +6664,30 @@ async function playEmployeeSmartMessageSound(soundType) {
   }
 }
 
+
+// إرسال رد الموظف أو تسجيل الشكر الاختياري
+async function submitEmployeeSmartMessageReply(thanksOnly = false) {
+  const deliveryId = activeEmployeeSmartMessageDeliveryId;
+  const input = $("smartEmployeeReplyText");
+  const status = $("smartEmployeeReplyStatus");
+  const replyText = (input?.value || "").trim();
+  if (!deliveryId) return;
+  if (!thanksOnly && !replyText) { if (status) status.textContent = "اكتب ردك أولاً أو اختر شكراً ❤️"; return; }
+  const send = $("smartEmployeeSendReply"); if (send) send.disabled = true;
+  try {
+    const { data: authData, error: authError } = await db.auth.getUser();
+    if (authError) throw authError;
+    if (!authData?.user) throw new Error("انتهت جلسة الدخول، سجّل الدخول مرة أخرى.");
+    const update = { employee_reply: thanksOnly ? null : replyText, employee_thanks: !!thanksOnly, employee_replied_at: new Date().toISOString(), manager_reply_seen: false };
+    const { error } = await db.from("employee_smart_message_deliveries").update(update).eq("id",deliveryId).eq("employee_id",authData.user.id);
+    if (error) throw error;
+    if (status) status.textContent = thanksOnly ? "تم إرسال الشكر ❤️" : "تم إرسال ردك إلى المدير بنجاح.";
+    await closeEmployeeSmartMessage();
+  } catch (error) {
+    if (status) status.textContent = "تعذر إرسال الرد: " + error.message;
+    if (send) send.disabled = false;
+  }
+}
 
 // إغلاق الرسالة وتسجيل مشاهدتها
 async function closeEmployeeSmartMessage() {
@@ -7091,7 +7174,11 @@ async function showEmployeeSmartMessage(eventKey) {
       closeEmployeeSmartMessage;
 
     $("smartEmployeeMessageDismiss").onclick =
-      closeEmployeeSmartMessage;
+      () => submitEmployeeSmartMessageReply(true);
+    $("smartEmployeeSendReply").onclick =
+      () => submitEmployeeSmartMessageReply(false);
+    $("smartEmployeeReplyText").value = "";
+    $("smartEmployeeReplyStatus").textContent = "";
 
   } catch (error) {
 
@@ -9124,6 +9211,55 @@ async function loadDayOffEmployees() {
   });
 }
 
+// سجل الإجازات المعتمدة التي انتهى يومها فقط
+async function loadDayOffHistory() {
+  const select = $("dayOffHistoryEmployee");
+  if (!select) return;
+  const current = select.value;
+  const { data: employees, error: empError } = await db.from("profiles").select("id,full_name,employee_code").eq("role","employee").order("employee_code");
+  if (empError) throw empError;
+  select.innerHTML = '<option value="">اختر الموظف لعرض سجله</option>' + (employees || []).map(e => `<option value="${escapeDayOffText(e.id)}">${escapeDayOffText(e.full_name)} - ${escapeDayOffText(e.employee_code)}</option>`).join("");
+  if (current) select.value = current;
+  await renderDayOffHistory();
+}
+
+async function renderDayOffHistory() {
+  const employeeId = $("dayOffHistoryEmployee")?.value;
+  const body = $("dayOffHistoryBody");
+  const summary = $("dayOffHistorySummary");
+  if (!body || !summary) return;
+  if (!employeeId) { body.innerHTML = '<tr><td colspan="3">اختر موظفاً لعرض سجله.</td></tr>'; summary.textContent = 'يعرض السجل الإجازات المعتمدة التي انتهى يومها فقط.'; return; }
+  const today = new Intl.DateTimeFormat("en-CA", {timeZone:"Africa/Cairo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const { data, error } = await db.from("employee_days_off").select("leave_date,reason").eq("employee_id",employeeId).lt("leave_date",today).order("leave_date",{ascending:false});
+  if (error) throw error;
+  const rows = data || [];
+  summary.textContent = `إجمالي الإجازات السابقة: ${rows.length} يوم`;
+  body.innerHTML = rows.length ? rows.map(r => `<tr><td>${escapeDayOffText(r.leave_date)}</td><td>${escapeDayOffText(r.reason || '—')}</td><td><span class="pill p-green">معتمدة ومنتهية</span></td></tr>`).join("") : '<tr><td colspan="3">لا توجد إجازات معتمدة سابقة لهذا الموظف.</td></tr>';
+}
+
+async function loadManagerSmartMessageReplies() {
+  const host = $("managerSmartMessageReplies");
+  if (!host) return;
+  host.innerHTML = '<p>جارٍ تحميل الردود...</p>';
+  const { data, error } = await db.from("employee_smart_message_deliveries").select("id,employee_id,message_title,message_body,employee_reply,employee_thanks,employee_replied_at,manager_reply_seen").or("employee_reply.not.is.null,employee_thanks.eq.true").order("employee_replied_at",{ascending:false}).limit(100);
+  if (error) { host.innerHTML = `<p style="color:#b3302f">تعذر تحميل الردود: ${escapeDayOffText(error.message)}</p>`; return; }
+  if (!data?.length) { host.innerHTML = '<p>لا توجد ردود حتى الآن.</p>'; return; }
+  const employeeIds = [...new Set(data.map(r => r.employee_id))];
+  const { data: profiles, error: profileError } = await db.from("profiles").select("id,full_name,employee_code").in("id",employeeIds);
+  if (profileError) { host.innerHTML = `<p style="color:#b3302f">تعذر تحميل أسماء الموظفين: ${escapeDayOffText(profileError.message)}</p>`; return; }
+  const profileMap = new Map((profiles || []).map(p => [p.id,p]));
+  host.innerHTML = data.map(r => { const employee = profileMap.get(r.employee_id); return `<article style="padding:14px;margin:10px 0;background:#fff;border:1px solid #e0eaf0;border-radius:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong>${escapeDayOffText(employee?.full_name || 'موظف')}</strong><span class="pill ${r.manager_reply_seen ? 'p-gray':'p-amber'}">${r.manager_reply_seen ? 'تمت المراجعة':'رد جديد'}</span><span style="margin-inline-start:auto;color:#82919c;font-size:11px">${escapeDayOffText(r.employee_replied_at || '')}</span></div><p style="margin:8px 0;color:#607583;font-size:12px">${escapeDayOffText(r.message_title || 'رسالة الإدارة')}</p><div style="padding:10px;background:#f5f8fa;border-radius:9px;font-size:13px">${escapeDayOffText(r.employee_reply || (r.employee_thanks ? 'شكراً ❤️' : ''))}</div>${r.manager_reply_seen ? '' : `<button type="button" data-reply-seen="${escapeDayOffText(r.id)}" style="margin-top:10px;padding:8px 14px;width:auto">تمت المراجعة</button>`}</article>`; }).join("");
+}
+
+$("dayOffHistoryEmployee")?.addEventListener("change", renderDayOffHistory);
+$("managerSmartMessageReplies")?.addEventListener("click", async ev => {
+  const btn = ev.target.closest("[data-reply-seen]"); if (!btn) return;
+  btn.disabled = true;
+  const { error } = await db.from("employee_smart_message_deliveries").update({manager_reply_seen:true}).eq("id",btn.dataset.replySeen);
+  if (error) { showMessage(error.message); btn.disabled=false; return; }
+  await loadManagerSmartMessageReplies();
+});
+
 // تحميل الإجازات المسجلة
 async function loadDayOffRecords() {
   const body = $("dayOffTableBody");
@@ -9266,6 +9402,8 @@ async function initializeDayOffSection() {
   try {
     await loadDayOffEmployees();
     await loadDayOffRecords();
+    await loadDayOffHistory();
+    await loadManagerSmartMessageReplies();
     $("dayOffStatus").textContent = "يمكنك الآن إدارة إجازات الموظفين.";
   } catch (error) {
     console.error(error);
@@ -9579,7 +9717,6 @@ const SEC2NAV = { dashboardSection: 'home', employeesSection: 'employees', sales
 const BUILTIN = [
   { key: 'home', icon: 'grid', grp: 'main', go: () => { A.activeNav = 'home'; window.showSection('dashboardSection'); Owner.renderHome(); } },
   { key: 'employees', icon: 'users', grp: 'main', go: () => proxy('manageEmployeesButton', 'employees') },
-  { key: 'attendance', icon: 'clock', grp: 'main', go: () => { A.activeNav = 'attendance'; window.showSection('dashboardSection'); const el = $('attendanceReportSection'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
   { key: 'daysoff', icon: 'calendar', grp: 'main', go: () => proxy('openEmployeeDaysOffButton', 'daysoff') },
   { key: 'sales', icon: 'trend', grp: 'main', go: () => proxy('manageSalesButton', 'sales') },
   { key: 'reports', icon: 'doc', grp: 'clients', go: () => openOwner('reportsSection', 'reports', () => Owner.renderReports()) },
