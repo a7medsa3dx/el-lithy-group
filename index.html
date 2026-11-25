@@ -9699,9 +9699,29 @@ async function guard(btn, fn) {
   catch (e) { console.error(e); toast(errMsg(e), 'err'); }
   finally { if (btn) btn.disabled = false; }
 }
-async function safe(p) {
-  try { const r = await p; if (r && r.error) { console.warn(r.error.message); if (/PGRST20[25]|schema cache|does not exist/i.test(r.error.message || '')) A.sqlOk = false; return { data: null, count: null, error: r.error }; } return r; }
-  catch (e) { console.warn(e); return { data: null, count: null, error: e }; }
+async function safe(p, label = 'تحميل البيانات') {
+  let timer = null;
+  try {
+    // لا نترك لوحة التحكم معلّقة إلى ما لا نهاية إذا تأخر طلب Supabase.
+    const timeout = new Promise(resolve => {
+      timer = setTimeout(() => resolve({
+        data: null, count: null,
+        error: new Error('انتهت مهلة الاتصال أثناء ' + label + '. تحقق من اتصال الإنترنت ثم اضغط تحديث.')
+      }), 15000);
+    });
+    const r = await Promise.race([Promise.resolve(p), timeout]);
+    if (r && r.error) {
+      console.warn('[EL-LITHY] ' + label + ':', r.error.message || r.error);
+      if (/PGRST20[25]|schema cache|does not exist/i.test(r.error.message || '')) A.sqlOk = false;
+      return { data: null, count: null, error: r.error };
+    }
+    return r;
+  } catch (e) {
+    console.warn('[EL-LITHY] ' + label + ':', e);
+    return { data: null, count: null, error: e };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 function modal(html, onMount) {
   const back = document.createElement('div');
@@ -9953,16 +9973,20 @@ Owner.renderHome = async function () {
   const box = $('homeWidgets'); if (!box) return;
   box.innerHTML = '<div class="empty">جارٍ تحميل الملخص...</div>';
   const today = cairoToday(), ms = today.slice(0, 7) + '-01';
-  const [emps, att, comp, reps, camp, alerts, unread, esales] = await Promise.all([
-    safe(db.from('profiles').select('id,full_name,job_title,employee_code').eq('role', 'employee').eq('active', true).order('employee_code')),
-    safe(db.from('attendance').select('employee_id,check_in,check_out,break_start,break_end').eq('work_date', today)),
-    safe(db.from('monthly_company_sales_performance').select('*').eq('month_start', ms).maybeSingle()),
-    safe(db.from('daily_reports').select('employee_id').eq('report_date', today)),
-    safe(db.from('campaign_summary').select('*').eq('status', 'open').maybeSingle()),
-    safe(db.from('manager_alerts').select('*').order('created_at', { ascending: false }).limit(5)),
-    safe(db.from('manager_alerts').select('id', { count: 'exact', head: true }).eq('is_read', false)),
-    safe(db.from('monthly_employee_sales_performance').select('*').eq('month_start', ms).order('total_sales', { ascending: false }))
+  const homeResults = await Promise.all([
+    safe(db.from('profiles').select('id,full_name,job_title,employee_code').eq('role', 'employee').eq('active', true).order('employee_code'), 'تحميل قائمة الموظفين'),
+    safe(db.from('attendance').select('employee_id,check_in,check_out,break_start,break_end').eq('work_date', today), 'تحميل الحضور والانصراف'),
+    safe(db.from('monthly_company_sales_performance').select('*').eq('month_start', ms).maybeSingle(), 'تحميل مبيعات الشركة'),
+    safe(db.from('daily_reports').select('employee_id').eq('report_date', today), 'تحميل تقارير اليوم'),
+    safe(db.from('campaign_summary').select('*').eq('status', 'open').maybeSingle(), 'تحميل الحملة الحالية'),
+    safe(db.from('manager_alerts').select('*').order('created_at', { ascending: false }).limit(5), 'تحميل التنبيهات'),
+    safe(db.from('manager_alerts').select('id', { count: 'exact', head: true }).eq('is_read', false), 'تحميل عدد التنبيهات غير المقروءة'),
+    safe(db.from('monthly_employee_sales_performance').select('*').eq('month_start', ms).order('total_sales', { ascending: false }), 'تحميل مبيعات الموظفين')
   ]);
+  const [emps, att, comp, reps, camp, alerts, unread, esales] = homeResults;
+  const homeErrors = homeResults
+    .map((r, i) => r && r.error ? ['الموظفون','الحضور والانصراف','مبيعات الشركة','تقارير اليوم','الحملة الحالية','التنبيهات','التنبيهات غير المقروءة','مبيعات الموظفين'][i] + ': ' + (r.error.message || 'تعذر التحميل') : null)
+    .filter(Boolean);
   const E = sortStaff(emps.data || []), rec = new Map((att.data || []).map(r => [r.employee_id, r]));
   let present = 0, onBreak = 0;
   E.forEach(e => { const r = rec.get(e.id); if (r && r.check_in && !r.check_out) { if (r.break_start && !r.break_end) onBreak++; else present++; } });
@@ -9976,6 +10000,9 @@ Owner.renderHome = async function () {
 
   let html = '<div class="page-head"><div class="sp"><h2>مرحباً بك في لوحة التحكم</h2><p>' + new Date().toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) + '</p></div>' +
     '<button class="btn sec" id="homeRefresh">' + icon('refresh', 18) + 'تحديث</button></div>';
+  if (homeErrors.length) {
+    html += '<div class="card" style="margin:12px 0;border:1px solid #f0c36d;background:#fff9e9;color:#76520a"><b>بعض بيانات لوحة التحكم لم تُحمّل</b><ul style="margin:8px 0 0;padding-right:20px">' + homeErrors.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul><p class="small" style="margin:8px 0 0">باقي اللوحة سيظل متاحًا. افحص اتصال الإنترنت أو صلاحيات الجدول المذكور ثم اضغط تحديث.</p></div>';
+  }
   const timeOnly = value => value ? new Date(value).toLocaleTimeString('ar-EG-u-nu-latn', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit' }) : '—';
   html += '<div class="grid g-auto" style="margin:12px 0">' + kpi('c-green','clock','الحاضرون الآن',here+' <small>من '+E.length+'</small>',onBreak+' في فترة راحة') + '</div>';
   const attendanceRows = E.map(emp => {
