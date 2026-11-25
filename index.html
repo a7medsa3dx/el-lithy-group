@@ -1760,8 +1760,6 @@
 .home-attendance-table th{padding:12px 9px;background:#f1f6f8!important;color:#496271!important;font-size:12px;white-space:nowrap;text-align:right}
 .home-attendance-table td{padding:12px 9px;border-top:1px solid #edf2f5;text-align:right;font-size:13px;white-space:nowrap}
 .home-attendance-table tbody tr:hover{background:#f8fbfc}
-#employeeSalesHistory #employeeSalesOlderList::-webkit-scrollbar{width:8px}
-#employeeSalesHistory #employeeSalesOlderList::-webkit-scrollbar-thumb{background:#b8cbd5;border-radius:10px}
 @media(max-width:980px){.home-attendance-table{min-width:680px}}
 
 </style>
@@ -3710,6 +3708,10 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
     <button id="checkOutButton" type="button">تسجيل الانصراف</button>
   </div>
 </div>
+<div id="employeeLeavesSection" class="card" style="margin-top:14px;padding:18px;background:#fff;border:1px solid #dce4eb;border-radius:12px">
+  <h3 style="color:#173b55;margin:0 0 12px">📅 الإجازات القادمة</h3>
+  <div id="employeeLeavesList">جاري تحميل الإجازات...</div>
+</div>
 
   
 </div>
@@ -3780,28 +3782,10 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 
 </div>
 
-<div class="card" id="teamSalesBox"></div><div id="employeeSalesHistory" style="
-  margin-top:18px;
-  padding:18px;
-  background:#fff;
-  border:1px solid #dce6ef;
-  border-radius:16px;
-">
-  <h3 style="color:#173b55;margin:0 0 15px">
-    📋 سجل مبيعاتي
-  </h3>
-
-  <div style="margin-bottom:12px;padding:14px;background:#f4f8fb;border:1px solid #e2ebf1;border-radius:13px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-      <strong style="color:#173b55">آخر 3 عمليات بيع</strong><span style="font-size:11px;color:#718096">الأحدث أولاً</span>
-    </div>
-    <div id="employeeSalesRecentList">جاري تحميل سجل المبيعات...</div>
-  </div>
-  <div id="employeeSalesOlderWrap" style="display:none;padding:14px;background:#fbfcfd;border:1px solid #e2ebf1;border-radius:13px">
-    <strong style="display:block;margin-bottom:10px;color:#526b7b">باقي عمليات الشهر</strong>
-    <div id="employeeSalesOlderList" style="max-height:260px;overflow-y:auto;overflow-x:hidden;padding-inline-end:5px;overscroll-behavior:contain">
-    </div>
-  </div>
+<div class="card" id="teamSalesBox"></div><div id="employeeSalesHistory" style="margin-top:18px;padding:18px;background:#fff;border:1px solid #dce6ef;border-radius:16px">
+  <h3 style="color:#173b55;margin:0 0 12px">📋 سجل مبيعاتي</h3>
+  <div class="small muted" style="margin-bottom:8px">كل عمليات الشهر — الأحدث أولاً</div>
+  <div id="employeeSalesAllList" style="height:250px;max-height:250px;overflow-y:auto;overflow-x:hidden;padding:2px 6px 2px 2px;overscroll-behavior:contain">جاري تحميل سجل المبيعات...</div>
 </div>
   
 </div>
@@ -3941,21 +3925,6 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
   </div>
 
   <p id="employeeTermsMessage" style="margin-top:15px;color:#64748b;line-height:1.8"></p>
-</div>
-<div id="employeeLeavesSection" style="
-  margin-top:20px;
-  padding:18px;
-  background:#fff;
-  border:1px solid #dce4eb;
-  border-radius:12px;
-">
-  <h3 style="color:#173b55;margin:0 0 15px">
-    📅 إجازاتي المعتمدة
-  </h3>
-
-  <div id="employeeLeavesList">
-    جاري تحميل الإجازات...
-  </div>
 </div>
 
 <button id="employeeLogoutButton" type="button" style="
@@ -8725,13 +8694,9 @@ async function loadEmployeeSalesDashboard(profile) {
     }
 
    
-      // تحميل سجل مبيعات الموظف
+      // تحميل سجل مبيعات الموظف: كل العمليات في صندوق واحد قابل للتمرير
 const [year, month] = cairoDate.slice(0, 7).split("-").map(Number);
-
-const nextMonth = month === 12
-  ? `${year + 1}-01-01`
-  : `${year}-${String(month + 1).padStart(2, "0")}-01`;
-
+const nextMonth = month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, "0")}-01`;
 const { data: history, error: historyError } = await db
   .from("sales_transactions")
   .select("id, sale_date, customer_name, sale_type, amount")
@@ -8739,51 +8704,24 @@ const { data: history, error: historyError } = await db
   .gte("sale_date", monthStart)
   .lt("sale_date", nextMonth)
   .order("created_at", { ascending: false });
-
 if (historyError) throw historyError;
-
-const recentSalesList = $("employeeSalesRecentList");
-const olderSalesList = $("employeeSalesOlderList");
-const olderSalesWrap = $("employeeSalesOlderWrap");
-recentSalesList.replaceChildren();
-olderSalesList.replaceChildren();
-
+const allSalesList = $("employeeSalesAllList");
+allSalesList.replaceChildren();
 const renderSaleCard = (sale, index) => {
   const item = document.createElement("article");
-  item.style.cssText = "padding:12px;margin-bottom:9px;background:#fff;border:1px solid #e3ebf0;border-radius:11px;border-right:4px solid " + (sale.sale_type === "plus" ? "#2476b8" : "#20a675");
+  item.style.cssText = "padding:10px 12px;margin-bottom:8px;background:#fff;border:1px solid #e3ebf0;border-radius:11px;border-right:4px solid " + (sale.sale_type === "plus" ? "#2476b8" : "#20a675");
   const top = document.createElement("div");
   top.style.cssText = "display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap";
-  const customer = document.createElement("strong");
-  customer.style.color = "#173b55";
-  customer.textContent = (index < 5 ? (index + 1) + ". " : "") + (sale.customer_name || "بدون اسم عميل");
-  const amount = document.createElement("b");
-  amount.style.color = sale.sale_type === "plus" ? "#2476b8" : "#16865f";
+  const customer = document.createElement("strong"); customer.style.color="#173b55";
+  customer.textContent = (index + 1) + ". " + (sale.customer_name || "بدون اسم عميل");
+  const amount = document.createElement("b"); amount.style.color = sale.sale_type === "plus" ? "#2476b8" : "#16865f";
   amount.textContent = formatMoney(Number(sale.amount));
-  const details = document.createElement("p");
-  details.style.cssText = "margin:7px 0 0;color:#64748b;font-size:12px";
+  const details = document.createElement("p"); details.style.cssText="margin:5px 0 0;color:#64748b;font-size:12px";
   details.textContent = `${sale.sale_type === "plus" ? "Plus" : "Triple Zero"} | ${sale.sale_date}`;
-  top.append(customer, amount); item.append(top, details); return item;
+  top.append(customer,amount); item.append(top,details); return item;
 };
-
-if (!history || history.length === 0) {
-  recentSalesList.textContent = "لا توجد عمليات بيع مسجلة هذا الشهر.";
-  olderSalesWrap.style.display = "none";
-} else {
-  history.slice(0, 3).forEach((sale, index) => recentSalesList.appendChild(renderSaleCard(sale, index)));
-  const older = history.slice(3);
-  olderSalesWrap.style.display = older.length ? "block" : "none";
-  older.forEach((sale, index) => olderSalesList.appendChild(renderSaleCard(sale, index + 3)));
-}
-
-// تحميل الإجازات المعتمدة للموظف
-const { data: leaves, error: leavesError } = await db
-  .from("employee_days_off")
-  .select("id, leave_date, reason")
- .eq("employee_id", profile.id)
-.gte("leave_date", cairoDate)
-.order("leave_date", { ascending: true });
-
-if (leavesError) throw leavesError;
+if (!history || history.length === 0) allSalesList.textContent = "لا توجد عمليات بيع مسجلة هذا الشهر.";
+else history.forEach((sale,index)=>allSalesList.appendChild(renderSaleCard(sale,index)));
 
 const leavesList = $("employeeLeavesList");
 leavesList.replaceChildren();
@@ -9913,7 +9851,7 @@ const bell = $('mgrBell'); if (bell) bell.addEventListener('click', () => { cons
 const topLogout = $('mgrLogoutTop'); if (topLogout) topLogout.addEventListener('click', () => $('logoutButton').click());
 
 window.EL = { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, fmtDT, EGY, IC, ICON_NAMES, COLORS, icon, LABELS, lab, applyLabels,
-  errMsg, toast, guard, safe, modal, csv, typeName, typeOptions, appChip, pageHead, sqlWarn, loadSettings, loadTypes, loadEmployees, empName,
+  errMsg, toast, guard, safe, modal, csv, typeName, typeOptions, appChip, pageHead, sqlWarn, loadSettings, loadTypes, loadEmployees, sortStaff, empName,
   buildSidebar, paintActive, navItems, BUILTIN, afterLogin };
 })();
 
@@ -9923,7 +9861,7 @@ window.EL = { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, 
 (function () {
 'use strict';
 const { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, fmtDT, EGY, ICON_NAMES, COLORS, icon, lab, errMsg, toast, guard, safe, modal, csv,
-  typeName, typeOptions, appChip, pageHead, sqlWarn, loadTypes, loadEmployees, empName, buildSidebar, paintActive, navItems, LABELS, applyLabels, BUILTIN } = EL;
+  typeName, typeOptions, appChip, pageHead, sqlWarn, loadTypes, loadEmployees, sortStaff, empName, buildSidebar, paintActive, navItems, LABELS, applyLabels, BUILTIN } = EL;
 const Owner = window.Owner = { cTab: 'inbox', mType: '', mSel: new Set(), mQuery: '', master: [], inbox: [], iSel: new Set() };
 
 const tabsHtml = (tabs, cur, attr) => '<div class="tabs" role="tablist">' + tabs.map(t => '<button type="button" class="tab-btn' + (t[0] === cur ? ' on' : '') + '" ' + attr + '="' + t[0] + '">' + esc(t[1]) + '</button>').join('') + '</div>';
@@ -10065,6 +10003,19 @@ Owner.renderHome = async function () {
   const oc = $('homeOpenCamp'); if (oc) oc.onclick = () => (BUILTIN.find(b => b.key === 'campaigns')).go();
   qa('[data-cs]', box).forEach(b => b.onclick = () => { const it = navItems().find(x => x.key === 'cs:' + b.dataset.cs); if (it) it.go(); });
   qa('[data-alert-go]', box).forEach(b => b.onclick = () => alertGo(b.dataset.alertGo));
+};
+
+// حارس أخطاء لوحة المدير: يمنع بقاء عبارة التحميل عند حدوث خطأ برمجي غير متوقع.
+const _renderHome = Owner.renderHome;
+Owner.renderHome = async function () {
+  const box = $('homeWidgets');
+  try { return await _renderHome(); }
+  catch (error) {
+    console.error('[EL-LITHY] dashboard render failed:', error);
+    if (box) box.innerHTML = '<div class="card" style="border:1px solid #e5a1a1;background:#fff5f5;color:#8b2525;padding:18px"><h3 style="margin-top:0">تعذر فتح الصفحة الرئيسية</h3><p>حدث خطأ أثناء تجهيز لوحة التحكم.</p><pre style="white-space:pre-wrap;direction:ltr;text-align:left;font-size:12px"></pre><button type="button" class="btn sec" id="homeRetryRender">إعادة المحاولة</button></div>';
+    const pre = box && box.querySelector('pre'); if (pre) pre.textContent = error && (error.stack || error.message) || String(error);
+    const retry = $('homeRetryRender'); if (retry) retry.onclick = () => Owner.renderHome();
+  }
 };
 
 // =====================================================================
@@ -10830,121 +10781,76 @@ Emp.renderCustomers = async function () {
   const box = $('empCustomersBox'); if (!box) return;
   if (!box.dataset.ready) {
     box.dataset.ready = '1';
-    box.innerHTML = '<div class="stack" style="gap:16px"><div class="card" id="empAssignBox"></div><div class="card" id="empAddBox"></div><div class="card" id="empMyBox"></div></div>';
+    box.innerHTML = '<div class="stack" style="gap:16px"><div class="card" id="empAssignBox"></div><div class="card" id="empAddBox"></div></div>';
     Emp.buildAddForm();
   }
-  await Promise.all([Emp.loadAssignments(), Emp.loadMine()]);
+  await Emp.loadAssignments();
 };
 
 // ----- نموذج إضافة عميل -----
 Emp.buildAddForm = function () {
-  const host = $('empAddBox');
-  host.innerHTML = '<h3 style="margin:0 0 4px;font-size:18px">تسجيل عميل جديد</h3><p class="muted small" style="margin:0 0 12px">كل أبلكيشن له نوعه ومبلغه. العميل الواحد ممكن يكون عليه أكثر من أبلكيشن.</p><div class="stack">' +
-    '<div class="field"><label for="ecPhone">رقم الهاتف (اختياري لو هتسجل اسم واتساب)</label><input id="ecPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint">11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015</span></div>' +
-    '<div class="field"><label for="ecWhatsApp">اسم مستخدم واتساب (اختياري)</label><input id="ecWhatsApp" type="text" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"><span class="hint">يمكن تسجيل الهاتف فقط أو اسم واتساب فقط أو الاثنين معًا.</span></div>' +
+  const host = $('empAddBox'); if (!host) return;
+  host.innerHTML = '<h3 style="margin:0 0 12px;font-size:18px">تسجيل عميل جديد</h3><div class="stack">' +
+    '<div class="field"><label for="ecPhone">رقم الهاتف</label><input id="ecPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint">11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015</span></div>' +
+    '<div class="field"><label for="ecWhatsApp">اسم مستخدم واتساب</label><input id="ecWhatsApp" type="text" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
     '<label class="row" style="gap:8px;margin:0;font-weight:700"><input type="checkbox" id="ecForeign" style="width:20px;height:20px"> رقم غير مصري</label>' +
+    '<div class="field" id="ecInternationalWrap" style="display:none"><label for="ecCountryCode">رقم العميل الدولي</label><div class="row" style="gap:8px;align-items:stretch"><select id="ecCountryCode" dir="ltr" style="max-width:46%;min-width:145px"></select><input id="ecInternationalPhone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="رقم الهاتف" dir="ltr" style="text-align:start;flex:1;min-width:0"></div><span class="hint">اختر كود الدولة ثم اكتب الرقم بدون كود الدولة.</span></div>' +
     '<div class="field"><label>الأبلكيشنات</label><div id="ecApps"></div></div>' +
-    '<div class="field"><label for="ecNotes" id="ecNotesLab">ملاحظات</label><textarea id="ecNotes" placeholder="ملاحظات عن العميل"></textarea></div>' +
+    '<div class="field"><label for="ecNotes">ملاحظات</label><textarea id="ecNotes" placeholder="ملاحظات عن العميل"></textarea></div>' +
     '<button type="button" class="btn" id="ecSave" style="width:100%">حفظ العميل</button></div>';
+  const countryCodes = [
+    ['مصر','+20'],['السعودية','+966'],['الإمارات','+971'],['الكويت','+965'],['قطر','+974'],['البحرين','+973'],['عمان','+968'],['الأردن','+962'],['لبنان','+961'],['العراق','+964'],['فلسطين','+970'],['اليمن','+967'],['ليبيا','+218'],['السودان','+249'],['المغرب','+212'],['الجزائر','+213'],['تونس','+216'],['موريتانيا','+222'],['تركيا','+90'],['الولايات المتحدة','+1'],['كندا','+1'],['المملكة المتحدة','+44'],['ألمانيا','+49'],['فرنسا','+33'],['إيطاليا','+39'],['إسبانيا','+34'],['هولندا','+31'],['بلجيكا','+32'],['سويسرا','+41'],['النمسا','+43'],['السويد','+46'],['النرويج','+47'],['الدنمارك','+45'],['فنلندا','+358'],['أيرلندا','+353'],['اليونان','+30'],['قبرص','+357'],['روسيا','+7'],['أوكرانيا','+380'],['بولندا','+48'],['رومانيا','+40'],['التشيك','+420'],['المجر','+36'],['البرتغال','+351'],['أستراليا','+61'],['نيوزيلندا','+64'],['الصين','+86'],['اليابان','+81'],['كوريا الجنوبية','+82'],['الهند','+91'],['باكستان','+92'],['بنغلاديش','+880'],['سريلانكا','+94'],['نيبال','+977'],['إندونيسيا','+62'],['ماليزيا','+60'],['سنغافورة','+65'],['تايلاند','+66'],['فيتنام','+84'],['الفلبين','+63'],['هونغ كونغ','+852'],['تايوان','+886'],['إيران','+98'],['أفغانستان','+93'],['جنوب أفريقيا','+27'],['نيجيريا','+234'],['غانا','+233'],['كينيا','+254'],['إثيوبيا','+251'],['أوغندا','+256'],['تنزانيا','+255'],['السنغال','+221'],['ساحل العاج','+225'],['الكاميرون','+237'],['الصومال','+252'],['البرازيل','+55'],['الأرجنتين','+54'],['المكسيك','+52'],['تشيلي','+56'],['كولومبيا','+57'],['بيرو','+51'],['فنزويلا','+58'],['أوروغواي','+598'],['باراغواي','+595'],['بوليفيا','+591'],['كوستاريكا','+506'],['بنما','+507'],['جامايكا','+1-876'],['جمهورية الدومينيكان','+1-809'],['آيسلندا','+354'],['لوكسمبورغ','+352'],['مالطا','+356'],['بلغاريا','+359'],['كرواتيا','+385'],['صربيا','+381'],['سلوفاكيا','+421'],['سلوفينيا','+386'],['ليتوانيا','+370'],['لاتفيا','+371'],['إستونيا','+372'],['جورجيا','+995'],['أرمينيا','+374'],['أذربيجان','+994'],['كازاخستان','+7'],['أوزبكستان','+998'],['قرغيزستان','+996'],['طاجيكستان','+992'],['تركمانستان','+993'],['منغوليا','+976'],['كمبوديا','+855'],['لاوس','+856'],['ميانمار','+95'],['المالديف','+960'],['موريشيوس','+230'],['سيشل','+248'],['زيمبابوي','+263'],['زامبيا','+260'],['رواندا','+250'],['الكونغو','+242'],['الكونغو الديمقراطية','+243'],['أنغولا','+244'],['موزمبيق','+258'],['مدغشقر','+261'],['ناميبيا','+264'],['بوتسوانا','+267'],['السلفادور','+503'],['غواتيمالا','+502'],['هندوراس','+504'],['نيكاراغوا','+505'],['الإكوادور','+593'],['غيانا','+592'],['سورينام','+597'],
+    ['ألبانيا','+355'],['أندورا','+376'],['البوسنة والهرسك','+387'],['الجبل الأسود','+382'],['مقدونيا الشمالية','+389'],['مولدوفا','+373'],['بيلاروس','+375'],['ليختنشتاين','+423'],['موناكو','+377'],['سان مارينو','+378'],['جزر فارو','+298'],['جرينلاند','+299'],['جبل طارق','+350'],['كوسوفو','+383'],
+    ['جزر البهاما','+1-242'],['بربادوس','+1-246'],['أنغويلا','+1-264'],['أنتيغوا وبربودا','+1-268'],['جزر العذراء البريطانية','+1-284'],['جزر كايمان','+1-345'],['برمودا','+1-441'],['غرينادا','+1-473'],['جزر تركس وكايكوس','+1-649'],['مونتسرات','+1-664'],['سانت لوسيا','+1-758'],['دومينيكا','+1-767'],['سانت فنسنت والغرينادين','+1-784'],['بورتوريكو','+1-787'],['ترينيداد وتوباغو','+1-868'],['سانت كيتس ونيفيس','+1-869'],['هايتي','+509'],['أروبا','+297'],['كوراساو','+599'],['سينت مارتن','+1-721'],['غوادلوب','+590'],['مارتينيك','+596'],['غيانا الفرنسية','+594'],
+    ['بنين','+229'],['بوركينا فاسو','+226'],['بوروندي','+257'],['الرأس الأخضر','+238'],['جمهورية أفريقيا الوسطى','+236'],['تشاد','+235'],['جزر القمر','+269'],['جيبوتي','+253'],['غينيا الاستوائية','+240'],['إريتريا','+291'],['الغابون','+241'],['غامبيا','+220'],['غينيا','+224'],['غينيا بيساو','+245'],['ليسوتو','+266'],['ليبيريا','+231'],['ملاوي','+265'],['مالي','+223'],['النيجر','+227'],['ساو تومي وبرينسيب','+239'],['سيراليون','+232'],['جنوب السودان','+211'],['توغو','+228'],['إسواتيني','+268'],
+    ['بوتان','+975'],['بروناي','+673'],['تيمور الشرقية','+670'],['كوريا الشمالية','+850'],['ماكاو','+853'],['سوريا','+963'],['إسرائيل','+972'],
+    ['فيجي','+679'],['بابوا غينيا الجديدة','+675'],['ساموا','+685'],['تونغا','+676'],['فانواتو','+678'],['جزر سليمان','+677'],['كيريباتي','+686'],['ولايات ميكرونيسيا المتحدة','+691'],['جزر مارشال','+692'],['بالاو','+680'],['ناورو','+674'],['توفالو','+688'],['جزر كوك','+682'],['نيوي','+683'],['كاليدونيا الجديدة','+687'],['بولينيزيا الفرنسية','+689']
+  ];
+  const codeSel=$('ecCountryCode'); codeSel.innerHTML=countryCodes.map(([n,c])=>'<option value="'+esc(c)+'"'+(c==='+20'?' selected':'')+'>'+esc(n)+' ('+esc(c)+')</option>').join('');
   Emp.ed = EL.appEditor($('ecApps'), [], true);
-  const ph = $('ecPhone'), hint = $('ecHint');
-  const paint = () => {
-    const v = ph.value, ok = EGY.test(v);
-    hint.style.color = !v ? '' : ok ? 'var(--green-t)' : 'var(--red-t)';
-    hint.textContent = ph.disabled ? 'رقم غير مصري: اكتب الرقم كاملاً مع كود الدولة في الملاحظات.' : !v ? '11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015' : ok ? 'رقم صحيح ✓' : v.length + ' من 11 رقم' + (v.length >= 3 && !/^(010|011|012|015)/.test(v) ? ' · لازم يبدأ بـ 010 / 011 / 012 / 015' : '');
-  };
-  ph.addEventListener('input', () => { ph.value = toEn(ph.value).replace(/[^0-9]/g, '').slice(0, 11); paint(); });
-  ph.addEventListener('paste', e => { e.preventDefault(); const t = toEn((e.clipboardData || window.clipboardData).getData('text')).replace(/[^0-9]/g, '').slice(-11); ph.value = (t.length === 11 ? t : toEn((e.clipboardData || window.clipboardData).getData('text')).replace(/[^0-9]/g, '').slice(0, 11)); paint(); });
-  $('ecForeign').onchange = e => {
-    ph.disabled = e.target.checked; if (e.target.checked) ph.value = '';
-    $('ecNotesLab').textContent = e.target.checked ? 'ملاحظات (اكتب رقم العميل هنا، إلزامي)' : 'ملاحظات';
+  const ph=$('ecPhone'), wa=$('ecWhatsApp'), hint=$('ecHint'), foreignBox=$('ecInternationalWrap'), intl=$('ecInternationalPhone');
+  const paint=()=>{const v=ph.value,ok=EGY.test(v);hint.style.color=!v?'':ok?'var(--green-t)':'var(--red-t)';hint.textContent=!v?'11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015':ok?'رقم صحيح ✓':v.length+' من 11 رقم'+(v.length>=3&&!/^(010|011|012|015)/.test(v)?' · لازم يبدأ بـ 010 / 011 / 012 / 015':'');};
+  ph.addEventListener('input',()=>{ph.value=toEn(ph.value).replace(/[^0-9]/g,'').slice(0,11);paint();});
+  ph.addEventListener('paste',e=>{e.preventDefault();ph.value=toEn((e.clipboardData||window.clipboardData).getData('text')).replace(/[^0-9]/g,'').slice(0,11);paint();});
+  intl.addEventListener('input',()=>{intl.value=toEn(intl.value).replace(/[^0-9]/g,'').slice(0,15);});
+  $('ecForeign').onchange=e=>{
+    const on=e.target.checked; ph.disabled=on; wa.disabled=on; intl.disabled=!on; foreignBox.style.display=on?'block':'none';
+    if(on){ph.value='';wa.value='';}else{intl.value='';}
     paint();
   };
-  $('ecSave').onclick = e => guard(e.currentTarget, async () => {
-    const foreign = $('ecForeign').checked, phone = ph.value, whatsapp = ($('ecWhatsApp')?.value || '').trim().replace(/^@+/, ''), notes = $('ecNotes').value.trim();
-    if (foreign) { if (!notes) throw new Error('اكتب رقم العميل غير المصري في الملاحظات.'); }
-    else if (phone && !EGY.test(phone)) throw new Error('الرقم لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.');
-    if (!foreign && !phone && !whatsapp) throw new Error('اكتب رقم الهاتف أو اسم مستخدم واتساب على الأقل.');
-    const apps = Emp.ed.get(true);
-    let id = null, merged = false;
-    if (!foreign && (phone || whatsapp)) {
+  $('ecSave').onclick=e=>guard(e.currentTarget,async()=>{
+    const foreign=$('ecForeign').checked;
+    const localPhone=ph.value;
+    const whatsapp=(wa.value||'').trim().replace(/^@+/,'');
+    const intlDigits=toEn(intl.value).replace(/[^0-9]/g,'');
+    const phone=foreign?(codeSel.value.replace(/[^+0-9]/g,'')+intlDigits):localPhone;
+    const notes=$('ecNotes').value.trim();
+    if(foreign&&!intlDigits)throw new Error('اكتب رقم الهاتف الدولي بعد اختيار كود الدولة.');
+    if(foreign&&intlDigits.length<5)throw new Error('رقم الهاتف الدولي قصير جدًا.');
+    if(!foreign&&localPhone&&!EGY.test(localPhone))throw new Error('الرقم لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.');
+    if(!foreign&&!localPhone&&!whatsapp)throw new Error('اكتب رقم الهاتف أو اسم مستخدم واتساب على الأقل.');
+    const apps=Emp.ed.get(true); let id=null,merged=false;
+    if(!foreign&&(localPhone||whatsapp)){
       let ex=null;
-      if(phone){const q1=await db.from('employee_customers').select('id,report_date,master_customer_id,notes').eq('employee_id',me()).eq('phone',phone).maybeSingle();if(q1.error)throw q1.error;ex=q1.data;}
+      if(localPhone){const q1=await db.from('employee_customers').select('id,report_date,master_customer_id,notes').eq('employee_id',me()).eq('phone',localPhone).maybeSingle();if(q1.error)throw q1.error;ex=q1.data;}
       if(!ex&&whatsapp){const q2=await db.from('employee_customers').select('id,report_date,master_customer_id,notes').eq('employee_id',me()).ilike('whatsapp_username',whatsapp).maybeSingle();if(q2.error)throw q2.error;ex=q2.data;}
-      if (ex) {
-        if (ex.report_date !== cairoToday() || ex.master_customer_id) throw new Error('هذا العميل مسجل عندك من قبل ولا يمكن تعديله الآن. أبلغ المدير لو في أبلكيشن جديد.');
-        if (!confirm('هذا العميل مسجل عندك اليوم. هل تريد إضافة البيانات والأبلكيشنات الجديدة على نفس العميل؟')) return;
-        id = ex.id; merged = true;
-        const patch={};if(whatsapp)patch.whatsapp_username=whatsapp;if(phone)patch.phone=phone;if(notes)patch.notes=((ex.notes?ex.notes+'\n':'')+notes);if(Object.keys(patch).length){const u=await db.from('employee_customers').update(patch).eq('id',id);if(u.error)throw u.error;}
-      }
+      if(ex){if(ex.report_date!==cairoToday()||ex.master_customer_id)throw new Error('هذا العميل مسجل عندك من قبل ولا يمكن تعديله الآن. أبلغ المدير لو في أبلكيشن جديد.');if(!confirm('هذا العميل مسجل عندك اليوم. هل تريد إضافة البيانات والأبلكيشنات الجديدة على نفس العميل؟'))return;id=ex.id;merged=true;const patch={};if(whatsapp)patch.whatsapp_username=whatsapp;if(localPhone)patch.phone=localPhone;if(notes)patch.notes=((ex.notes?ex.notes+'\n':'')+notes);if(Object.keys(patch).length){const u=await db.from('employee_customers').update(patch).eq('id',id);if(u.error)throw u.error;}}
     }
-    if (!id) {
-      const ins = await db.from('employee_customers').insert({ employee_id: me(), phone: foreign || !phone ? null : phone, whatsapp_username: whatsapp || null, is_foreign: foreign, notes: notes || null }).select('id').single();
-      if (ins.error) throw ins.error; id = ins.data.id;
-    }
-    try {
-      for (const a of apps) {
-        const ex = await db.from('employee_customer_apps').select('id').eq('customer_id', id).eq('application_type_id', a.type).maybeSingle();
-        const r = ex.data ? await db.from('employee_customer_apps').update({ amount: a.amount }).eq('id', ex.data.id) : await db.from('employee_customer_apps').insert({ customer_id: id, application_type_id: a.type, amount: a.amount });
-        if (r.error) throw r.error;
-      }
-    } catch (err) { if (!merged) await db.from('employee_customers').delete().eq('id', id); throw err; }
-    toast(merged ? 'تم تحديث العميل بالأبلكيشنات الجديدة.' : foreign ? 'تم تسجيل العميل وتنبيه المدير.' : 'تم تسجيل العميل.', 'ok');
-    ph.value = ''; if ($('ecWhatsApp')) $('ecWhatsApp').value = ''; $('ecNotes').value = ''; $('ecForeign').checked = false; ph.disabled = false; $('ecNotesLab').textContent = 'ملاحظات';
-    Emp.ed = EL.appEditor($('ecApps'), [], true); paint();
-    await Emp.loadMine(); Emp.refreshToday();
-  });
-};
-
-// ----- عملائي -----
-Emp.loadMine = async function () {
-  const box = $('empMyBox'); if (!box) return;
-  const r = await safe(db.from('employee_customers').select('id,phone,whatsapp_username,is_foreign,notes,report_date,master_customer_id,employee_customer_apps(id,amount,application_type_id)').eq('employee_id', me()).order('created_at', { ascending: false }).limit(60));
-  if (r.error) { box.innerHTML = '<div class="empty">النظام الجديد غير مفعّل بعد. تواصل مع المدير.</div>'; return; }
-  Emp.mine = r.data || []; const today = cairoToday();
-  const todayN = Emp.mine.filter(c => c.report_date === today).length;
-  box.innerHTML = '<div class="row" style="margin-bottom:10px"><h3 class="sp" style="margin:0;font-size:18px">عملائي</h3><span class="pill p-blue">اليوم: ' + todayN + '</span></div>' +
-    (Emp.mine.length ? '<div class="stack" style="gap:10px">' + Emp.mine.map(c => {
-      const editable = c.report_date === today && !c.master_customer_id;
-      return '<div class="cust-card"><div class="row" style="gap:8px"><b dir="ltr" class="sp" style="text-align:start">' + (c.phone ? esc(c.phone) : (c.whatsapp_username ? '@' + esc(c.whatsapp_username) : 'رقم غير مصري')) + '</b><span class="small muted">' + fmtDate(c.report_date) + '</span></div>' +
-        '<div class="chips">' + ((c.employee_customer_apps || []).map(a => appChip(typeName(a.application_type_id), a.amount)).join('') || '<span class="muted small">بدون أبلكيشن</span>') + '</div>' +
-        (c.notes ? '<div class="small muted" style="white-space:pre-wrap">' + esc(c.notes) + '</div>' : '') +
-        (editable ? '<div class="row"><button class="mini" data-ce="' + c.id + '">تعديل</button><button class="mini danger" data-cd="' + c.id + '">حذف</button></div>' : '') + '</div>';
-    }).join('') + '</div>' : '<div class="empty">لم تسجّل عملاء بعد.</div>');
-  box.onclick = async e => {
-    const ed = e.target.closest('[data-ce]'); if (ed) { Emp.editCustomer(Emp.mine.find(c => c.id === ed.dataset.ce)); return; }
-    const dl = e.target.closest('[data-cd]'); if (dl && confirm('حذف هذا العميل؟')) await guard(dl, async () => { const r = await db.from('employee_customers').delete().eq('id', dl.dataset.cd); if (r.error) throw r.error; toast('تم الحذف.', 'ok'); await Emp.loadMine(); Emp.refreshToday(); });
-  };
-};
-Emp.editCustomer = function (c) {
-  const apps = (c.employee_customer_apps || []).map(a => ({ id: a.id, type: a.application_type_id, amount: a.amount }));
-  const m = modal('<h3>تعديل العميل</h3><div class="stack"><div class="small muted" dir="ltr" style="text-align:start"><b>' + (c.phone ? esc(c.phone) : (c.whatsapp_username ? '@'+esc(c.whatsapp_username) : 'رقم غير مصري')) + '</b></div>' +
-    '<div class="field"><label>الأبلكيشنات</label><div id="eeApps"></div></div><div class="field"><label>ملاحظات</label><textarea id="eeNotes">' + esc(c.notes || '') + '</textarea></div>' +
-    '<div class="row"><button class="btn sp" id="eeSave">حفظ</button><button class="btn sec" id="eeCancel">إلغاء</button></div></div>');
-  const ed = EL.appEditor($('eeApps'), apps, true);
-  $('eeCancel').onclick = () => m.close();
-  $('eeSave').onclick = e => guard(e.currentTarget, async () => {
-    const list = ed.get(true), notes = $('eeNotes').value.trim();
-    if (c.is_foreign && !notes) throw new Error('الملاحظات إلزامية للرقم غير المصري.');
-    const u = await db.from('employee_customers').update({ notes: notes || null }).eq('id', c.id); if (u.error) throw u.error;
-    const keep = list.filter(a => a.id).map(a => a.id);
-    for (const o of apps) if (!keep.includes(o.id)) { const r = await db.from('employee_customer_apps').delete().eq('id', o.id); if (r.error) throw r.error; }
-    for (const a of list) {
-      const ex = a.id ? { data: { id: a.id } } : await db.from('employee_customer_apps').select('id').eq('customer_id', c.id).eq('application_type_id', a.type).maybeSingle();
-      const r = ex.data ? await db.from('employee_customer_apps').update({ application_type_id: a.type, amount: a.amount }).eq('id', ex.data.id) : await db.from('employee_customer_apps').insert({ customer_id: c.id, application_type_id: a.type, amount: a.amount });
-      if (r.error) throw r.error;
-    }
-    m.close(); toast('تم الحفظ.', 'ok'); await Emp.loadMine();
+    if(!id){const ins=await db.from('employee_customers').insert({employee_id:me(),phone:phone||null,whatsapp_username:foreign?null:(whatsapp||null),is_foreign:foreign,notes:notes||null}).select('id').single();if(ins.error)throw ins.error;id=ins.data.id;}
+    try{for(const a of apps){const ex=await db.from('employee_customer_apps').select('id').eq('customer_id',id).eq('application_type_id',a.type).maybeSingle();const r=ex.data?await db.from('employee_customer_apps').update({amount:a.amount}).eq('id',ex.data.id):await db.from('employee_customer_apps').insert({customer_id:id,application_type_id:a.type,amount:a.amount});if(r.error)throw r.error;}}
+    catch(err){if(!merged)await db.from('employee_customers').delete().eq('id',id);throw err;}
+    toast(merged?'تم تحديث العميل بالأبلكيشنات الجديدة.':'تم تسجيل العميل.', 'ok');
+    ph.value='';wa.value='';intl.value='';$('ecNotes').value='';$('ecForeign').checked=false;ph.disabled=false;wa.disabled=false;intl.disabled=true;foreignBox.style.display='none';codeSel.value='+20';Emp.ed=EL.appEditor($('ecApps'),[],true);paint();Emp.refreshToday();
   });
 };
 
 // ----- الأرقام الموزعة من المدير -----
 Emp.loadAssignments = async function () {
   const box = $('empAssignBox'); if (!box) return;
-  const r = await safe(db.from('customer_assignments').select('*').eq('assigned_to', me()).order('assigned_at', { ascending: false }).limit(100));
+  const r = await safe(db.from('customer_assignments').select('*').eq('assigned_to', me()).is('result', null).order('assigned_at', { ascending: false }).limit(100));
   if (r.error) { box.classList.add('hide-me'); return; }
-  const rows = r.data || [], pending = rows.filter(x => !x.result), done = rows.filter(x => x.result);
-  box.classList.toggle('hide-me', !rows.length);
+  const pending = r.data || [];
+  box.classList.toggle('hide-me', !pending.length);
   const dot = $('empCustDot'); if (dot) dot.classList.toggle('hide-me', !pending.length);
   const card = x => {
     const res = x.result ? EL.RESULTS[x.result] : null, w = x.phone ? waNum(x.phone) : null;
@@ -10957,7 +10863,7 @@ Emp.loadAssignments = async function () {
       '<button class="btn" data-asave style="width:100%">' + (x.result ? 'تحديث الرد' : 'إرسال الرد للمدير') + '</button></div>';
   };
   box.innerHTML = '<div class="row" style="margin-bottom:10px"><h3 class="sp" style="margin:0;font-size:18px">أرقام للمتابعة من المدير</h3>' + (pending.length ? '<span class="pill p-amber">' + pending.length + ' بانتظارك</span>' : '') + '</div>' +
-    '<div class="stack" style="gap:12px">' + pending.map(card).join('') + (done.length ? '<details><summary style="cursor:pointer;font-weight:700;padding:8px 0">تمت المتابعة (' + done.length + ')</summary><div class="stack" style="gap:12px;margin-top:8px">' + done.map(card).join('') + '</div></details>' : '') + '</div>';
+    '<div class="stack" style="gap:12px">' + pending.map(card).join('') + '</div>';
   box.onclick = async e => {
     const b = e.target.closest('[data-asave]'); if (!b) return; const c = b.closest('[data-aid]');
     await guard(b, async () => {
@@ -10987,12 +10893,9 @@ Emp.loadAssignments = async function () {
 
 <style>
 /* EL-LITHY 2026 enhancement layer */
-#employeeSalesHistory{height:390px;max-height:390px;display:flex;flex-direction:column;overflow:hidden}
-#employeeSalesHistory > div{background:transparent!important;border:0!important;padding:0!important}
-#employeeSalesHistory #employeeSalesOlderWrap{border-top:1px solid var(--line)!important;padding-top:10px!important;margin-top:8px!important}
-#employeeSalesRecentList{max-height:130px;overflow:auto}
-#employeeSalesOlderWrap{min-height:0;flex:1;overflow:hidden}
-#employeeSalesOlderList{max-height:190px!important;overflow-y:auto!important}
+#employeeSalesAllList{scrollbar-width:thin;scrollbar-color:#b8cbd5 transparent}
+#employeeSalesAllList::-webkit-scrollbar{width:8px}
+#employeeSalesAllList::-webkit-scrollbar-thumb{background:#b8cbd5;border-radius:10px}
 #empNav{padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
 #mgrSidebar .sb-group-title{padding-inline:10px;line-height:1.5;overflow-wrap:anywhere}
 @media(min-width:981px){#mgrSidebar{padding:14px 10px}#mgrSidebar .sb-brand{gap:9px}#mgrSidebar .sb-item{min-height:42px;padding:9px 10px;font-size:13px}}
