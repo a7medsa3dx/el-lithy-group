@@ -3537,6 +3537,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 <section id="customersSection" class="hidden"></section>
 <section id="campaignsSection" class="hidden"></section>
 <section id="appTypesSection" class="hidden"></section>
+<section id="monthlyReportSection" class="hidden"></section>
 <section id="alertsSection" class="hidden"></section>
 <section id="settingsSection" class="hidden"></section>
 <section id="customSectionView" class="hidden"></section>
@@ -3792,7 +3793,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 
   <div style="margin-bottom:12px;padding:14px;background:#f4f8fb;border:1px solid #e2ebf1;border-radius:13px">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-      <strong style="color:#173b55">آخر 5 عمليات بيع</strong><span style="font-size:11px;color:#718096">الأحدث أولاً</span>
+      <strong style="color:#173b55">آخر 3 عمليات بيع</strong><span style="font-size:11px;color:#718096">الأحدث أولاً</span>
     </div>
     <div id="employeeSalesRecentList">جاري تحميل سجل المبيعات...</div>
   </div>
@@ -3986,7 +3987,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
     const SUPABASE_URL = "https://xksqddhhnrpmutkxjjaj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_kd5hsMt6TkRExJ-P9Cud6Q_5BCzWopz";
 
-const db = window.supabase.createClient(
+const db = window.db = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY,
   {
@@ -8768,10 +8769,10 @@ if (!history || history.length === 0) {
   recentSalesList.textContent = "لا توجد عمليات بيع مسجلة هذا الشهر.";
   olderSalesWrap.style.display = "none";
 } else {
-  history.slice(0, 5).forEach((sale, index) => recentSalesList.appendChild(renderSaleCard(sale, index)));
-  const older = history.slice(5);
+  history.slice(0, 3).forEach((sale, index) => recentSalesList.appendChild(renderSaleCard(sale, index)));
+  const older = history.slice(3);
   olderSalesWrap.style.display = older.length ? "block" : "none";
-  older.forEach((sale, index) => olderSalesList.appendChild(renderSaleCard(sale, index + 5)));
+  older.forEach((sale, index) => olderSalesList.appendChild(renderSaleCard(sale, index + 3)));
 }
 
 // تحميل الإجازات المعتمدة للموظف
@@ -9750,9 +9751,11 @@ async function loadTypes() {
   const t = await safe(db.from('application_types').select('*').order('sort_order').order('name'));
   A.types = t.data || [];
 }
+const STAFF_ORDER=['أحمد طارق','أحمد حجازي','شادن','چومانه','يسرا'];
+const sortStaff=rows=>(rows||[]).slice().sort((a,b)=>{const ia=STAFF_ORDER.indexOf(a.full_name),ib=STAFF_ORDER.indexOf(b.full_name);return (ia<0?999:ia)-(ib<0?999:ib)||String(a.employee_code||'').localeCompare(String(b.employee_code||''));});
 async function loadEmployees() {
   const r = await safe(db.from('profiles').select('id,full_name,employee_code,job_title,active').eq('role', 'employee').order('employee_code'));
-  A.employees = r.data || [];
+  A.employees = sortStaff(r.data || []);
   return A.employees;
 }
 const empName = id => { const e = A.employees.find(x => x.id === id); return e ? e.full_name : '—'; };
@@ -9760,11 +9763,11 @@ const empName = id => { const e = A.employees.find(x => x.id === id); return e ?
 // ---------------- التنقل ----------------
 const MGR = ['dashboardSection', 'employeesSection', 'salesManagementSection', 'employeeDaysOffSection', 'accountSettingsSection',
   'employmentTermsSection', 'smartMessagesSection', 'passwordChangeSection', 'reportsSection', 'customersSection', 'campaignsSection',
-  'appTypesSection', 'alertsSection', 'settingsSection', 'customSectionView'];
+  'appTypesSection', 'alertsSection', 'settingsSection', 'monthlyReportSection', 'customSectionView'];
 const ALL_SECTIONS = ['loginSection', 'recoverySection', 'employeeDashboardSection'].concat(MGR);
 const SEC2NAV = { dashboardSection: 'home', employeesSection: 'employees', salesManagementSection: 'sales', employeeDaysOffSection: 'daysoff',
   employmentTermsSection: 'contracts', smartMessagesSection: 'smart', accountSettingsSection: 'account', passwordChangeSection: 'account',
-  reportsSection: 'reports', customersSection: 'customers', campaignsSection: 'campaigns', appTypesSection: 'apptypes', alertsSection: 'alerts', settingsSection: 'settings' };
+  reportsSection: 'reports', customersSection: 'customers', campaignsSection: 'campaigns', appTypesSection: 'apptypes', alertsSection: 'alerts', settingsSection: 'settings', monthlyReportSection: 'monthly' };
 
 const BUILTIN = [
   { key: 'home', icon: 'grid', grp: 'main', go: () => { A.activeNav = 'home'; window.showSection('dashboardSection'); Owner.renderHome(); } },
@@ -9772,9 +9775,9 @@ const BUILTIN = [
   { key: 'daysoff', icon: 'calendar', grp: 'main', go: () => proxy('openEmployeeDaysOffButton', 'daysoff') },
   { key: 'sales', icon: 'trend', grp: 'main', go: () => proxy('manageSalesButton', 'sales') },
   { key: 'reports', icon: 'doc', grp: 'clients', go: () => openOwner('reportsSection', 'reports', () => Owner.renderReports()) },
+  { key: 'monthly', icon: 'calendar-days', grp: 'clients', go: () => openOwner('monthlyReportSection', 'monthly', () => Owner.renderMonthlyReport()) },
   { key: 'customers', icon: 'table', grp: 'clients', go: () => openOwner('customersSection', 'customers', () => Owner.renderCustomers()) },
   { key: 'campaigns', icon: 'megaphone', grp: 'clients', go: () => openOwner('campaignsSection', 'campaigns', () => Owner.renderCampaigns()) },
-  { key: 'apptypes', icon: 'phone', grp: 'clients', go: () => openOwner('appTypesSection', 'apptypes', () => Owner.renderAppTypes()) },
   { key: 'smart', icon: 'mail', grp: 'tools', go: () => proxy('openSmartMessagesButton', 'smart') },
   { key: 'contracts', icon: 'contract', grp: 'tools', go: () => proxy('openEmploymentTermsButton', 'contracts') },
   { key: 'alerts', icon: 'bell', grp: 'tools', go: () => openOwner('alertsSection', 'alerts', () => Owner.renderAlerts()) },
@@ -9866,7 +9869,7 @@ window.showDashboard = async function () {
 async function afterLogin() {
   const u = await db.auth.getUser();
   if (!u.data || !u.data.user) return;
-  const p = await db.from('profiles').select('id,full_name,employee_code,role,job_title').eq('id', u.data.user.id).single();
+  const p = await db.from('profiles').select('id,full_name,employee_code,role,job_title,avatar_url').eq('id', u.data.user.id).single();
   A.profile = p.data; A.isOwner = !!p.data && p.data.role === 'owner';
   A.sqlOk = true;
   await loadSettings();
@@ -9950,19 +9953,17 @@ Owner.renderHome = async function () {
   const box = $('homeWidgets'); if (!box) return;
   box.innerHTML = '<div class="empty">جارٍ تحميل الملخص...</div>';
   const today = cairoToday(), ms = today.slice(0, 7) + '-01';
-  const [emps, att, comp, reps, camp, master, pend, alerts, unread, esales] = await Promise.all([
+  const [emps, att, comp, reps, camp, alerts, unread, esales] = await Promise.all([
     safe(db.from('profiles').select('id,full_name,job_title,employee_code').eq('role', 'employee').eq('active', true).order('employee_code')),
     safe(db.from('attendance').select('employee_id,check_in,check_out,break_start,break_end').eq('work_date', today)),
     safe(db.from('monthly_company_sales_performance').select('*').eq('month_start', ms).maybeSingle()),
     safe(db.from('daily_reports').select('employee_id').eq('report_date', today)),
     safe(db.from('campaign_summary').select('*').eq('status', 'open').maybeSingle()),
-    safe(db.from('master_customers').select('id', { count: 'exact', head: true })),
-    safe(db.from('owner_customer_overview').select('id', { count: 'exact', head: true }).is('master_customer_id', null).eq('is_foreign', false)),
     safe(db.from('manager_alerts').select('*').order('created_at', { ascending: false }).limit(5)),
     safe(db.from('manager_alerts').select('id', { count: 'exact', head: true }).eq('is_read', false)),
     safe(db.from('monthly_employee_sales_performance').select('*').eq('month_start', ms).order('total_sales', { ascending: false }))
   ]);
-  const E = emps.data || [], rec = new Map((att.data || []).map(r => [r.employee_id, r]));
+  const E = sortStaff(emps.data || []), rec = new Map((att.data || []).map(r => [r.employee_id, r]));
   let present = 0, onBreak = 0;
   E.forEach(e => { const r = rec.get(e.id); if (r && r.check_in && !r.check_out) { if (r.break_start && !r.break_end) onBreak++; else present++; } });
   const here = present + onBreak;
@@ -9976,6 +9977,7 @@ Owner.renderHome = async function () {
   let html = '<div class="page-head"><div class="sp"><h2>مرحباً بك في لوحة التحكم</h2><p>' + new Date().toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) + '</p></div>' +
     '<button class="btn sec" id="homeRefresh">' + icon('refresh', 18) + 'تحديث</button></div>';
   const timeOnly = value => value ? new Date(value).toLocaleTimeString('ar-EG-u-nu-latn', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit' }) : '—';
+  html += '<div class="grid g-auto" style="margin:12px 0">' + kpi('c-green','clock','الحاضرون الآن',here+' <small>من '+E.length+'</small>',onBreak+' في فترة راحة') + '</div>';
   const attendanceRows = E.map(emp => {
     const r = rec.get(emp.id);
     let state = 'لم يسجل الحضور', tone = 'p-gray';
@@ -9990,12 +9992,21 @@ Owner.renderHome = async function () {
     '<div class="home-attendance-table-wrap"><table class="home-attendance-table"><thead><tr><th>الموظف</th><th>الحضور</th><th>بداية الاستراحة</th><th>نهاية الاستراحة</th><th>الانصراف</th><th>الحالة الحالية</th></tr></thead><tbody>' + (attendanceRows || '<tr><td colspan="6">لا يوجد موظفون مسجلون.</td></tr>') + '</tbody></table></div></section>';
 
   html += '<div class="grid g-auto">' +
-    kpi('c-green', 'clock', 'الحاضرون الآن', here + ' <small>من ' + E.length + '</small>', onBreak + ' في فترة راحة') +
     kpi('c-blue', 'trend', 'مبيعات الشهر', num(c.total_sales || 0) + ' <small>جنيه</small>', num(pct.toFixed(1)) + '% من هدف الشركة') +
-    kpi('c-violet', 'doc', 'تقارير اليوم', (A.campaign ? repSet.size : '—') + ' <small>' + (A.campaign ? 'من ' + E.length : '') + '</small>', A.campaign ? notSent.length + ' لم يرسلوا بعد' : 'لا توجد حملة مفتوحة') +
-    kpi('c-amber', 'phone', 'عملاء متاحون للمتابعة', num(master.count || 0) + ' <small>عميل</small>', (pend.count || 0) + ' بانتظار الإضافة للوحتك') + '</div>';
+    kpi('c-violet', 'doc', 'تقارير اليوم', (A.campaign ? repSet.size : '—') + ' <small>' + (A.campaign ? 'من ' + E.length : '') + '</small>', A.campaign ? notSent.length + ' لم يرسلوا بعد' : 'لا توجد حملة مفتوحة') + '</div>'; 
 
   html += '<div class="grid g-2" style="margin-top:16px">';
+  // المبيعات
+  html += '<div class="card"><div class="row" style="margin-bottom:6px"><h3 style="margin:0" class="sp">مبيعات الموظفين مقابل الهدف</h3><span class="muted small">' + today.slice(0, 7) + '</span></div>' +
+    '<div class="row" style="gap:8px;margin-bottom:12px"><span class="pill p-blue">Plus: ' + num(plus) + '</span><span class="pill p-violet">Triple Zero: ' + num(triple) + '</span>' +
+    (c.company_target ? '<span class="pill p-gray">هدف الشركة: ' + num(c.company_target) + '</span>' : '') + '</div><div class="stack" style="gap:14px">';
+  if (!sales.length) html += '<div class="empty">لا توجد مبيعات هذا الشهر.</div>';
+  sales.slice(0, 8).forEach(r => {
+    const p = r.achievement_percentage == null || r.employee_code === 'EMP002' ? null : Number(r.achievement_percentage);
+    html += '<div><div class="row" style="gap:8px;font-size:13px;margin-bottom:6px"><b class="sp">' + esc(r.full_name) + '</b><span class="muted">' + num(r.total_sales) + (p == null ? '' : ' · ' + p.toFixed(1) + '%') + '</span></div>' +
+      '<div class="bar"><i style="width:' + Math.min(100, p == null ? 0 : p) + '%;background:' + (p != null && p >= 100 ? 'var(--green)' : 'var(--blue)') + '"></i></div></div>';
+  });
+  html += '</div></div></div>';
   // الحملة
   html += '<div class="card"><div class="row" style="margin-bottom:14px"><h3 style="margin:0" class="sp">الحملة الإعلانية الحالية</h3>' + (cs ? '<span class="pill p-green">مفتوحة</span>' : '<span class="pill p-gray">لا توجد</span>') + '</div>';
   if (cs) {
@@ -10009,22 +10020,11 @@ Owner.renderHome = async function () {
       '<p class="small muted" style="margin:10px 0 0">عملاء سجّلهم الموظفون في هذه الحملة: ' + num(cs.customers_registered) + ' · تقارير مرسلة: ' + num(cs.reports_count) + '</p>';
   } else html += '<div class="empty">لا توجد حملة مفتوحة. التقرير اليومي يتخطى الأيام بدون حملة تلقائياً.</div><button class="btn" style="margin-top:12px !important" id="homeOpenCamp">فتح حملة جديدة</button>';
   html += '</div>';
-  // المبيعات
-  html += '<div class="card"><div class="row" style="margin-bottom:6px"><h3 style="margin:0" class="sp">مبيعات الموظفين مقابل الهدف</h3><span class="muted small">' + today.slice(0, 7) + '</span></div>' +
-    '<div class="row" style="gap:8px;margin-bottom:12px"><span class="pill p-blue">Plus: ' + num(plus) + '</span><span class="pill p-violet">Triple Zero: ' + num(triple) + '</span>' +
-    (c.company_target ? '<span class="pill p-gray">هدف الشركة: ' + num(c.company_target) + '</span>' : '') + '</div><div class="stack" style="gap:14px">';
-  if (!sales.length) html += '<div class="empty">لا توجد مبيعات هذا الشهر.</div>';
-  sales.slice(0, 8).forEach(r => {
-    const p = r.achievement_percentage == null || r.employee_code === 'EMP002' ? null : Number(r.achievement_percentage);
-    html += '<div><div class="row" style="gap:8px;font-size:13px;margin-bottom:6px"><b class="sp">' + esc(r.full_name) + '</b><span class="muted">' + num(r.total_sales) + (p == null ? '' : ' · ' + p.toFixed(1) + '%') + '</span></div>' +
-      '<div class="bar"><i style="width:' + Math.min(100, p == null ? 0 : p) + '%;background:' + (p != null && p >= 100 ? 'var(--green)' : 'var(--blue)') + '"></i></div></div>';
-  });
-  html += '</div></div></div>';
 
   html += '<div class="grid g-2" style="margin-top:16px"><div class="card"><div class="row" style="margin-bottom:12px"><h3 style="margin:0" class="sp">آخر التنبيهات</h3>' + ((unread.count || 0) ? '<span class="pill p-red">' + unread.count + ' جديد</span>' : '') + '</div><div class="stack" style="gap:10px">';
   const al = alerts.data || [];
   if (!al.length) html += '<div class="empty">لا توجد تنبيهات.</div>';
-  al.forEach(a => { html += alertItem(a, true); });
+  al.forEach(a => { const meta=ALERT_META[a.kind]||['bell','teal','تنبيه','alerts']; html += '<div data-alert-go="'+meta[3]+'" style="cursor:pointer">'+alertItem(a,true)+'</div>'; });
   html += '</div></div><div class="card"><h3>' + (A.campaign ? 'لم يرسلوا تقرير اليوم' : 'اختصارات') + '</h3>';
   if (A.campaign) html += notSent.length ? '<div class="chips">' + notSent.map(e => '<span class="pill p-amber">' + esc(e.full_name) + '</span>').join('') + '</div>' : '<div class="empty">كل الموظفين أرسلوا تقاريرهم.</div>';
   else html += '<div class="muted">افتح حملة جديدة من إدارة الحملات ليبدأ الموظفون بإرسال التقارير.</div>';
@@ -10044,6 +10044,7 @@ Owner.renderHome = async function () {
 // التنبيهات
 // =====================================================================
 const ALERT_META = {
+  missing_checkout: ['clock', 'amber', 'انصراف غير مسجل', 'home'],
   foreign_number: ['globe', 'amber', 'رقم غير مصري', 'customers'], new_report: ['doc', 'violet', 'تقرير جديد', 'reports'],
   report_edited: ['edit', 'blue', 'تقرير معدّل', 'reports'], assignment_result: ['check', 'green', 'رد على رقم موزّع', 'customers']
 };
@@ -10101,7 +10102,7 @@ Owner.renderReports = async function () {
     field('إلى تاريخ', '<input type="date" id="rpTo" value="' + today + '">') + '</div>' +
     '<div class="row" style="margin-top:14px"><button class="btn" id="rpLoad">عرض التقارير</button></div></div><div id="rpResult" style="margin-top:16px"></div>';
   $('rpLoad').onclick = e => guard(e.currentTarget, loadReports);
-  $('rpExport').onclick = () => { if (!Owner.rpRows) return toast('اعرض التقارير أولاً.', 'err'); csv('daily-reports', [['التاريخ', 'الموظف', 'إجمالي الرسائل', lab('cat.interested'), lab('cat.noreply'), lab('cat.notinterested'), 'ملاحظات']].concat(Owner.rpRows.map(r => [r.report_date, empName(r.employee_id), r.total_messages, r.interested, r.no_reply, r.not_interested, r.notes || '']))); };
+  $('rpExport').onclick = () => { if (!Owner.rpRows) return toast('اعرض التقارير أولاً.', 'err'); csv('daily-reports', [['التاريخ', 'الحملة وقت إرسال التقرير', 'الموظف', 'إجمالي الرسائل', lab('cat.interested'), lab('cat.noreply'), lab('cat.notinterested'), 'ملاحظات']].concat(Owner.rpRows.map(r => [r.report_date, r.campaign_title_snapshot || '—', empName(r.employee_id), r.total_messages, r.interested, r.no_reply, r.not_interested, r.notes || '']))); };
   await loadReports();
 };
 async function loadReports() {
@@ -10127,9 +10128,9 @@ async function loadReports() {
     const b = e.target.closest('[data-cust]'); if (!b) return;
     const [emp, date] = b.dataset.cust.split('|'); const tr = b.closest('tr');
     if (tr.nextElementSibling && tr.nextElementSibling.classList.contains('cust-row')) { tr.nextElementSibling.remove(); return; }
-    const c = await safe(db.from('employee_customers').select('id,phone,is_foreign,notes,employee_customer_apps(amount,application_type_id)').eq('employee_id', emp).eq('report_date', date).order('created_at'));
+    const c = await safe(db.from('employee_customers').select('id,phone,whatsapp_username,is_foreign,notes,employee_customer_apps(amount,application_type_id)').eq('employee_id', emp).eq('report_date', date).order('created_at'));
     const list = c.data || [];
-    const inner = list.length ? '<div class="stack" style="gap:8px">' + list.map(cu => '<div class="row" style="gap:10px"><b dir="ltr">' + (cu.phone ? esc(cu.phone) : 'رقم غير مصري') + '</b>' + (cu.employee_customer_apps || []).map(a => appChip(typeName(a.application_type_id), a.amount)).join('') + (cu.notes ? '<span class="muted small">' + esc(cu.notes) + '</span>' : '') + '</div>').join('') + '</div>' : '<span class="muted">لم يسجّل عملاء في هذا اليوم.</span>';
+    const inner = list.length ? '<div class="stack" style="gap:8px">' + list.map(cu => '<div class="row" style="gap:10px"><b dir="ltr">' + (cu.phone ? esc(cu.phone) : (cu.whatsapp_username ? '@'+esc(cu.whatsapp_username) : 'رقم غير مصري')) + '</b>' + (cu.employee_customer_apps || []).map(a => appChip(typeName(a.application_type_id), a.amount)).join('') + (cu.notes ? '<span class="muted small">' + esc(cu.notes) + '</span>' : '') + '</div>').join('') + '</div>' : '<span class="muted">لم يسجّل عملاء في هذا اليوم.</span>';
     tr.insertAdjacentHTML('afterend', '<tr class="cust-row"><td colspan="8" style="background:#F8FBFD">' + inner + '</td></tr>');
   };
 }
@@ -10151,7 +10152,7 @@ Owner.renderCustomers = async function () {
 async function inboxTab() {
   const r = await safe(db.from('owner_customer_overview').select('*').order('created_at', { ascending: false }).limit(600));
   if (r.error) { $('cuBody').innerHTML = sqlWarn; return; }
-  Owner.inbox = r.data || []; Owner.iSel = new Set();
+  const base=await safe(db.from('employee_customers').select('id,whatsapp_username,phone')); const extra=new Map((base.data||[]).map(x=>[x.id,x])); Owner.inbox=(r.data||[]).map(x=>Object.assign({},x,extra.get(x.id)||{})); Owner.iSel = new Set();
   $('cuBody').innerHTML = '<div class="card" style="margin-bottom:14px"><div class="form-grid">' +
     field('الموظف', '<select id="ibEmp">' + empOptions('', true) + '</select>') +
     field('الحالة', '<select id="ibStatus"><option value="pending">لم تُضف للوحتي</option><option value="all">الكل</option><option value="foreign">رقم غير مصري</option><option value="dup">مكرر عند موظف آخر</option></select>') +
@@ -10161,20 +10162,30 @@ async function inboxTab() {
 }
 function paintInbox() {
   const emp = $('ibEmp').value, st = $('ibStatus').value, qs = toEn($('ibQ').value.trim());
-  let rows = Owner.inbox.filter(x => (!emp || x.employee_id === emp) && (!qs || (x.phone || '').includes(qs)));
+  let rows = Owner.inbox.filter(x => (!emp || x.employee_id === emp) && (!qs || String(x.phone || '').includes(qs) || String(x.whatsapp_username || '').toLowerCase().includes(qs.toLowerCase())));
   if (st === 'pending') rows = rows.filter(x => !x.master_customer_id && !x.in_master); if (st === 'foreign') rows = rows.filter(x => x.is_foreign); if (st === 'dup') rows = rows.filter(x => x.other_employees_count > 0);
-  const addable = rows.filter(x => x.phone && !x.in_master);
+  const addable = rows.filter(x => (x.phone || x.whatsapp_username) && !x.in_master);
   let html = '<div class="row" style="margin-bottom:10px"><span class="muted small sp">' + rows.length + ' سجل</span><button class="btn" id="ibBulk"' + (addable.length ? '' : ' disabled') + '>إضافة المحدد للوحتي</button></div>';
   if (!rows.length) html += '<div class="empty">لا توجد سجلات.</div>';
   else html += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:34px"></th><th>رقم العميل</th><th>الأبلكيشنات</th><th>سجّله</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead><tbody>' +
-    rows.map(x => '<tr class="' + (x.other_employees_count > 0 && !x.in_master ? 'dup' : '') + '"><td>' + (x.phone && !x.in_master ? '<input type="checkbox" data-isel="' + x.id + '"' + (Owner.iSel.has(x.id) ? ' checked' : '') + '>' : '') + '</td>' +
-      '<td dir="ltr" style="text-align:start !important"><b>' + (x.phone ? esc(x.phone) : '<span class="pill p-amber">رقم غير مصري</span>') + '</b>' + (x.notes ? '<br><span class="muted small">' + esc(x.notes) + '</span>' : '') + '</td>' +
+    rows.map(x => '<tr class="' + (x.other_employees_count > 0 && !x.in_master ? 'dup' : '') + '"><td>' + ((x.phone || x.whatsapp_username) && !x.in_master ? '<input type="checkbox" data-isel="' + x.id + '"' + (Owner.iSel.has(x.id) ? ' checked' : '') + '>' : '') + '</td>' +
+      '<td dir="ltr" style="text-align:start !important"><b>' + (x.phone ? esc(x.phone) : (x.whatsapp_username ? '@'+esc(x.whatsapp_username) : '<span class="pill p-amber">رقم غير مصري</span>')) + '</b>' + (x.notes ? '<br><span class="muted small">' + esc(x.notes) + '</span>' : '') + '</td>' +
       '<td><div class="chips">' + ((x.apps || []).map(a => appChip(a.app, a.amount)).join('') || '<span class="muted small">بدون</span>') + '</div></td><td>' + esc(x.employee_name) + '</td><td>' + fmtDate(x.report_date) + '</td>' +
       '<td>' + (x.in_master ? '<span class="pill p-green">في لوحتي</span>' : '') + (x.other_employees_count > 0 ? ' <span class="pill p-amber">مكرر عند ' + x.other_employees_count + ' موظف</span>' : '') + '</td>' +
       '<td>' + (x.in_master && !x.master_customer_id ? '<button class="mini" data-iadd="' + x.id + '">دمج الأبلكيشنات</button>' : !x.in_master ? '<button class="mini pri" data-iadd="' + x.id + '">إضافة للوحة</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
   $('ibList').innerHTML = html;
   const addOne = async (id) => {
-    const x = Owner.inbox.find(i => i.id === id); let phone = null;
+    const x = Owner.inbox.find(i => i.id === id);
+    if (!x.phone && x.whatsapp_username) {
+      const src=await db.from('employee_customers').select('id,phone,whatsapp_username,notes,employee_customer_apps(application_type_id,amount)').eq('id',id).single(); if(src.error)throw src.error;
+      const found=await db.from('master_customers').select('id').ilike('whatsapp_username',src.data.whatsapp_username).maybeSingle();if(found.error)throw found.error;
+      let masterId=found.data?.id;
+      if(!masterId){const mc=await db.from('master_customers').insert({phone:null,whatsapp_username:src.data.whatsapp_username,name:null,notes:src.data.notes||null,source_employee_id:x.employee_id,source_customer_id:id}).select('id').single();if(mc.error)throw mc.error;masterId=mc.data.id;}
+      for(const a of (src.data.employee_customer_apps||[])){const ex=await db.from('master_customer_apps').select('id').eq('master_customer_id',masterId).eq('application_type_id',a.application_type_id).maybeSingle();if(ex.error)throw ex.error;const ins=ex.data?await db.from('master_customer_apps').update({amount:a.amount}).eq('id',ex.data.id):await db.from('master_customer_apps').insert({master_customer_id:masterId,application_type_id:a.application_type_id,amount:a.amount});if(ins.error)throw ins.error;}
+      const upd=await db.from('employee_customers').update({master_customer_id:masterId}).eq('id',id);if(upd.error)throw upd.error;
+      return {status:found.data?'merged':'added'};
+    }
+    let phone = null;
     if (!x.phone) { phone = prompt('هذا العميل برقم غير مصري. اكتب رقمه (مع كود الدولة):', ''); if (!phone) return false; }
     const r = await db.rpc('add_customer_to_master', { p_customer_id: id, p_phone: phone }); if (r.error) throw r.error; return r.data;
   };
@@ -10183,7 +10194,7 @@ function paintInbox() {
     if (one) { await guard(one, async () => { const d = await addOne(one.dataset.iadd); if (d) { toast(d.status === 'merged' ? 'الرقم موجود في لوحتك، تم دمج الأبلكيشنات الجديدة.' : 'تمت إضافة العميل للوحتك.', 'ok'); await inboxTab(); } }); return; }
     if (e.target.id === 'ibBulk' || e.target.closest('#ibBulk')) {
       const ids = Array.from(Owner.iSel); if (!ids.length) return toast('حدد عملاء أولاً.', 'err');
-      await guard($('ibBulk'), async () => { let ok = 0, merged = 0; for (const id of ids) { const r = await db.rpc('add_customer_to_master', { p_customer_id: id, p_phone: null }); if (r.error) throw r.error; if (r.data.status === 'merged') merged++; else ok++; } toast('أُضيف ' + ok + ' وتم دمج ' + merged + ' في لوحتك.', 'ok'); await inboxTab(); });
+      await guard($('ibBulk'), async () => { let ok = 0, merged = 0; for (const id of ids) { const r = await addOne(id); if (r && r.status === 'merged') merged++; else if(r) ok++; } toast('أُضيف ' + ok + ' وتم دمج ' + merged + ' في لوحتك.', 'ok'); await inboxTab(); });
     }
   };
   $('ibList').onchange = e => { const c = e.target.closest('[data-isel]'); if (c) { c.checked ? Owner.iSel.add(c.dataset.isel) : Owner.iSel.delete(c.dataset.isel); } };
@@ -10197,14 +10208,14 @@ async function masterTab() {
   $('cuBody').innerHTML = '<div id="mtChips" style="margin-bottom:14px"></div><div id="mtSummary"></div><div class="row" style="margin-bottom:12px"><div class="field sp" style="min-width:200px"><input id="mtQ" type="text" placeholder="ابحث بالرقم أو الاسم" value="' + esc(Owner.mQuery) + '"></div>' +
     '<button class="btn sec" id="mtExport">' + icon('download', 18) + 'تصدير</button><button class="btn" id="mtAssign">' + icon('send', 18) + 'توزيع المحدد على موظف</button></div><div id="mtList"></div>';
   $('mtQ').oninput = () => { Owner.mQuery = $('mtQ').value; paintMaster(); };
-  $('mtExport').onclick = () => { const L = masterRows(); csv('customers', [['الرقم', 'الاسم', 'الأبلكيشن', 'المبلغ', 'ملاحظات']].concat(L.rows.flatMap(r => r.shown.map(a => [r.m.phone, r.m.name || '', a.name, a.amount, r.m.notes || ''])))); };
+  $('mtExport').onclick = () => { const L = masterRows(); csv('customers', [['رقم الهاتف', 'اسم واتساب', 'الاسم', 'الأبلكيشن', 'المبلغ', 'ملاحظات']].concat(L.rows.flatMap(r => r.shown.map(a => [r.m.phone || '', r.m.whatsapp_username || '', r.m.name || '', a.name, a.amount, r.m.notes || ''])))); };
   $('mtAssign').onclick = assignModal;
   paintMaster();
 }
 function masterRows() {
   const type = Owner.mType, qs = toEn(Owner.mQuery.trim()).toLowerCase();
   let rows = Owner.master.map(m => ({ m, apps: (m.master_customer_apps || []).map(a => ({ id: a.id, type: a.application_type_id, name: typeName(a.application_type_id), amount: Number(a.amount) })) }));
-  if (qs) rows = rows.filter(r => r.m.phone.includes(qs) || (r.m.name || '').toLowerCase().includes(qs));
+  if (qs) rows = rows.filter(r => String(r.m.phone||'').toLowerCase().includes(qs) || String(r.m.whatsapp_username||'').toLowerCase().includes(qs) || (r.m.name || '').toLowerCase().includes(qs));
   const all = rows;
   if (type) rows = rows.filter(r => r.apps.some(a => a.type === type)).map(r => { const s = r.apps.filter(a => a.type === type); return Object.assign({}, r, { shown: s, key: s[0].amount }); });
   else rows = rows.map(r => Object.assign({}, r, { shown: r.apps, key: Math.max(0, ...r.apps.map(a => a.amount)) }));
@@ -10225,7 +10236,7 @@ function paintMaster() {
   let html = '';
   if (!rows.length) html = '<div class="empty">لا يوجد عملاء' + (type ? ' على هذا النوع.' : ' في لوحتك بعد.') + '</div>';
   else html = '<div class="muted small" style="margin-bottom:8px">مرتّب من أعلى مبلغ إلى أقل مبلغ</div><div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:34px"></th><th>رقم العميل</th><th>الأبلكيشن والمبلغ</th><th>ملاحظات</th><th></th></tr></thead><tbody>' +
-    rows.map(r => '<tr><td><input type="checkbox" data-msel="' + r.m.id + '"' + (Owner.mSel.has(r.m.id) ? ' checked' : '') + '></td><td dir="ltr" style="text-align:start !important"><b>' + esc(r.m.phone) + '</b>' + (r.m.name ? '<br><span class="muted small">' + esc(r.m.name) + '</span>' : '') + '</td>' +
+    rows.map(r => '<tr><td><input type="checkbox" data-msel="' + r.m.id + '"' + (Owner.mSel.has(r.m.id) ? ' checked' : '') + '></td><td dir="ltr" style="text-align:start !important"><b>' + esc(r.m.phone || (r.m.whatsapp_username ? '@'+r.m.whatsapp_username : '—')) + '</b>' + (r.m.name ? '<br><span class="muted small">' + esc(r.m.name) + '</span>' : '') + '</td>' +
       '<td><div class="chips">' + (r.shown.map(a => appChip(a.name, a.amount)).join('') || '<span class="muted small">بدون أبلكيشن</span>') + '</div></td><td class="small">' + esc(r.m.notes || '') + '</td>' +
       '<td><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="mini" data-medit="' + r.m.id + '">تعديل</button><button class="mini danger" data-mdel="' + r.m.id + '" aria-label="حذف">' + icon('trash', 14) + '</button></div></td></tr>').join('') + '</tbody></table></div>';
   $('mtList').innerHTML = html;
@@ -10238,7 +10249,8 @@ function paintMaster() {
 function masterModal(mc) {
   const apps = mc ? (mc.master_customer_apps || []).map(a => ({ id: a.id, type: a.application_type_id, amount: a.amount })) : [];
   const m = modal('<h3>' + (mc ? 'تعديل عميل' : 'إضافة عميل للوحتك') + '</h3><div class="stack">' +
-    field('رقم الهاتف', '<input id="mmPhone" type="text" inputmode="tel" dir="ltr" style="text-align:start" value="' + esc(mc ? mc.phone : '') + '" placeholder="01012345678 أو +971..."', '', 'يقبل رقماً مصرياً أو دولياً (7 إلى 15 رقماً).') +
+    field('رقم الهاتف (اختياري)', '<input id="mmPhone" type="text" inputmode="tel" dir="ltr" style="text-align:start" value="' + esc(mc ? mc.phone || '' : '') + '" placeholder="01012345678 أو +971..."', '', 'اتركه فارغاً إذا كان العميل مسجلاً باسم واتساب فقط.') +
+    field('اسم مستخدم واتساب (اختياري)', '<input id="mmWhatsApp" type="text" dir="ltr" style="text-align:start" value="' + esc(mc ? mc.whatsapp_username || '' : '') + '" placeholder="@username">') +
     field('اسم العميل (اختياري)', '<input id="mmName" type="text" value="' + esc(mc ? mc.name || '' : '') + '">') +
     '<div class="field"><label>الأبلكيشنات (لكل أبلكيشن مبلغه المنفصل)</label><div id="mmApps"></div></div>' +
     field('ملاحظات', '<textarea id="mmNotes">' + esc(mc ? mc.notes || '' : '') + '</textarea>') +
@@ -10247,14 +10259,14 @@ function masterModal(mc) {
   $('mmCancel').onclick = () => m.close();
   $('mmPhone').oninput = e => { e.target.value = toEn(e.target.value).replace(/[^0-9+]/g, ''); };
   $('mmSave').onclick = e => guard(e.currentTarget, async () => {
-    const phone = $('mmPhone').value.trim(); if (!/^\+?[0-9]{7,15}$/.test(phone)) throw new Error('الرقم غير صالح.');
+    const phone = $('mmPhone').value.trim(), whatsapp=$('mmWhatsApp').value.trim().replace(/^@+/, ''); if (phone && !/^\+?[0-9]{7,15}$/.test(phone)) throw new Error('الرقم غير صالح.'); if(!phone&&!whatsapp)throw new Error('اكتب رقم الهاتف أو اسم مستخدم واتساب على الأقل.');
     const list = ed.get(false);
     let id = mc && mc.id;
-    if (mc) { const r = await db.from('master_customers').update({ phone, name: $('mmName').value.trim() || null, notes: $('mmNotes').value.trim() || null }).eq('id', id); if (r.error) throw r.error; }
+    if (mc) { const r = await db.from('master_customers').update({ phone:phone||null, whatsapp_username:whatsapp||null, name: $('mmName').value.trim() || null, notes: $('mmNotes').value.trim() || null }).eq('id', id); if (r.error) throw r.error; }
     else {
-      const ex = await db.from('master_customers').select('id').eq('phone', phone).maybeSingle();
+      const ex = phone ? await db.from('master_customers').select('id').eq('phone', phone).maybeSingle() : await db.from('master_customers').select('id').ilike('whatsapp_username',whatsapp).maybeSingle();
       if (ex.data) { if (!confirm('الرقم موجود في لوحتك بالفعل. هل تريد دمج الأبلكيشنات الجديدة عليه؟')) return; id = ex.data.id; }
-      else { const r = await db.from('master_customers').insert({ phone, name: $('mmName').value.trim() || null, notes: $('mmNotes').value.trim() || null }).select('id').single(); if (r.error) throw r.error; id = r.data.id; }
+      else { const r = await db.from('master_customers').insert({ phone:phone||null, whatsapp_username:whatsapp||null, name: $('mmName').value.trim() || null, notes: $('mmNotes').value.trim() || null }).select('id').single(); if (r.error) throw r.error; id = r.data.id; }
     }
     const keep = list.filter(a => a.id).map(a => a.id);
     if (mc) for (const old of apps) if (!keep.includes(old.id)) { const r = await db.from('master_customer_apps').delete().eq('id', old.id); if (r.error) throw r.error; }
@@ -10277,8 +10289,8 @@ function assignModal() {
   $('asCancel').onclick = () => m.close();
   $('asGo').onclick = e => guard(e.currentTarget, async () => {
     const emp = $('asEmp').value; if (!emp) throw new Error('اختر الموظف.');
-    const r = await db.rpc('assign_customers', { p_master_ids: ids, p_employee_id: emp, p_manager_note: $('asNote').value.trim() || null }); if (r.error) throw r.error;
-    m.close(); Owner.mSel = new Set(); toast('تم توزيع ' + r.data + ' عميل على ' + empName(emp) + '.', 'ok');
+    const rows=Owner.master.filter(x=>ids.includes(x.id));const payload=rows.map(x=>({assigned_to:emp,assigned_by:A.profile.id,master_customer_id:x.id,phone:x.phone||null,whatsapp_username:x.whatsapp_username||null,customer_name:x.name||null,manager_note:$('asNote').value.trim()||null,apps_snapshot:(x.master_customer_apps||[]).map(a=>({app:typeName(a.application_type_id),amount:a.amount,application_type_id:a.application_type_id}))}));const ins=await db.from('customer_assignments').insert(payload);if(ins.error)throw ins.error;
+    m.close(); Owner.mSel = new Set(); toast('تم توزيع ' + payload.length + ' عميل على ' + empName(emp) + '.', 'ok');
   });
 }
 
@@ -10297,7 +10309,7 @@ function paintFollow() {
   const emp = $('fwEmp').value, res = $('fwRes').value;
   const rows = Owner.follow.filter(x => (!emp || x.assigned_to === emp) && (!res || (res === 'pending' ? !x.result : x.result === res)));
   $('fwList').innerHTML = rows.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الرقم</th><th>الأبلكيشنات</th><th>الموظف</th><th>ملاحظتك</th><th>النتيجة</th><th>ملاحظة الموظف</th><th>التاريخ</th></tr></thead><tbody>' +
-    rows.map(x => '<tr><td dir="ltr" style="text-align:start !important"><b>' + esc(x.phone) + '</b></td><td><div class="chips">' + (x.apps_snapshot || []).map(a => appChip(a.app, a.amount)).join('') + '</div></td><td>' + esc(empName(x.assigned_to)) + '</td><td class="small">' + esc(x.manager_note || '') + '</td>' +
+    rows.map(x => '<tr><td dir="ltr" style="text-align:start !important"><b>' + esc(x.phone || (x.whatsapp_username ? '@'+x.whatsapp_username : '—')) + '</b></td><td><div class="chips">' + (x.apps_snapshot || []).map(a => appChip(a.app, a.amount)).join('') + '</div></td><td>' + esc(empName(x.assigned_to)) + '</td><td class="small">' + esc(x.manager_note || '') + '</td>' +
       '<td>' + (x.result ? '<span class="pill p-' + RESULTS[x.result][1] + '">' + RESULTS[x.result][0] + '</span>' : '<span class="pill p-amber">بانتظار الرد</span>') + '</td><td class="small">' + esc(x.employee_note || '') + '</td><td class="small">' + fmtDate(x.assigned_at) + '</td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">لا توجد أرقام موزعة.</div>';
 }
 
@@ -10312,10 +10324,11 @@ Owner.renderCampaigns = async function () {
   A.campaign = open ? Object.assign({}, A.campaign || {}, { id: open.campaign_id, title: open.title, starts_on: open.starts_on, status: 'open' }) : null;
   sec.innerHTML = pageHead(lab('nav.campaigns'), 'لو مفيش حملة مفتوحة، التقرير اليومي بيتخطى اليوم تلقائياً.') +
     '<div class="grid g-2"><div class="card"><h3>' + (open ? 'الحملة المفتوحة' : 'فتح حملة جديدة') + '</h3>' +
-    (open ? '<p><b>' + esc(open.title) + '</b><br><span class="muted">بدأت ' + fmtDate(open.starts_on) + '</span></p><button class="btn danger" id="cpClose">إغلاق الحملة</button>' :
+    (open ? '<p><b>' + esc(open.title) + '</b><br><span class="muted">بدأت ' + fmtDate(open.starts_on) + '</span></p><div class="row"><button class="btn sec" id="cpRename">تعديل اسم الحملة</button><button class="btn danger" id="cpClose">إغلاق الحملة</button></div>' :
       '<div class="stack">' + field('اسم الإعلان / الحملة', '<input id="cpTitle" type="text" placeholder="مثال: إعلان نوفمبر">') + field('تاريخ البدء', '<input id="cpStart" type="date" value="' + cairoToday() + '">') + '<button class="btn" id="cpOpen">فتح الحملة</button></div>') + '</div>' +
     '<div class="card"><h3>الحملات السابقة</h3>' + (list.length ? '<div class="stack" style="gap:10px">' + list.map(c => '<div class="alert-item"><div class="sp"><b>' + esc(c.title) + '</b> <span class="pill ' + (c.status === 'open' ? 'p-green' : 'p-gray') + '">' + (c.status === 'open' ? 'مفتوحة' : 'مغلقة') + '</span><br><span class="muted small">' + fmtDate(c.starts_on) + ' ← ' + fmtDate(c.ends_on) + '</span><br><span class="small">رسائل ' + num(c.total_messages) + ' · ' + esc(lab('cat.interested')) + ' ' + num(c.interested) + ' · ' + esc(lab('cat.noreply')) + ' ' + num(c.no_reply) + ' · ' + esc(lab('cat.notinterested')) + ' ' + num(c.not_interested) + ' · عملاء مسجلون ' + num(c.customers_registered) + '</span></div></div>').join('') + '</div>' : '<div class="empty">لا توجد حملات بعد.</div>') + '</div></div>';
   const o = $('cpOpen'); if (o) o.onclick = e => guard(e.currentTarget, async () => { const t = $('cpTitle').value.trim(); if (!t) throw new Error('اكتب اسم الحملة.'); const r = await db.from('ad_campaigns').insert({ title: t, starts_on: $('cpStart').value || cairoToday() }); if (r.error) throw r.error; toast('تم فتح الحملة.', 'ok'); await loadSettingsCampaign(); Owner.renderCampaigns(); });
+  const rn=$('cpRename');if(rn)rn.onclick=e=>guard(e.currentTarget,async()=>{const title=prompt('اكتب اسم الحملة الجديد:',open.title);if(title===null)return;if(!title.trim())throw new Error('اسم الحملة لا يمكن أن يكون فارغاً.');const u=await db.from('ad_campaigns').update({title:title.trim()}).eq('id',open.campaign_id);if(u.error)throw u.error;toast('تم تعديل اسم الحملة.','ok');await loadSettingsCampaign();Owner.renderCampaigns();});
   const c = $('cpClose'); if (c) c.onclick = e => { if (!confirm('إغلاق الحملة؟ لن يستطيع الموظفون إرسال تقارير جديدة.')) return; guard(e.currentTarget, async () => { const r = await db.from('ad_campaigns').update({ status: 'closed' }).eq('id', open.campaign_id); if (r.error) throw r.error; toast('تم إغلاق الحملة.', 'ok'); await loadSettingsCampaign(); Owner.renderCampaigns(); }); };
 };
 async function loadSettingsCampaign() { const c = await safe(db.from('ad_campaigns').select('*').eq('status', 'open').maybeSingle()); A.campaign = c.data || null; }
@@ -10349,15 +10362,54 @@ Owner.renderAppTypes = async function () {
 };
 
 // =====================================================================
+// التقرير الشهري الشامل (للمدير فقط)
+// =====================================================================
+Owner.renderMonthlyReport = async function () {
+  const sec=$('monthlyReportSection'); await loadEmployees();
+  const now=cairoToday(), month=now.slice(0,7);
+  sec.innerHTML=pageHead('التقرير الشهري الشامل','الحضور والانصراف والتأخير والاستراحات والمبيعات والتارجت — للمدير فقط.')+
+    '<div class="card"><div class="form-grid">'+field('الشهر','<input type="month" id="mrMonth" value="'+month+'">')+field('الموظف','<select id="mrEmp"><option value="">كل الموظفين</option>'+empOptions('',true)+'</select>')+'</div><div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn" id="mrLoad">عرض التقرير</button><button class="btn sec" id="mrExcel">تصدير Excel</button><button class="btn sec" id="mrPdf">طباعة / حفظ PDF</button></div></div><div id="mrResult" style="margin-top:16px"></div>';
+  $('mrLoad').onclick=e=>guard(e.currentTarget,loadMonthlyReport); $('mrExcel').onclick=()=>{if(!Owner.monthlyRows)return toast('اعرض التقرير أولاً.','err');const rows=Owner.monthlyRows, daily=Owner.monthlyAttendanceRows||[];const escX=v=>String(v??'').replace(/[&<>]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[x]));const tableX=a=>'<table dir="rtl">'+a.map((r,i)=>'<tr>'+r.map(c=>'<'+(i?'td':'th')+'>'+escX(c)+'</'+(i?'td':'th')+'>').join('')+'</tr>').join('')+'</table>';const html='<html><meta charset="utf-8"><h2>ملخص الموظفين</h2>'+tableX(rows)+'<h2>تفاصيل الحضور والانصراف</h2>'+tableX(daily)+'</html>';const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='EL-LITHY-monthly-report.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}; $('mrPdf').onclick=()=>{if(!Owner.monthlyPrint)return toast('اعرض التقرير أولاً.','err');const w=window.open('','_blank');if(!w)return toast('اسمح بالنوافذ المنبثقة لحفظ PDF.','err');w.document.write(Owner.monthlyPrint);w.document.close();w.focus();w.print();};
+  await loadMonthlyReport();
+};
+async function loadMonthlyReport(){
+  const month=$('mrMonth').value, emp=$('mrEmp').value; if(!/^\d{4}-\d{2}$/.test(month))throw new Error('اختر الشهر.');
+  const yy=Number(month.slice(0,4)),mm=Number(month.slice(5,7));const from=month+'-01', next=mm===12?String(yy+1)+'-01-01':String(yy)+'-'+String(mm+1).padStart(2,'0')+'-01';
+  let aq=db.from('attendance').select('employee_id,work_date,check_in,check_out,late_minutes,break_start,break_end').gte('work_date',from).lt('work_date',next).order('work_date');
+  let sq=db.from('sales_transactions').select('employee_id,sale_date,amount,sale_type').gte('sale_date',from).lt('sale_date',next);
+  let tq=db.from('monthly_employee_targets').select('employee_id,month_start,target_amount').eq('month_start',from);
+  if(emp){aq=aq.eq('employee_id',emp);sq=sq.eq('employee_id',emp);tq=tq.eq('employee_id',emp);}
+  const [ar,sr,tr,pr]=await Promise.all([aq,sq,tq,db.from('profiles').select('id,full_name,job_title').eq('role','employee').eq('active',true)]);
+  for(const r of [ar,sr,tr,pr])if(r.error)throw r.error;
+  const names=new Map((pr.data||[]).map(x=>[x.id,x.full_name])); const ids=emp?[emp]:A.employees.map(x=>x.id);
+  const target=new Map((tr.data||[]).map(x=>[x.employee_id,Number(x.target_amount||0)]));
+  const sales=new Map(), att=new Map(); (sr.data||[]).forEach(x=>sales.set(x.employee_id,(sales.get(x.employee_id)||0)+Number(x.amount||0)));
+  (ar.data||[]).forEach(x=>{const a=att.get(x.employee_id)||{days:0,late:0,breaks:0,breakMinutes:0,checkedOut:0,missingOut:0};a.days++;a.late+=Number(x.late_minutes||0);if(x.break_start){a.breaks++;if(x.break_end){const bs=new Date(x.break_start).getTime(),be=new Date(x.break_end).getTime();if(Number.isFinite(bs)&&Number.isFinite(be)&&be>=bs)a.breakMinutes+=Math.round((be-bs)/60000);}}if(x.check_out)a.checkedOut++;else if(x.check_in)a.missingOut++;att.set(x.employee_id,a);});
+  const rows=[['الموظف','أيام الحضور','إجمالي التأخير بالدقائق','أيام الاستراحة','مدة الاستراحات بالدقائق','أيام الانصراف المسجل','سجلات انصراف ناقصة','إجمالي المبيعات','التارجت','نسبة التحقيق']];
+  const detail=ids.map(id=>{const a=att.get(id)||{days:0,late:0,breaks:0,breakMinutes:0,checkedOut:0,missingOut:0},s=sales.get(id)||0,t=target.get(id)||0,p=t?s/t*100:0;const row=[names.get(id)||'—',a.days,a.late,a.breaks,a.breakMinutes,a.checkedOut,a.missingOut,s,t,t?p.toFixed(2)+'%':'—'];rows.push(row);return row;});
+  Owner.monthlyRows=rows;
+  const totals=detail.reduce((o,r)=>{for(let i=1;i<=8;i++)o[i]=(o[i]||0)+Number(r[i]||0);return o;},{});
+  const dailyHead=['الموظف','التاريخ','الحضور','الانصراف','التأخير بالدقائق','بداية الاستراحة','نهاية الاستراحة','مدة الاستراحة بالدقائق'];
+  const daily=(ar.data||[]).map(x=>{let mins=0;if(x.break_start&&x.break_end){const a=new Date(x.break_start).getTime(),b=new Date(x.break_end).getTime();if(Number.isFinite(a)&&Number.isFinite(b)&&b>=a)mins=Math.round((b-a)/60000);}return [names.get(x.employee_id)||'—',x.work_date,x.check_in?fmtDT(x.check_in):'—',x.check_out?fmtDT(x.check_out):'لم يسجل',Number(x.late_minutes||0),x.break_start?fmtDT(x.break_start):'—',x.break_end?fmtDT(x.break_end):'—',mins];});
+  Owner.monthlyAttendanceRows=[dailyHead,...daily];
+  const summaryHtml='<div class="card" style="overflow:auto;margin-bottom:14px"><h3>ملخص الموظفين</h3><table class="data-table" style="width:100%;min-width:860px"><thead><tr>'+rows[0].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+detail.map(r=>'<tr>'+r.map(x=>'<td>'+esc(String(x))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+  const dailyHtml='<div class="card" style="overflow:auto"><h3>تفاصيل الحضور والانصراف اليومية</h3><table class="data-table" style="width:100%;min-width:900px"><thead><tr>'+dailyHead.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+daily.map(r=>'<tr>'+r.map(x=>'<td>'+esc(String(x))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+  $('mrResult').innerHTML='<div class="grid g-auto" style="margin-bottom:14px">'+[['أيام الحضور',totals[1]||0],['التأخير بالدقائق',totals[2]||0],['المبيعات',money(totals[7]||0)],['التارجت',money(totals[8]||0)]].map(x=>'<div class="stat"><div class="t muted">'+x[0]+'</div><div class="n">'+x[1]+'</div></div>').join('')+'</div>'+summaryHtml+dailyHtml;
+  const escPrint=v=>String(v??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const printTable=(head,data)=>'<table><thead><tr>'+head.map(x=>'<th>'+escPrint(x)+'</th>').join('')+'</tr></thead><tbody>'+data.map(r=>'<tr>'+r.map(x=>'<td>'+escPrint(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+  Owner.monthlyPrint='<html dir="rtl" lang="ar"><meta charset="utf-8"><title>التقرير الشهري</title><style>body{font-family:Arial;padding:20px}h2,h3{text-align:center}table{border-collapse:collapse;width:100%;margin:12px 0 24px}td,th{border:1px solid #bbb;padding:7px;text-align:center;font-size:10px}th{background:#edf3f6}h3{margin-top:24px}</style><h2>EL-LITHY GROUP — التقرير الشهري '+month+'</h2><h3>ملخص الموظفين</h3>'+printTable(rows[0],detail)+'<h3>تفاصيل الحضور والانصراف</h3>'+printTable(dailyHead,daily)+'</html>';
+}
+
+// =====================================================================
 // الإعدادات (التحكم الكامل)
 // =====================================================================
 Owner.sTab = 'labels';
 Owner.renderSettings = async function () {
   const sec = $('settingsSection');
   sec.innerHTML = pageHead(lab('nav.settings'), 'تحكم كامل في عناوين التطبيق وترتيب القائمة والإدارات الجديدة. هذه الصفحة للمدير فقط.') +
-    tabsHtml([['labels', 'العناوين والأسماء'], ['nav', 'القائمة والترتيب'], ['custom', 'الإدارات المخصصة'], ['account', 'الحساب']], Owner.sTab, 'data-stab') + '<div id="stBody"></div>';
+    tabsHtml([['labels', 'العناوين والأسماء'], ['nav', 'القائمة والترتيب'], ['custom', 'الإدارات المخصصة'], ['apps', 'إدارة أنواع التطبيقات'], ['identity', 'الهوية والصور'], ['account', 'الحساب']], Owner.sTab, 'data-stab') + '<div id="stBody"></div>';
   qa('[data-stab]', sec).forEach(b => b.onclick = () => { Owner.sTab = b.dataset.stab; Owner.renderSettings(); });
-  if (Owner.sTab === 'labels') stLabels(); else if (Owner.sTab === 'nav') stNav(); else if (Owner.sTab === 'custom') stCustom(); else stAccount();
+  if (Owner.sTab === 'labels') stLabels(); else if (Owner.sTab === 'nav') stNav(); else if (Owner.sTab === 'custom') stCustom(); else if (Owner.sTab === 'apps') { $('stBody').innerHTML = '<div id="settingsAppTypes"></div>'; await loadTypes(); const tmp = $('appTypesSection'); await Owner.renderAppTypes(); $('settingsAppTypes').innerHTML = tmp.innerHTML; tmp.innerHTML = ''; } else if (Owner.sTab === 'identity') stIdentity(); else stAccount();
 };
 async function saveSetting(key, value) { const r = await db.from('app_settings').upsert({ key, value }, { onConflict: 'key' }); if (r.error) throw r.error; }
 function stLabels() {
@@ -10380,6 +10432,21 @@ function stNav() {
     $('nvReset').onclick = e => guard(e.currentTarget, async () => { await saveSetting('nav', { order: [], hidden: [] }); A.nav = { order: [], hidden: [] }; buildSidebar(); stNav(); toast('تم استرجاع الترتيب.', 'ok'); });
   };
   paint();
+}
+function stIdentity() {
+  $('stBody').innerHTML = '<div class="card"><h3>هوية الشركة وصور الحسابات</h3><p class="muted">ارفع شعار لوحة المدير وشعار واجهة الموظفين وصورة المدير. الموظف يرفع صورته من حسابه.</p><div class="form-grid">' +
+    field('شعار لوحة المدير', '<input type="file" id="mgrLogoFile" accept="image/*">') +
+    field('شعار واجهة الموظفين', '<input type="file" id="empLogoFile" accept="image/*">') +
+    field('صورة المدير', '<input type="file" id="ownerAvatarFile" accept="image/*">') + '</div><div class="row" style="margin-top:14px"><button class="btn" id="saveBrandAssets">رفع وحفظ الصور</button></div><p class="small muted">الصور تُحفظ في مساحة تخزين الشركة وتظهر على الأجهزة الأخرى بعد تحديث الصفحة.</p></div>';
+  ['mgrLogoFile','empLogoFile','ownerAvatarFile'].forEach(id=>$(id).onchange=()=>{const f=$(id).files[0];if(!f)return;let pv=$(id+'Preview');if(!pv){pv=document.createElement('div');pv.id=id+'Preview';pv.style.marginTop='8px';$(id).parentElement.appendChild(pv);}const u=URL.createObjectURL(f);pv.innerHTML='<img src="'+u+'" alt="معاينة" style="max-width:120px;max-height:90px;object-fit:contain;border-radius:12px">';});
+  $('saveBrandAssets').onclick = e => guard(e.currentTarget, async () => {
+    const up = async (id, path) => { const f = $(id).files[0]; if (!f) return null; if (!f.type.startsWith('image/')) throw new Error('اختر ملف صورة صحيح.'); if (f.size > 4*1024*1024) throw new Error('حجم الصورة يجب ألا يتجاوز 4 ميجابايت.'); const ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg'; const key=path+'.'+ext; const r=await db.storage.from('company-media').upload(key,f,{upsert:true,contentType:f.type}); if(r.error) throw r.error; return db.storage.from('company-media').getPublicUrl(key).data.publicUrl; };
+    const mgr=await up('mgrLogoFile','brand/manager-logo'), emp=await up('empLogoFile','brand/employee-logo'), avatar=await up('ownerAvatarFile','profiles/'+A.profile.id+'/avatar');
+    const patch={}; if(mgr) patch.manager_logo_url=mgr; if(emp) patch.employee_logo_url=emp; if(avatar) patch.avatar_url=avatar;
+    if(Object.keys(patch).length){ const cr=await db.from('company_settings').update(patch).eq('id',true); if(cr.error) throw cr.error; if(avatar){const pr=await db.from('profiles').update({avatar_url:avatar}).eq('id',A.profile.id);if(pr.error)throw pr.error;} }
+    toast('تم حفظ الصور. أعد تحميل الصفحة لرؤية الشعارات في كل المواضع.','ok');
+  });
+  $('resetBrandAssets').onclick=e=>guard(e.currentTarget,async()=>{const r=await db.from('company_settings').update({manager_logo_url:null,employee_logo_url:null}).eq('id',true);if(r.error)throw r.error;const p=await db.from('profiles').update({avatar_url:null}).eq('id',A.profile.id);if(p.error)throw p.error;toast('تمت استعادة الصور الافتراضية.','ok');});
 }
 function stAccount() {
   $('stBody').innerHTML = '<div class="grid g-2"><div class="card"><h3>حسابك</h3><p class="muted">تغيير كلمة المرور وإعدادات الأمان لحساب المدير.</p><button class="btn" id="stAcc">فتح إعدادات الحساب</button></div>' +
@@ -10559,7 +10626,7 @@ const isPreview = () => document.body.dataset.preview === '1';
 const me = () => (A.profile && A.profile.id) || null;
 const yesterday = () => new Date(Date.now() - 864e5).toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
 const waNum = p => { const d = String(p || '').replace(/[^0-9]/g, ''); return d.startsWith('0') ? '20' + d.slice(1) : d; };
-const TABS = [['today', 'clock'], ['sales', 'trend'], ['report', 'doc'], ['customers', 'users'], ['account', 'user']];
+const TABS = [['today', 'clock'], ['report', 'doc'], ['sales', 'trend'], ['customers', 'users'], ['account', 'user']];
 
 Emp.buildNav = function () {
   const nav = $('empNav'); if (!nav) return;
@@ -10573,7 +10640,7 @@ Emp.paintHero = function () {
   const t = ($('staffJobTitle') && $('staffJobTitle').textContent.trim()) || (A.profile && A.profile.job_title) || '';
   if ($('empHeroName')) $('empHeroName').textContent = n || '—';
   if ($('empHeroTitle')) $('empHeroTitle').textContent = t;
-  if ($('empAv')) $('empAv').textContent = (n || 'م').charAt(0);
+  if ($('empAv')) $('empAv').innerHTML = A.profile && A.profile.avatar_url ? '<img src="'+A.profile.avatar_url+'" alt="الصورة الشخصية">' : (n || 'م').charAt(0);
   if ($('empHeroDate')) $('empHeroDate').textContent = new Date().toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Cairo' });
 };
 
@@ -10599,6 +10666,21 @@ Emp.init = async function () {
   Emp.tab('today', true);
   Emp.refreshToday();
   Emp.pendingDot();
+  Emp.checkForgottenCheckout();
+  clearInterval(A.checkoutReminderTimer); A.checkoutReminderTimer=setInterval(Emp.checkForgottenCheckout,5*60*1000);
+  clearInterval(A.employeeContributionTimer); A.employeeContributionTimer=setInterval(()=>{if(A.empTab==='sales')Emp.renderTeam();},60000);
+};
+
+Emp.checkForgottenCheckout = async function(){
+  if(!me()||isPreview())return;
+  const today=cairoToday(); const [r,sch]=await Promise.all([safe(db.from('attendance').select('id,check_in,check_out').eq('employee_id',me()).eq('work_date',today).maybeSingle()),safe(db.from('employee_work_schedules').select('work_end,active').eq('employee_id',me()).eq('active',true).maybeSingle())]);
+  if(r.error||sch.error||!r.data||!r.data.check_in||r.data.check_out||!sch.data||!sch.data.work_end)return;
+  const end=String(sch.data.work_end).slice(0,5);const now=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());if(now<end)return;
+  if(Emp.checkoutReminderShownFor===today)return; Emp.checkoutReminderShownFor=today;
+  const msg='تنبيه: لم يتم تسجيل الانصراف اليوم. لو انتهى دوامك، سجّل الانصراف من قسم الحضور والانصراف.';
+  toast(msg,'warn');
+  const alertResult=await safe(db.rpc('notify_missing_checkout'));if(alertResult.error)console.warn('manager reminder alert',alertResult.error);
+  const host=$('empTodayBox'); if(host){const n=document.createElement('div');n.className='notice';n.style.marginTop='12px';n.textContent=msg;host.appendChild(n);}
 };
 
 Emp.tab = function (name, silent) {
@@ -10611,6 +10693,15 @@ Emp.tab = function (name, silent) {
   if (name === 'sales') Emp.renderTeam();
   if (name === 'report') Emp.renderReport();
   if (name === 'customers') Emp.renderCustomers();
+  if (name === 'account') setTimeout(Emp.renderOwnProfileControls, 0);
+};
+Emp.renderOwnProfileControls = async function(){
+  const tab=document.querySelector('.emp-tab[data-tab="account"]'); if(!tab||!me()||isPreview())return;
+  let panel=$('empOwnProfileControls'); if(!panel){panel=document.createElement('div');panel.id='empOwnProfileControls';panel.className='card';panel.style.marginBottom='14px';tab.prepend(panel);}
+  panel.innerHTML='<h3 style="margin-top:0">صورتي الشخصية</h3><p class="muted small">ارفع صورة تظهر بجوار اسمك على أجهزتك.</p><input id="empAvatarFile" type="file" accept="image/*"><div id="empAvatarPreview" style="margin-top:10px"></div><div class="row"><button type="button" class="btn sp" id="empAvatarSave">حفظ الصورة</button><button type="button" class="btn sec" id="empAvatarReset">استعادة الصورة الافتراضية</button></div>'; 
+  $('empAvatarFile').onchange=()=>{const f=$('empAvatarFile').files[0];if(!f)return;const url=URL.createObjectURL(f);$('empAvatarPreview').innerHTML='<img src="'+url+'" style="width:88px;height:88px;object-fit:cover;border-radius:20px">';};
+  $('empAvatarReset').onclick=e=>guard(e.currentTarget,async()=>{const r=await db.rpc('set_my_avatar_url',{p_avatar_url:null});if(r.error)throw r.error;A.profile.avatar_url=null;Emp.paintHero();const av=document.querySelector('.employee-avatar');if(av)av.textContent='👤';if($('empAv'))$('empAv').textContent='م';toast('تمت استعادة الصورة الافتراضية.','ok');});
+  $('empAvatarSave').onclick=e=>guard(e.currentTarget,async()=>{const f=$('empAvatarFile').files[0];if(!f)throw new Error('اختر صورة أولاً.');if(!f.type.startsWith('image/')||f.size>4*1024*1024)throw new Error('اختر صورة لا تتجاوز 4 ميجابايت.');const ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';const path='profiles/'+me()+'/avatar.'+ext;const up=await db.storage.from('company-media').upload(path,f,{upsert:true,contentType:f.type});if(up.error)throw up.error;const url=db.storage.from('company-media').getPublicUrl(path).data.publicUrl;const save=await db.rpc('set_my_avatar_url',{p_avatar_url:url});if(save.error)throw save.error;A.profile.avatar_url=url;Emp.paintHero();toast('تم حفظ صورتك الشخصية.','ok');});
 };
 
 // ---------------------------------------------------------------------
@@ -10646,17 +10737,11 @@ Emp.pendingDot = async function () {
 // ---------------------------------------------------------------------
 Emp.renderTeam = async function () {
   const box = $('teamSalesBox'); if (!box) return;
-  const r = await safe(db.rpc('team_sales_overview', { p_month: null }));
-  if (r.error) { box.classList.add('hide-me'); return; }
-  const rows = (r.data || []).slice().sort((a, b) => Number(b.total_sales) - Number(a.total_sales));
+  const r = await safe(db.rpc('employee_sales_contribution'));
+  if (r.error) { box.innerHTML = '<div class="empty">تعذر تحميل نسبة مساهمتك حاليًا. تأكد من تشغيل تحديث قاعدة البيانات.</div>'; return; }
+  const pct = Number((r.data || [])[0]?.contribution_percentage || 0);
   box.classList.remove('hide-me');
-  box.innerHTML = '<h3 style="margin:0 0 4px;font-size:18px">مؤشر الفريق هذا الشهر</h3><p class="muted small" style="margin:0 0 10px">إجمالي المبيعات ونسبة تحقيق الهدف لكل زميل.</p>' +
-    (rows.length ? rows.map((x, i) => {
-      const p = x.achievement_percentage == null ? null : Number(x.achievement_percentage), mine = x.employee_id === me();
-      return '<div class="rank-row' + (mine ? ' me' : '') + '"><div class="rank-no">' + (i + 1) + '</div><div class="sp" style="min-width:0"><div class="row" style="gap:8px;flex-wrap:nowrap"><b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" class="sp">' + esc(x.full_name) + (mine ? ' (أنت)' : '') + '</b>' +
-        '<span style="font-weight:800">' + num(x.total_sales) + '</span></div>' +
-        '<div class="row" style="gap:10px;margin-top:6px;flex-wrap:nowrap"><div class="bar sp"><i style="width:' + Math.min(100, p == null ? 0 : p) + '%;background:' + (p != null && p >= 100 ? 'var(--green)' : 'var(--blue)') + '"></i></div><span class="small muted" style="min-width:48px;text-align:end">' + (p == null ? '—' : p.toFixed(1) + '%') + '</span></div></div></div>';
-    }).join('') : '<div class="empty">لا توجد مبيعات هذا الشهر.</div>');
+  box.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><h3 style="margin:0 0 5px;font-size:18px">مساهمتك في مبيعات الشركة</h3><p class="muted small" style="margin:0">نسبة مبيعاتك من إجمالي مبيعات الشركة خلال الشهر الحالي</p></div><strong style="font-size:26px;color:var(--brand)">' + pct.toFixed(2) + '%</strong></div><div style="height:10px;background:#e8eef5;border-radius:20px;overflow:hidden;margin-top:14px"><i style="display:block;width:' + Math.max(0,Math.min(100,pct)) + '%;height:100%;background:linear-gradient(90deg,#1c7890,#20a675);border-radius:20px"></i></div>';
 };
 
 // ---------------------------------------------------------------------
@@ -10705,7 +10790,7 @@ Emp.renderReport = async function () {
   $('rpSave').onclick = e => guard(e.currentTarget, async () => {
     const body = { total_messages: val('rpTotal'), interested: val('rpInt'), no_reply: val('rpNo'), not_interested: val('rpNot'), notes: $('rpNotes').value.trim() || null };
     if (body.interested + body.no_reply + body.not_interested !== body.total_messages) throw new Error('مجموع الحالات الثلاث لازم يساوي إجمالي الرسائل.');
-    const r = cur ? await db.from('daily_reports').update(body).eq('id', cur.id) : await db.from('daily_reports').insert(Object.assign({ employee_id: me(), report_date: today }, body));
+    const r = cur ? await db.from('daily_reports').update(body).eq('id', cur.id) : await db.from('daily_reports').insert(Object.assign({ employee_id: me(), report_date: today, campaign_title_snapshot: A.campaign ? A.campaign.title : null }, body));
     if (r.error) throw r.error;
     toast(cur ? 'تم تحديث التقرير.' : 'تم إرسال التقرير.', 'ok'); Emp.repDate = null; await Emp.renderReport(); Emp.refreshToday();
   });
@@ -10728,7 +10813,8 @@ Emp.renderCustomers = async function () {
 Emp.buildAddForm = function () {
   const host = $('empAddBox');
   host.innerHTML = '<h3 style="margin:0 0 4px;font-size:18px">تسجيل عميل جديد</h3><p class="muted small" style="margin:0 0 12px">كل أبلكيشن له نوعه ومبلغه. العميل الواحد ممكن يكون عليه أكثر من أبلكيشن.</p><div class="stack">' +
-    '<div class="field"><label for="ecPhone">رقم الهاتف</label><input id="ecPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint">11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015</span></div>' +
+    '<div class="field"><label for="ecPhone">رقم الهاتف (اختياري لو هتسجل اسم واتساب)</label><input id="ecPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint">11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015</span></div>' +
+    '<div class="field"><label for="ecWhatsApp">اسم مستخدم واتساب (اختياري)</label><input id="ecWhatsApp" type="text" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"><span class="hint">يمكن تسجيل الهاتف فقط أو اسم واتساب فقط أو الاثنين معًا.</span></div>' +
     '<label class="row" style="gap:8px;margin:0;font-weight:700"><input type="checkbox" id="ecForeign" style="width:20px;height:20px"> رقم غير مصري</label>' +
     '<div class="field"><label>الأبلكيشنات</label><div id="ecApps"></div></div>' +
     '<div class="field"><label for="ecNotes" id="ecNotesLab">ملاحظات</label><textarea id="ecNotes" placeholder="ملاحظات عن العميل"></textarea></div>' +
@@ -10748,23 +10834,25 @@ Emp.buildAddForm = function () {
     paint();
   };
   $('ecSave').onclick = e => guard(e.currentTarget, async () => {
-    const foreign = $('ecForeign').checked, phone = ph.value, notes = $('ecNotes').value.trim();
+    const foreign = $('ecForeign').checked, phone = ph.value, whatsapp = ($('ecWhatsApp')?.value || '').trim().replace(/^@+/, ''), notes = $('ecNotes').value.trim();
     if (foreign) { if (!notes) throw new Error('اكتب رقم العميل غير المصري في الملاحظات.'); }
-    else if (!EGY.test(phone)) throw new Error('الرقم لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.');
+    else if (phone && !EGY.test(phone)) throw new Error('الرقم لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.');
+    if (!foreign && !phone && !whatsapp) throw new Error('اكتب رقم الهاتف أو اسم مستخدم واتساب على الأقل.');
     const apps = Emp.ed.get(true);
     let id = null, merged = false;
-    if (!foreign) {
-      const ex = await db.from('employee_customers').select('id,report_date,master_customer_id,notes').eq('employee_id', me()).eq('phone', phone).maybeSingle();
-      if (ex.error) throw ex.error;
-      if (ex.data) {
-        if (ex.data.report_date !== cairoToday() || ex.data.master_customer_id) throw new Error('هذا الرقم مسجل عندك من قبل ولا يمكن تعديله الآن. أبلغ المدير لو في أبلكيشن جديد.');
-        if (!confirm('هذا الرقم مسجل عندك اليوم. هل تريد إضافة الأبلكيشنات الجديدة على نفس العميل؟')) return;
-        id = ex.data.id; merged = true;
-        if (notes) { const u = await db.from('employee_customers').update({ notes: ((ex.data.notes ? ex.data.notes + '\n' : '') + notes) }).eq('id', id); if (u.error) throw u.error; }
+    if (!foreign && (phone || whatsapp)) {
+      let ex=null;
+      if(phone){const q1=await db.from('employee_customers').select('id,report_date,master_customer_id,notes').eq('employee_id',me()).eq('phone',phone).maybeSingle();if(q1.error)throw q1.error;ex=q1.data;}
+      if(!ex&&whatsapp){const q2=await db.from('employee_customers').select('id,report_date,master_customer_id,notes').eq('employee_id',me()).ilike('whatsapp_username',whatsapp).maybeSingle();if(q2.error)throw q2.error;ex=q2.data;}
+      if (ex) {
+        if (ex.report_date !== cairoToday() || ex.master_customer_id) throw new Error('هذا العميل مسجل عندك من قبل ولا يمكن تعديله الآن. أبلغ المدير لو في أبلكيشن جديد.');
+        if (!confirm('هذا العميل مسجل عندك اليوم. هل تريد إضافة البيانات والأبلكيشنات الجديدة على نفس العميل؟')) return;
+        id = ex.id; merged = true;
+        const patch={};if(whatsapp)patch.whatsapp_username=whatsapp;if(phone)patch.phone=phone;if(notes)patch.notes=((ex.notes?ex.notes+'\n':'')+notes);if(Object.keys(patch).length){const u=await db.from('employee_customers').update(patch).eq('id',id);if(u.error)throw u.error;}
       }
     }
     if (!id) {
-      const ins = await db.from('employee_customers').insert({ employee_id: me(), phone: foreign ? null : phone, is_foreign: foreign, notes: notes || null }).select('id').single();
+      const ins = await db.from('employee_customers').insert({ employee_id: me(), phone: foreign || !phone ? null : phone, whatsapp_username: whatsapp || null, is_foreign: foreign, notes: notes || null }).select('id').single();
       if (ins.error) throw ins.error; id = ins.data.id;
     }
     try {
@@ -10775,7 +10863,7 @@ Emp.buildAddForm = function () {
       }
     } catch (err) { if (!merged) await db.from('employee_customers').delete().eq('id', id); throw err; }
     toast(merged ? 'تم تحديث العميل بالأبلكيشنات الجديدة.' : foreign ? 'تم تسجيل العميل وتنبيه المدير.' : 'تم تسجيل العميل.', 'ok');
-    ph.value = ''; $('ecNotes').value = ''; $('ecForeign').checked = false; ph.disabled = false; $('ecNotesLab').textContent = 'ملاحظات';
+    ph.value = ''; if ($('ecWhatsApp')) $('ecWhatsApp').value = ''; $('ecNotes').value = ''; $('ecForeign').checked = false; ph.disabled = false; $('ecNotesLab').textContent = 'ملاحظات';
     Emp.ed = EL.appEditor($('ecApps'), [], true); paint();
     await Emp.loadMine(); Emp.refreshToday();
   });
@@ -10784,14 +10872,14 @@ Emp.buildAddForm = function () {
 // ----- عملائي -----
 Emp.loadMine = async function () {
   const box = $('empMyBox'); if (!box) return;
-  const r = await safe(db.from('employee_customers').select('id,phone,is_foreign,notes,report_date,master_customer_id,employee_customer_apps(id,amount,application_type_id)').eq('employee_id', me()).order('created_at', { ascending: false }).limit(60));
+  const r = await safe(db.from('employee_customers').select('id,phone,whatsapp_username,is_foreign,notes,report_date,master_customer_id,employee_customer_apps(id,amount,application_type_id)').eq('employee_id', me()).order('created_at', { ascending: false }).limit(60));
   if (r.error) { box.innerHTML = '<div class="empty">النظام الجديد غير مفعّل بعد. تواصل مع المدير.</div>'; return; }
   Emp.mine = r.data || []; const today = cairoToday();
   const todayN = Emp.mine.filter(c => c.report_date === today).length;
   box.innerHTML = '<div class="row" style="margin-bottom:10px"><h3 class="sp" style="margin:0;font-size:18px">عملائي</h3><span class="pill p-blue">اليوم: ' + todayN + '</span></div>' +
     (Emp.mine.length ? '<div class="stack" style="gap:10px">' + Emp.mine.map(c => {
       const editable = c.report_date === today && !c.master_customer_id;
-      return '<div class="cust-card"><div class="row" style="gap:8px"><b dir="ltr" class="sp" style="text-align:start">' + (c.phone ? esc(c.phone) : 'رقم غير مصري') + '</b><span class="small muted">' + fmtDate(c.report_date) + '</span></div>' +
+      return '<div class="cust-card"><div class="row" style="gap:8px"><b dir="ltr" class="sp" style="text-align:start">' + (c.phone ? esc(c.phone) : (c.whatsapp_username ? '@' + esc(c.whatsapp_username) : 'رقم غير مصري')) + '</b><span class="small muted">' + fmtDate(c.report_date) + '</span></div>' +
         '<div class="chips">' + ((c.employee_customer_apps || []).map(a => appChip(typeName(a.application_type_id), a.amount)).join('') || '<span class="muted small">بدون أبلكيشن</span>') + '</div>' +
         (c.notes ? '<div class="small muted" style="white-space:pre-wrap">' + esc(c.notes) + '</div>' : '') +
         (editable ? '<div class="row"><button class="mini" data-ce="' + c.id + '">تعديل</button><button class="mini danger" data-cd="' + c.id + '">حذف</button></div>' : '') + '</div>';
@@ -10803,7 +10891,7 @@ Emp.loadMine = async function () {
 };
 Emp.editCustomer = function (c) {
   const apps = (c.employee_customer_apps || []).map(a => ({ id: a.id, type: a.application_type_id, amount: a.amount }));
-  const m = modal('<h3>تعديل العميل</h3><div class="stack"><div class="small muted" dir="ltr" style="text-align:start"><b>' + (c.phone ? esc(c.phone) : 'رقم غير مصري') + '</b></div>' +
+  const m = modal('<h3>تعديل العميل</h3><div class="stack"><div class="small muted" dir="ltr" style="text-align:start"><b>' + (c.phone ? esc(c.phone) : (c.whatsapp_username ? '@'+esc(c.whatsapp_username) : 'رقم غير مصري')) + '</b></div>' +
     '<div class="field"><label>الأبلكيشنات</label><div id="eeApps"></div></div><div class="field"><label>ملاحظات</label><textarea id="eeNotes">' + esc(c.notes || '') + '</textarea></div>' +
     '<div class="row"><button class="btn sp" id="eeSave">حفظ</button><button class="btn sec" id="eeCancel">إلغاء</button></div></div>');
   const ed = EL.appEditor($('eeApps'), apps, true);
@@ -10832,11 +10920,11 @@ Emp.loadAssignments = async function () {
   box.classList.toggle('hide-me', !rows.length);
   const dot = $('empCustDot'); if (dot) dot.classList.toggle('hide-me', !pending.length);
   const card = x => {
-    const res = x.result ? EL.RESULTS[x.result] : null, w = waNum(x.phone);
-    return '<div class="cust-card" data-aid="' + x.id + '"><div class="row" style="gap:8px"><b dir="ltr" class="sp" style="text-align:start;font-size:17px">' + esc(x.phone) + '</b>' + (res ? '<span class="pill p-' + res[1] + '">' + res[0] + '</span>' : '<span class="pill p-amber">بانتظار ردك</span>') + '</div>' +
+    const res = x.result ? EL.RESULTS[x.result] : null, w = x.phone ? waNum(x.phone) : null;
+    return '<div class="cust-card" data-aid="' + x.id + '"><div class="row" style="gap:8px"><b dir="ltr" class="sp" style="text-align:start;font-size:17px">' + esc(x.phone || (x.whatsapp_username ? '@'+x.whatsapp_username : '—')) + '</b>' + (res ? '<span class="pill p-' + res[1] + '">' + res[0] + '</span>' : '<span class="pill p-amber">بانتظار ردك</span>') + '</div>' +
       '<div class="chips">' + (x.apps_snapshot || []).map(a => appChip(a.app, a.amount)).join('') + '</div>' +
       (x.manager_note ? '<div class="small" style="background:var(--brand-l);padding:10px;border-radius:12px;white-space:pre-wrap"><b>ملاحظة المدير:</b> ' + esc(x.manager_note) + '</div>' : '') +
-      '<div class="row" style="gap:8px"><a class="btn sec" style="flex:1;text-decoration:none;text-align:center" href="tel:' + esc(x.phone) + '">اتصال</a><a class="btn sec" style="flex:1;text-decoration:none;text-align:center" target="_blank" rel="noopener" href="https://wa.me/' + esc(w) + '">واتساب</a></div>' +
+      '<div class="row" style="gap:8px">' + (x.phone ? '<a class="btn sec" style="flex:1;text-decoration:none;text-align:center" href="tel:' + esc(x.phone) + '">اتصال</a><a class="btn sec" style="flex:1;text-decoration:none;text-align:center" target="_blank" rel="noopener" href="https://wa.me/' + esc(w) + '">واتساب</a>' : '<button type="button" class="btn sec" data-copy-wa="' + esc(x.whatsapp_username || '') + '">نسخ اسم واتساب</button><a class="btn sec" style="flex:1;text-decoration:none;text-align:center" target="_blank" rel="noopener" href="https://wa.me/">فتح واتساب</a>') + '</div>' +
       '<div class="field"><label>نتيجة المتابعة</label><select data-res><option value="">اختر النتيجة</option>' + Object.keys(EL.RESULTS).map(k => '<option value="' + k + '"' + (x.result === k ? ' selected' : '') + '>' + EL.RESULTS[k][0] + '</option>').join('') + '</select></div>' +
       '<div class="field"><label>ملاحظتك</label><textarea data-note style="min-height:64px">' + esc(x.employee_note || '') + '</textarea></div>' +
       '<button class="btn" data-asave style="width:100%">' + (x.result ? 'تحديث الرد' : 'إرسال الرد للمدير') + '</button></div>';
@@ -10867,6 +10955,42 @@ Emp.loadAssignments = async function () {
         });
     });
   }
+</script>
+
+
+<style>
+/* EL-LITHY 2026 enhancement layer */
+#employeeSalesHistory{height:390px;max-height:390px;display:flex;flex-direction:column;overflow:hidden}
+#employeeSalesHistory > div{background:transparent!important;border:0!important;padding:0!important}
+#employeeSalesHistory #employeeSalesOlderWrap{border-top:1px solid var(--line)!important;padding-top:10px!important;margin-top:8px!important}
+#employeeSalesRecentList{max-height:130px;overflow:auto}
+#employeeSalesOlderWrap{min-height:0;flex:1;overflow:hidden}
+#employeeSalesOlderList{max-height:190px!important;overflow-y:auto!important}
+#empNav{padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
+#mgrSidebar .sb-group-title{padding-inline:10px;line-height:1.5;overflow-wrap:anywhere}
+@media(min-width:981px){#mgrSidebar{padding:14px 10px}#mgrSidebar .sb-brand{gap:9px}#mgrSidebar .sb-item{min-height:42px;padding:9px 10px;font-size:13px}}
+.profile-avatar img,.emp-hero .av img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+</style>
+<script>
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  document.addEventListener('click',async ev=>{const b=ev.target.closest('[data-copy-wa]');if(!b)return;const v=b.getAttribute('data-copy-wa')||'';try{await navigator.clipboard.writeText('@'+v);b.textContent='تم النسخ ✓';}catch(e){window.prompt('انسخ اسم المستخدم', '@'+v);}});
+  const origShow=window.showDashboard;
+  if(typeof origShow==='function')window.showDashboard=async function(){const r=await origShow.apply(this,arguments);setTimeout(applyProfileAssets,500);return r;};
+  async function applyProfileAssets(){
+    if(!window.EL||!window.EL.A||!window.db)return;
+    const A=window.EL.A; if(!A.profile)return;
+    try{
+      const p=await window.db.from('profiles').select('avatar_url').eq('id',A.profile.id).maybeSingle();
+      if(p.data&&p.data.avatar_url){A.profile.avatar_url=p.data.avatar_url;document.querySelectorAll('.manager-avatar,.employee-avatar').forEach(el=>el.innerHTML='<img src="'+p.data.avatar_url+'" alt="صورة الحساب">');const av=$('empAv');if(av)av.innerHTML='<img src="'+p.data.avatar_url+'" alt="الصورة الشخصية">';}
+      const c=await window.db.from('company_settings').select('manager_logo_url,employee_logo_url').eq('id',true).maybeSingle();
+      if(c.data){const u=document.body.dataset.mode==='employee'?c.data.employee_logo_url:c.data.manager_logo_url;if(u){document.querySelectorAll('.logo img').forEach(i=>i.src=u);document.querySelectorAll('.sb-logo,.profile-brand-mark').forEach(i=>i.innerHTML='<img src="'+u+'" alt="EL-LITHY" style="width:100%;height:100%;object-fit:contain">');}}
+    }catch(e){console.warn('profile assets',e);}
+  }
+  const oldInit=window.Emp&&window.Emp.onShow;
+  if(window.Emp&&oldInit)window.Emp.onShow=function(){const r=oldInit.apply(this,arguments);setTimeout(applyProfileAssets,300);return r;};
+})();
 </script>
 
 </body>
