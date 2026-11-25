@@ -8723,6 +8723,22 @@ const renderSaleCard = (sale, index) => {
 if (!history || history.length === 0) allSalesList.textContent = "لا توجد عمليات بيع مسجلة هذا الشهر.";
 else history.forEach((sale,index)=>allSalesList.appendChild(renderSaleCard(sale,index)));
 
+// تحميل إجازات الموظف من جدول employee_days_off.
+// فشل تحميل الإجازات لا يجب أن يعطل ملخص المبيعات بالكامل.
+let leaves = [];
+try {
+  const { data: employeeLeaves, error: leavesError } = await db
+    .from("employee_days_off")
+    .select("leave_date, reason")
+    .eq("employee_id", profile.id)
+    .order("leave_date", { ascending: false });
+
+  if (leavesError) throw leavesError;
+  leaves = employeeLeaves || [];
+} catch (leavesError) {
+  console.warn("Employee days off could not be loaded:", leavesError);
+}
+
 const leavesList = $("employeeLeavesList");
 leavesList.replaceChildren();
 
