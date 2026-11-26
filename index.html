@@ -8407,11 +8407,14 @@ targetSaveButton.onclick = async () => {
       ? `${year + 1}-01-01`
       : `${year}-${String(monthNumber + 1).padStart(2, "0")}-01`;
 
-    const { data: monthlyTransactions, error: transactionsError } = await db
+    const excludedId = excludedReportEmployeeId();
+    let monthlyTransactionsQuery = db
       .from("sales_transactions")
-      .select("sale_type, amount")
+      .select("employee_id, sale_type, amount")
       .gte("sale_date", monthStart)
       .lt("sale_date", nextMonthStart);
+    if (excludedId) monthlyTransactionsQuery = monthlyTransactionsQuery.neq("employee_id", excludedId);
+    const { data: monthlyTransactions, error: transactionsError } = await monthlyTransactionsQuery;
 
     if (transactionsError) throw transactionsError;
 
@@ -8441,23 +8444,32 @@ targetSaveButton.onclick = async () => {
       `${monthlyTripleCount.toLocaleString("ar-EG-u-nu-latn")} عملية`;
 
     if (company) {
+      const reportCompanySales = eligibleEmployees.reduce(
+        (sum, employee) => sum + Number(employee.total_sales || 0), 0
+      );
+      const reportCompanyTarget = Number(company.company_target || 0);
+      const reportCompanyAchievement = reportCompanyTarget > 0
+        ? reportCompanySales / reportCompanyTarget * 100
+        : 0;
+      const reportCompanyRemaining = reportCompanyTarget - reportCompanySales;
+
       $("companyMonthlyTarget").textContent =
-        formatMoney(company.company_target);
+        formatMoney(reportCompanyTarget);
 
       $("companyMonthlySales").textContent =
-        formatMoney(company.total_sales);
+        formatMoney(reportCompanySales);
 
       $("companyAchievement").textContent =
-        Number(company.achievement_percentage || 0).toLocaleString("ar-EG-u-nu-latn") + "%";
+        reportCompanyAchievement.toLocaleString("ar-EG-u-nu-latn", { maximumFractionDigits: 2 }) + "%";
 
       const companyProgress = Math.max(
   0,
-  Math.min(100, Number(company.achievement_percentage || 0))
+  Math.min(100, reportCompanyAchievement)
 );
 
 $("companyProgressBar").style.width = companyProgress + "%";
       
-      const remaining = Number(company.remaining_target || 0);
+      const remaining = reportCompanyRemaining;
 
       $("companyRemainingTarget").textContent =
         remaining >= 0
@@ -9999,8 +10011,16 @@ Owner.renderHome = async function () {
   const eligibleIds = new Set(E.map(e => e.id));
   const repSet = new Set((reps.data || []).map(r => r.employee_id).filter(id => eligibleIds.has(id)));
   const notSent = A.campaign ? E.filter(e => !repSet.has(e.id)) : [];
-  const c = comp.data || {}, cs = camp.data ? (await campaignStatsWithoutExcludedEmployee([camp.data]))[0] : null;
   const sales = filterReportEmployees(esales.data || []);
+  const rawCompany = comp.data || {};
+  const reportTotalSales = sales.reduce((sum, row) => sum + Number(row.total_sales || 0), 0);
+  const reportCompanyTarget = Number(rawCompany.company_target || 0);
+  const c = Object.assign({}, rawCompany, {
+    total_sales: reportTotalSales,
+    achievement_percentage: reportCompanyTarget > 0 ? reportTotalSales / reportCompanyTarget * 100 : 0
+  });
+  c.remaining_target = reportCompanyTarget - reportTotalSales;
+  const cs = camp.data ? (await campaignStatsWithoutExcludedEmployee([camp.data]))[0] : null;
   const plus = sales.reduce((s, r) => s + Number(r.plus_sales || 0), 0), triple = sales.reduce((s, r) => s + Number(r.triple_zero_sales || 0), 0);
   const pct = Number(c.achievement_percentage || 0);
 
