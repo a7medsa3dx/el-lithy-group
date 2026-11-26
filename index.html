@@ -1795,6 +1795,51 @@ body[data-theme="dark"] .p-green,body[data-theme="dark"] .p-blue,body[data-theme
 body[data-theme="dark"] #mgrContent [style*="background:#fff"],body[data-theme="dark"] #mgrContent [style*="background: #fff"],body[data-theme="dark"] #employeeDashboardSection [style*="background:#fff"],body[data-theme="dark"] #employeeDashboardSection [style*="background: #fff"]{background:var(--card)!important;color:var(--ink)!important}
 body[data-theme="dark"] #mgrContent [style*="background:#F8FBFD"],body[data-theme="dark"] #mgrContent [style*="background: #F8FBFD"],body[data-theme="dark"] #employeeDashboardSection [style*="background:#F8FBFD"]{background:#243442!important;color:var(--ink)!important}
 
+
+/* تغطية موحدة لباقي شاشات التطبيق وعناصرها في الوضع الداكن */
+body[data-theme="dark"] #dashboardSection,
+body[data-theme="dark"] #employeeDashboardSection,
+body[data-theme="dark"] #salesManagementSection,
+body[data-theme="dark"] #mgrContent,
+body[data-theme="dark"] #empContent,
+body[data-theme="dark"] .section,
+body[data-theme="dark"] .panel,
+body[data-theme="dark"] .settings-panel { color: var(--ink) !important; }
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .panel,
+body[data-theme="dark"] .section-card,
+body[data-theme="dark"] .stat-card,
+body[data-theme="dark"] .customer-card,
+body[data-theme="dark"] .customer-item,
+body[data-theme="dark"] .sale-card,
+body[data-theme="dark"] .campaign-card,
+body[data-theme="dark"] .employee-card,
+body[data-theme="dark"] .report-card {
+  background-color: var(--card) !important;
+  color: var(--ink) !important;
+  border-color: var(--line) !important;
+}
+body[data-theme="dark"] .muted,
+body[data-theme="dark"] small,
+body[data-theme="dark"] .hint,
+body[data-theme="dark"] .subtext { color: var(--muted) !important; }
+body[data-theme="dark"] input,
+body[data-theme="dark"] select,
+body[data-theme="dark"] textarea { color-scheme: dark; }
+body[data-theme="dark"] [style*="background:#fff"],
+body[data-theme="dark"] [style*="background: #fff"],
+body[data-theme="dark"] [style*="background:white"],
+body[data-theme="dark"] [style*="background: white"],
+body[data-theme="dark"] [style*="background:#ffffff"],
+body[data-theme="dark"] [style*="background: #ffffff"] {
+  background-color: var(--card) !important;
+  color: var(--ink) !important;
+}
+body[data-theme="dark"] [style*="color:#173b55"],
+body[data-theme="dark"] [style*="color: #173b55"],
+body[data-theme="dark"] [style*="color:#243746"],
+body[data-theme="dark"] [style*="color: #243746"] { color: var(--ink) !important; }
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
 <style id="newDesign">
@@ -4000,6 +4045,68 @@ const db = window.db = window.supabase.createClient(
     }
   }
 );
+ 
+// ---------------------------------------------------------------------
+// نظام المظهر: حفظ مستقل لكل حساب + مزامنة الاختيار مع حساب Supabase
+// ---------------------------------------------------------------------
+(function () {
+  'use strict';
+  let activeUserId = null;
+  let choice = 'light';
+  let mediaQuery = null;
+  const valid = value => ['light', 'dark', 'system'].includes(value);
+  function resolved(value) {
+    if (value === 'system') {
+      if (!mediaQuery) mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      return mediaQuery.matches ? 'dark' : 'light';
+    }
+    return value === 'dark' ? 'dark' : 'light';
+  }
+  function apply(value) {
+    const actual = resolved(value);
+    document.documentElement.dataset.elTheme = actual;
+    document.body.dataset.theme = actual;
+    document.documentElement.style.colorScheme = actual;
+  }
+  function storageKey(id) { return 'el_lithy_theme_' + id; }
+  async function loadForUser(user) {
+    activeUserId = user && user.id ? user.id : null;
+    let saved = null;
+    try { if (activeUserId) saved = localStorage.getItem(storageKey(activeUserId)); }
+    catch (e) { console.warn('Theme local storage unavailable', e); }
+    const remote = user && user.user_metadata && user.user_metadata.el_lithy_theme;
+    choice = valid(remote) ? remote : (valid(saved) ? saved : 'light');
+    apply(choice);
+    return choice;
+  }
+  async function setChoice(value) {
+    if (!valid(value)) return;
+    choice = value;
+    apply(choice);
+    if (activeUserId) {
+      try { localStorage.setItem(storageKey(activeUserId), choice); }
+      catch (e) { console.warn('Theme could not be saved locally', e); }
+      const result = await db.auth.updateUser({ data: { el_lithy_theme: choice } });
+      if (result.error) {
+        console.error('Theme sync failed:', result.error);
+        if (window.EL && typeof window.EL.toast === 'function')
+          window.EL.toast('تم تطبيق المظهر على هذا الجهاز، لكن تعذرت مزامنته مع الحساب.', 'err');
+        return;
+      }
+    }
+    if (window.EL && typeof window.EL.toast === 'function')
+      window.EL.toast('تم تغيير وضع العرض بنجاح.', 'ok');
+  }
+  if (window.matchMedia) {
+    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const onSystemChange = () => { if (choice === 'system') apply(choice); };
+    if (mediaQuery.addEventListener) mediaQuery.addEventListener('change', onSystemChange);
+    else if (mediaQuery.addListener) mediaQuery.addListener(onSystemChange);
+  }
+  window.ELTheme = { getChoice: () => choice, setChoice, loadForUser, apply };
+  apply(choice);
+})();
+
 
 let employeePreviewMode = false;
     const $ = id => document.getElementById(id);
@@ -9943,6 +10050,7 @@ async function afterLogin() {
   if (!u.data || !u.data.user) return;
   const p = await db.from('profiles').select('id,full_name,employee_code,role,job_title,avatar_url').eq('id', u.data.user.id).single();
   A.profile = p.data; A.isOwner = !!p.data && p.data.role === 'owner';
+  await window.ELTheme.loadForUser(u.data.user);
   A.sqlOk = true;
   await loadSettings();
   if (A.isOwner) {
