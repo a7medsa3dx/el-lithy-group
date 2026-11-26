@@ -2722,9 +2722,9 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 </div> 
     
     <div>
-      <label for="saleType">نوع البيع</label>
+      <label for="saleType">نوع العرض</label>
       <select id="saleType" required>
-        <option value="">اختر نوع البيع</option>
+        <option value="">اختر نوع العرض</option>
         <option value="plus">Plus</option>
         <option value="triple_zero">Triple Zero</option>
       </select>
@@ -3002,7 +3002,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
       <thead>
         <tr style="background:#102b3f;color:white">
           <th style="padding:13px">تاريخ البيع</th>
-          <th style="padding:13px">نوع البيع</th>
+          <th style="padding:13px">نوع العرض</th>
           <th style="padding:13px">المبلغ</th>
           <th style="padding:13px">الإجراءات</th>
         </tr>
@@ -8699,7 +8699,7 @@ const [year, month] = cairoDate.slice(0, 7).split("-").map(Number);
 const nextMonth = month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, "0")}-01`;
 const { data: history, error: historyError } = await db
   .from("sales_transactions")
-  .select("id, sale_date, customer_name, sale_type, amount")
+  .select("id, sale_date, sale_type, amount")
   .eq("employee_id", profile.id)
   .gte("sale_date", monthStart)
   .lt("sale_date", nextMonth)
@@ -8709,16 +8709,23 @@ const allSalesList = $("employeeSalesAllList");
 allSalesList.replaceChildren();
 const renderSaleCard = (sale, index) => {
   const item = document.createElement("article");
-  item.style.cssText = "padding:10px 12px;margin-bottom:8px;background:#fff;border:1px solid #e3ebf0;border-radius:11px;border-right:4px solid " + (sale.sale_type === "plus" ? "#2476b8" : "#20a675");
+  const isPlus = sale.sale_type === "plus";
+  const offerType = isPlus ? "Plus" : "Triple Zero";
+  item.style.cssText = "padding:12px;margin-bottom:8px;background:#fff;border:1px solid #e3ebf0;border-radius:11px;border-right:4px solid " + (isPlus ? "#2476b8" : "#20a675");
   const top = document.createElement("div");
   top.style.cssText = "display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap";
-  const customer = document.createElement("strong"); customer.style.color="#173b55";
-  customer.textContent = (index + 1) + ". " + (sale.customer_name || "بدون اسم عميل");
-  const amount = document.createElement("b"); amount.style.color = sale.sale_type === "plus" ? "#2476b8" : "#16865f";
+  const type = document.createElement("strong");
+  type.style.cssText = "color:" + (isPlus ? "#2476b8" : "#16865f") + ";font-size:14px";
+  type.textContent = (index + 1) + ". نوع العرض: " + offerType;
+  const amount = document.createElement("b");
+  amount.style.color = isPlus ? "#2476b8" : "#16865f";
   amount.textContent = formatMoney(Number(sale.amount));
-  const details = document.createElement("p"); details.style.cssText="margin:5px 0 0;color:#64748b;font-size:12px";
-  details.textContent = `${sale.sale_type === "plus" ? "Plus" : "Triple Zero"} | ${sale.sale_date}`;
-  top.append(customer,amount); item.append(top,details); return item;
+  const details = document.createElement("p");
+  details.style.cssText = "margin:6px 0 0;color:#64748b;font-size:12px";
+  details.textContent = "تاريخ البيع: " + (sale.sale_date || "—");
+  top.append(type, amount);
+  item.append(top, details);
+  return item;
 };
 if (!history || history.length === 0) allSalesList.textContent = "لا توجد عمليات بيع مسجلة هذا الشهر.";
 else history.forEach((sale,index)=>allSalesList.appendChild(renderSaleCard(sale,index)));
