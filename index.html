@@ -10284,10 +10284,13 @@ function paintInbox() {
   let rows = Owner.inbox.filter(x => (!emp || x.employee_id === emp) && (!qs || String(x.phone || '').includes(qs) || String(x.whatsapp_username || '').toLowerCase().includes(qs.toLowerCase())));
   if (st === 'pending') rows = rows.filter(x => !x.master_customer_id && !x.in_master); if (st === 'foreign') rows = rows.filter(x => x.is_foreign); if (st === 'dup') rows = rows.filter(x => x.other_employees_count > 0);
   const addable = rows.filter(x => (x.phone || x.whatsapp_username) && !x.in_master);
-  let html = '<div class="row" style="margin-bottom:10px"><span class="muted small sp">' + rows.length + ' سجل</span><button class="btn" id="ibBulk"' + (addable.length ? '' : ' disabled') + '>إضافة المحدد للوحتي</button></div>';
+  if (!(Owner.iDelSel instanceof Set)) Owner.iDelSel = new Set();
+  const visibleIds = rows.map(x => x.id);
+  const selectedVisible = visibleIds.filter(id => Owner.iDelSel.has(id));
+  let html = '<div class="row" style="margin-bottom:10px;flex-wrap:wrap"><span class="muted small sp">' + rows.length + ' سجل · محدد للحذف: ' + selectedVisible.length + '</span><button class="btn" id="ibBulk"' + (addable.length ? '' : ' disabled') + '>إضافة المحدد للوحتي</button><button class="btn danger" id="ibBulkDelete"' + (selectedVisible.length ? '' : ' disabled') + '>حذف المحدد</button></div>';
   if (!rows.length) html += '<div class="empty">لا توجد سجلات.</div>';
-  else html += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:34px"></th><th>رقم العميل</th><th>الأبلكيشنات</th><th>سجّله</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead><tbody>' +
-    rows.map(x => '<tr class="' + (x.other_employees_count > 0 && !x.in_master ? 'dup' : '') + '"><td>' + ((x.phone || x.whatsapp_username) && !x.in_master ? '<input type="checkbox" data-isel="' + x.id + '"' + (Owner.iSel.has(x.id) ? ' checked' : '') + '>' : '') + '</td>' +
+  else html += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:34px"><input type="checkbox" id="ibSelectAll" title="تحديد الكل الظاهر"></th><th>رقم العميل</th><th>الأبلكيشنات</th><th>سجّله</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead><tbody>' +
+    rows.map(x => '<tr class="' + (x.other_employees_count > 0 && !x.in_master ? 'dup' : '') + '"><td>' + ((x.phone || x.whatsapp_username) ? '<input type="checkbox" data-isel="' + x.id + '"' + (Owner.iDelSel.has(x.id) ? ' checked' : '') + '>' : '') + '</td>' +
       '<td dir="ltr" style="text-align:start !important"><b>' + (x.phone ? esc(x.phone) : (x.whatsapp_username ? '@'+esc(x.whatsapp_username) : '<span class="pill p-amber">رقم غير مصري</span>')) + '</b>' + (x.notes ? '<br><span class="muted small">' + esc(x.notes) + '</span>' : '') + '</td>' +
       '<td><div class="chips">' + ((x.apps || []).map(a => appChip(a.app, a.amount)).join('') || '<span class="muted small">بدون</span>') + '</div></td><td>' + esc(x.employee_name) + '</td><td>' + fmtDate(x.report_date) + '</td>' +
       '<td>' + (x.in_master ? '<span class="pill p-green">في لوحتي</span>' : '') + (x.other_employees_count > 0 ? ' <span class="pill p-amber">مكرر عند ' + x.other_employees_count + ' موظف</span>' : '') + '</td>' +
@@ -10309,6 +10312,23 @@ function paintInbox() {
     const r = await db.rpc('add_customer_to_master', { p_customer_id: id, p_phone: phone }); if (r.error) throw r.error; return r.data;
   };
   $('ibList').onclick = async e => {
+    if (e.target.id === 'ibSelectAll') {
+      e.target.checked ? visibleIds.forEach(id => Owner.iDelSel.add(id)) : visibleIds.forEach(id => Owner.iDelSel.delete(id));
+      paintInbox(); return;
+    }
+    if (e.target.id === 'ibBulkDelete') {
+      const ids = selectedVisible;
+      if (!ids.length) return toast('حدد أرقامًا للحذف أولاً.', 'err');
+      if (!confirm('حذف ' + ids.length + ' رقم من وارد الموظفين؟ لن تُحذف نسخ العملاء الموجودة في لوحة العملاء الرئيسية.')) return;
+      await guard(e.target, async () => {
+        const d = await db.from('employee_customers').delete().in('id', ids);
+        if (d.error) throw d.error;
+        ids.forEach(id => Owner.iDelSel.delete(id));
+        toast('تم حذف ' + ids.length + ' رقم من وارد الموظفين.', 'ok');
+        await inboxTab();
+      });
+      return;
+    }
     const del = e.target.closest('[data-idelete]');
     if (del) {
       const x = Owner.inbox.find(i => i.id === del.dataset.idelete);
@@ -10329,7 +10349,16 @@ function paintInbox() {
       await guard($('ibBulk'), async () => { let ok = 0, merged = 0; for (const id of ids) { const r = await addOne(id); if (r && r.status === 'merged') merged++; else if(r) ok++; } toast('أُضيف ' + ok + ' وتم دمج ' + merged + ' في لوحتك.', 'ok'); await inboxTab(); });
     }
   };
-  $('ibList').onchange = e => { const c = e.target.closest('[data-isel]'); if (c) { c.checked ? Owner.iSel.add(c.dataset.isel) : Owner.iSel.delete(c.dataset.isel); } };
+  $('ibList').onchange = e => {
+    if (e.target.id === 'ibSelectAll') return;
+    const c = e.target.closest('[data-isel]');
+    if (c) {
+      c.checked ? Owner.iDelSel.add(c.dataset.isel) : Owner.iDelSel.delete(c.dataset.isel);
+      Owner.iSel = new Set([...Owner.iSel].filter(id => c.checked && id === c.dataset.isel ? true : id !== c.dataset.isel));
+      if (c.checked && !Owner.inbox.find(x => x.id === c.dataset.isel)?.in_master) Owner.iSel.add(c.dataset.isel);
+      paintInbox();
+    }
+  };
 }
 
 // ---- لوحة العملاء الرئيسية ----
@@ -10440,10 +10469,34 @@ async function followTab() {
 function paintFollow() {
   const emp = $('fwEmp').value, res = $('fwRes').value;
   const rows = Owner.follow.filter(x => (!emp || x.assigned_to === emp) && (!res || (res === 'pending' ? !x.result : x.result === res)));
-  $('fwList').innerHTML = rows.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الرقم</th><th>الأبلكيشنات</th><th>الموظف</th><th>ملاحظتك</th><th>النتيجة</th><th>ملاحظة الموظف</th><th>التاريخ</th><th>إجراء</th></tr></thead><tbody>' +
-    rows.map(x => '<tr><td dir="ltr" style="text-align:start !important"><b>' + esc(x.phone || (x.whatsapp_username ? '@'+x.whatsapp_username : '—')) + '</b></td><td><div class="chips">' + (x.apps_snapshot || []).map(a => appChip(a.app, a.amount)).join('') + '</div></td><td>' + esc(empName(x.assigned_to)) + '</td><td class="small">' + esc(x.manager_note || '') + '</td>' +
+  if (!(Owner.fDelSel instanceof Set)) Owner.fDelSel = new Set();
+  const visibleIds = rows.map(x => x.id);
+  const selectedVisible = visibleIds.filter(id => Owner.fDelSel.has(id));
+  $('fwList').innerHTML = rows.length ? '<div class="row" style="margin-bottom:10px;flex-wrap:wrap"><span class="muted small sp">' + rows.length + ' سجل · محدد: ' + selectedVisible.length + '</span><button class="btn danger" id="fwBulkDelete"' + (selectedVisible.length ? '' : ' disabled') + '>حذف المحدد</button></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:34px"><input type="checkbox" id="fwSelectAll" title="تحديد الكل الظاهر"></th><th>الرقم</th><th>الأبلكيشنات</th><th>الموظف</th><th>ملاحظتك</th><th>النتيجة</th><th>ملاحظة الموظف</th><th>التاريخ</th><th>إجراء</th></tr></thead><tbody>' +
+    rows.map(x => '<tr><td><input type="checkbox" data-fsel="' + x.id + '"' + (Owner.fDelSel.has(x.id) ? ' checked' : '') + '></td><td dir="ltr" style="text-align:start !important"><b>' + esc(x.phone || (x.whatsapp_username ? '@'+x.whatsapp_username : '—')) + '</b></td><td><div class="chips">' + (x.apps_snapshot || []).map(a => appChip(a.app, a.amount)).join('') + '</div></td><td>' + esc(empName(x.assigned_to)) + '</td><td class="small">' + esc(x.manager_note || '') + '</td>' +
       '<td>' + (x.result ? '<span class="pill p-' + RESULTS[x.result][1] + '">' + RESULTS[x.result][0] + '</span>' : '<span class="pill p-amber">بانتظار الرد</span>') + '</td><td class="small">' + esc(x.employee_note || '') + '</td><td class="small">' + fmtDate(x.assigned_at) + '</td><td><button class="mini danger" data-fdelete="' + x.id + '">حذف الرقم</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">لا توجد أرقام موزعة.</div>';
+  $('fwList').onchange = e => {
+    if (e.target.id === 'fwSelectAll') {
+      e.target.checked ? visibleIds.forEach(id => Owner.fDelSel.add(id)) : visibleIds.forEach(id => Owner.fDelSel.delete(id));
+      paintFollow(); return;
+    }
+    const c = e.target.closest('[data-fsel]');
+    if (c) { c.checked ? Owner.fDelSel.add(c.dataset.fsel) : Owner.fDelSel.delete(c.dataset.fsel); paintFollow(); }
+  };
   $('fwList').onclick = async e => {
+    if (e.target.id === 'fwBulkDelete') {
+      const ids = selectedVisible;
+      if (!ids.length) return toast('حدد أرقامًا للحذف أولاً.', 'err');
+      if (!confirm('هل تريد حذف ' + ids.length + ' سجل من المتابعة؟ سيتم حذف سجلات التوزيع وردود الموظفين المرتبطة بها فقط، ولن تُحذف بيانات العملاء الأصلية.')) return;
+      await guard(e.target, async () => {
+        const d = await db.from('customer_assignments').delete().in('id', ids);
+        if (d.error) throw d.error;
+        ids.forEach(id => Owner.fDelSel.delete(id));
+        toast('تم حذف ' + ids.length + ' سجل من المتابعة.', 'ok');
+        await followTab();
+      });
+      return;
+    }
     const del = e.target.closest('[data-fdelete]');
     if (!del) return;
     const item = Owner.follow.find(x => x.id === del.dataset.fdelete);
