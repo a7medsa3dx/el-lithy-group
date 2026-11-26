@@ -1762,6 +1762,39 @@
 .home-attendance-table tbody tr:hover{background:#f8fbfc}
 @media(max-width:980px){.home-attendance-table{min-width:680px}}
 
+
+/* ---------- مظهر التطبيق الداكن ---------- */
+:root[data-el-theme="dark"]{color-scheme:dark}
+body[data-theme="dark"]{
+  --bg:#101923;--card:#1B2936;--ink:#E7EEF5;--muted:#A9BAC8;--line:#344655;
+  --brand:#42A6B8;--brand-d:#0E2636;--brand-m:#174457;--brand-l:#203B49;
+  --blue:#62A9E8;--blue-l:#203A52;--blue-t:#A9D2F5;
+  --green:#35B88E;--green-l:#1C4038;--green-t:#83D9B8;
+  --amber:#E5B65C;--amber-l:#493A20;--amber-t:#F0D49A;
+  --violet:#B49AE8;--violet-l:#382D50;
+  --red:#F0807C;--red-l:#482B2C;--red-t:#FFAAA5;
+  --gray-l:#2B3946;--gray-t:#C0CCD5;
+  --shadow:0 6px 18px rgba(0,0,0,.22);
+  color-scheme:dark;
+}
+body[data-theme="dark"],body[data-theme="dark"] .container{background:var(--bg)!important;color:var(--ink)!important}
+body[data-theme="dark"] .card,body[data-theme="dark"] .modal,body[data-theme="dark"] #employeesSection,body[data-theme="dark"] #employeeDaysOffSection,body[data-theme="dark"] #accountSettingsSection,body[data-theme="dark"] #passwordChangeSection,body[data-theme="dark"] #salesManagementSection,body[data-theme="dark"] #smartMessagesSection,body[data-theme="dark"] #employmentTermsSection,body[data-theme="dark"] #dashboardSection #attendanceReportSection{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+body[data-theme="dark"] #mgrTopbar,body[data-theme="dark"] #empNav{background:#172431!important;border-color:var(--line)!important}
+body[data-theme="dark"] .icon-btn,body[data-theme="dark"] .chip,body[data-theme="dark"] .tile,body[data-theme="dark"] .order-row,body[data-theme="dark"] .cust-card,body[data-theme="dark"] .tbl,body[data-theme="dark"] .mini,body[data-theme="dark"] .btn.sec{background:#243442!important;color:var(--ink)!important;border-color:var(--line)!important}
+body[data-theme="dark"] .tabs,body[data-theme="dark"] .empty,body[data-theme="dark"] .alert-item,body[data-theme="dark"] .bar{background:#243442!important;color:var(--ink)!important;border-color:var(--line)!important}
+body[data-theme="dark"] .tbl th,body[data-theme="dark"] #mgrContent th{background:#203747!important;color:#DCE8F0!important}
+body[data-theme="dark"] .tbl td,body[data-theme="dark"] #attendanceReportSection td,body[data-theme="dark"] .rank-row{border-color:var(--line)!important}
+body[data-theme="dark"] .tbl tr:hover td{background:#2A3B49!important}
+body[data-theme="dark"] input:not([type=checkbox]):not([type=radio]),body[data-theme="dark"] select,body[data-theme="dark"] textarea,body[data-theme="dark"] #mgrContent input:not([type=checkbox]):not([type=radio]),body[data-theme="dark"] #mgrContent select,body[data-theme="dark"] #mgrContent textarea{background:#172633!important;color:var(--ink)!important;border-color:#435767!important}
+body[data-theme="dark"] input::placeholder,body[data-theme="dark"] textarea::placeholder{color:#8FA2B1!important}
+body[data-theme="dark"] .field>label,body[data-theme="dark"] label{color:#C2D0DA}
+body[data-theme="dark"] .emp-tab #employeeSalesPanel,body[data-theme="dark"] .emp-tab #employeeSalesHistory,body[data-theme="dark"] .emp-tab #employeeLeavesSection,body[data-theme="dark"] .emp-tab #employeeEmploymentTermsPanel,body[data-theme="dark"] .emp-tab>.att-card{background:var(--card)!important;color:var(--ink)!important}
+body[data-theme="dark"] .emp-hero{filter:brightness(.88)}
+body[data-theme="dark"] .notice,body[data-theme="dark"] .stat,body[data-theme="dark"] .rep-num{background:#243746!important;color:var(--ink)!important}
+body[data-theme="dark"] .p-green,body[data-theme="dark"] .p-blue,body[data-theme="dark"] .p-amber,body[data-theme="dark"] .p-red,body[data-theme="dark"] .p-violet,body[data-theme="dark"] .p-gray{filter:brightness(.85)}
+body[data-theme="dark"] #mgrContent [style*="background:#fff"],body[data-theme="dark"] #mgrContent [style*="background: #fff"],body[data-theme="dark"] #employeeDashboardSection [style*="background:#fff"],body[data-theme="dark"] #employeeDashboardSection [style*="background: #fff"]{background:var(--card)!important;color:var(--ink)!important}
+body[data-theme="dark"] #mgrContent [style*="background:#F8FBFD"],body[data-theme="dark"] #mgrContent [style*="background: #F8FBFD"],body[data-theme="dark"] #employeeDashboardSection [style*="background:#F8FBFD"]{background:#243442!important;color:var(--ink)!important}
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
 <style id="newDesign">
@@ -10947,8 +10980,9 @@ function stIdentity() {
 }
 
 function stAccount() {
-  $('stBody').innerHTML = '<div class="grid g-2"><div class="card"><h3>حسابك</h3><p class="muted">تغيير كلمة المرور وإعدادات الأمان لحساب المدير.</p><button class="btn" id="stAcc">فتح إعدادات الحساب</button></div>' +
+  $('stBody').innerHTML = '<div class="grid g-2"><div class="card"><h3>المظهر</h3><p class="muted">اختار شكل التطبيق المفضل لديك.</p><div class="field"><label for="managerThemeChoice">وضع العرض</label><select id="managerThemeChoice"><option value="light">عادي</option><option value="dark">داكن</option><option value="system">حسب نظام الهاتف</option></select></div></div><div class="card"><h3>حسابك</h3><p class="muted">تغيير كلمة المرور وإعدادات الأمان لحساب المدير.</p><button class="btn" id="stAcc">فتح إعدادات الحساب</button></div>' +
     '<div class="card"><h3>إدارة الموظفين</h3><p class="muted">تعديل الأسماء والمسميات الوظيفية وإيقاف الحسابات من صفحة الموظفين.</p><button class="btn sec" id="stEmp">فتح الموظفين</button></div></div>';
+  const managerTheme=$('managerThemeChoice'); if(managerTheme){managerTheme.value=window.ELTheme?.getChoice()||'light';managerTheme.onchange=()=>window.ELTheme?.setChoice(managerTheme.value);}
   $('stAcc').onclick = () => { A.activeNav = 'account'; $('openAccountSettingsButton').click(); };
   $('stEmp').onclick = () => (BUILTIN.find(b => b.key === 'employees')).go();
 }
@@ -11207,7 +11241,8 @@ Emp.tab = function (name, silent) {
 Emp.renderOwnProfileControls = async function(){
   const tab=document.querySelector('.emp-tab[data-tab="account"]'); if(!tab||!me()||isPreview())return;
   let panel=$('empOwnProfileControls'); if(!panel){panel=document.createElement('div');panel.id='empOwnProfileControls';panel.className='card';panel.style.marginBottom='14px';tab.prepend(panel);}
-  panel.innerHTML='<h3 style="margin-top:0">صورتي الشخصية</h3><p class="muted small">ارفع صورة تظهر بجوار اسمك على أجهزتك.</p><input id="empAvatarFile" type="file" accept="image/*"><div id="empAvatarPreview" style="margin-top:10px"></div><div class="row"><button type="button" class="btn sp" id="empAvatarSave">حفظ الصورة</button><button type="button" class="btn sec" id="empAvatarReset">استعادة الصورة الافتراضية</button></div>'; 
+  panel.innerHTML='<h3 style="margin-top:0">المظهر</h3><p class="muted small">اختار شكل التطبيق المفضل لديك.</p><div class="field"><label for="employeeThemeChoice">وضع العرض</label><select id="employeeThemeChoice"><option value="light">عادي</option><option value="dark">داكن</option><option value="system">حسب نظام الهاتف</option></select></div><div style="height:16px"></div><h3 style="margin-top:0">صورتي الشخصية</h3><p class="muted small">ارفع صورة تظهر بجوار اسمك على أجهزتك.</p><input id="empAvatarFile" type="file" accept="image/*"><div id="empAvatarPreview" style="margin-top:10px"></div><div class="row"><button type="button" class="btn sp" id="empAvatarSave">حفظ الصورة</button><button type="button" class="btn sec" id="empAvatarReset">استعادة الصورة الافتراضية</button></div>';
+  const themeChoice=$('employeeThemeChoice'); if(themeChoice){themeChoice.value=window.ELTheme?.getChoice()||'light';themeChoice.onchange=()=>window.ELTheme?.setChoice(themeChoice.value);} 
   $('empAvatarFile').onchange=()=>{const f=$('empAvatarFile').files[0];if(!f)return;const url=URL.createObjectURL(f);$('empAvatarPreview').innerHTML='<img src="'+url+'" style="width:88px;height:88px;object-fit:cover;border-radius:20px">';};
   $('empAvatarReset').onclick=e=>guard(e.currentTarget,async()=>{const r=await db.rpc('set_my_avatar_url',{p_avatar_url:null});if(r.error)throw r.error;A.profile.avatar_url=null;Emp.paintHero();const av=document.querySelector('.employee-avatar');if(av)av.textContent='👤';if($('empAv'))$('empAv').textContent='م';toast('تمت استعادة الصورة الافتراضية.','ok');});
   $('empAvatarSave').onclick=e=>guard(e.currentTarget,async()=>{const f=$('empAvatarFile').files[0];if(!f)throw new Error('اختر صورة أولاً.');if(!f.type.startsWith('image/')||f.size>4*1024*1024)throw new Error('اختر صورة لا تتجاوز 4 ميجابايت.');const ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';const path='profiles/'+me()+'/avatar.'+ext;const up=await db.storage.from('company-media').upload(path,f,{upsert:true,contentType:f.type});if(up.error)throw up.error;const url=db.storage.from('company-media').getPublicUrl(path).data.publicUrl;const save=await db.rpc('set_my_avatar_url',{p_avatar_url:url});if(save.error)throw save.error;A.profile.avatar_url=url;Emp.paintHero();toast('تم حفظ صورتك الشخصية.','ok');});
