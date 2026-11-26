@@ -12376,6 +12376,148 @@ body[data-theme="dark"] #employeeSalesHistory{
 body[data-theme="dark"] #employeeSalesHistory h3{color:#F1F6F9!important}
 body[data-theme="dark"] #employeeSalesHistory .small,
 body[data-theme="dark"] #employeeSalesAllList{color:#C7D4DD!important}
+
+/* ===== Modern manager sections: sales, targets and leaves ===== */
+#salesManagementSection,
+#employeeDaysOffSection{
+  --mgr-surface:#ffffff;
+  --mgr-soft:#f4f8fb;
+  --mgr-border:#dce6ee;
+  --mgr-text:#183247;
+  --mgr-muted:#647b8b;
+  --mgr-shadow:0 8px 24px rgba(16,43,63,.07);
+  width:100%;max-width:100%;color:var(--mgr-text);
+}
+body[data-theme="dark"] #salesManagementSection,
+body[data-theme="dark"] #employeeDaysOffSection{
+  --mgr-surface:#172635;
+  --mgr-soft:#1d3040;
+  --mgr-border:#344b5d;
+  --mgr-text:#f1f6fa;
+  --mgr-muted:#bdcbd5;
+  --mgr-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+#salesManagementSection > h2,
+#employeeDaysOffSection h2{
+  margin:4px 0 18px!important;padding:4px 0 14px;
+  color:var(--mgr-text)!important;font-size:clamp(22px,2.4vw,29px)!important;
+  font-weight:800;border-bottom:1px solid var(--mgr-border);
+}
+#salesManagementSection > .notice,
+#employeeDaysOffSection > .notice{
+  border-radius:18px;padding:18px 20px;margin:0 0 18px;
+  box-shadow:var(--mgr-shadow);line-height:1.8;
+}
+#salesManagementSection > div,
+#employeeDaysOffSection > div{
+  border:1px solid var(--mgr-border)!important;border-radius:20px!important;
+  background:var(--mgr-surface)!important;color:var(--mgr-text)!important;
+  box-shadow:var(--mgr-shadow);padding:clamp(16px,2vw,24px)!important;
+}
+#salesManagementSection h3,
+#employeeDaysOffSection h3,
+#employeeDaysOffSection h4{
+  color:var(--mgr-text)!important;font-size:19px;font-weight:800;
+  line-height:1.5;margin-top:0;
+}
+#salesManagementSection p,
+#employeeDaysOffSection p{color:var(--mgr-muted)}
+#salesManagementSection form#addSaleForm{
+  margin-top:14px;background:var(--mgr-soft)!important;
+  border:1px solid var(--mgr-border)!important;border-radius:18px!important;
+  box-shadow:none!important;padding:clamp(15px,2vw,22px)!important;
+}
+#salesManagementSection label,
+#employeeDaysOffSection label{
+  display:block;color:var(--mgr-text)!important;font-weight:700;
+  font-size:14px;margin:0 0 7px;
+}
+#salesManagementSection input,
+#salesManagementSection select,
+#employeeDaysOffSection input,
+#employeeDaysOffSection select{
+  min-height:46px;width:100%;border:1px solid var(--mgr-border)!important;
+  border-radius:12px!important;background:var(--mgr-surface)!important;
+  color:var(--mgr-text)!important;padding:11px 13px!important;
+  font:inherit;box-shadow:none;
+}
+#salesManagementSection input::placeholder,
+#employeeDaysOffSection input::placeholder{color:var(--mgr-muted)!important;opacity:1}
+#salesManagementSection input:focus,
+#salesManagementSection select:focus,
+#employeeDaysOffSection input:focus,
+#employeeDaysOffSection select:focus{
+  outline:none;border-color:#2693a5!important;
+  box-shadow:0 0 0 3px rgba(38,147,165,.16)!important;
+}
+#salesManagementSection [style*="background:white"],
+#salesManagementSection [style*="background: white"],
+#salesManagementSection [style*="background:#f7fafc"],
+#salesManagementSection [style*="background: #f7fafc"],
+#employeeDaysOffSection .dayoff-history-panel{
+  background:var(--mgr-soft)!important;border-color:var(--mgr-border)!important;
+  color:var(--mgr-text)!important;border-radius:18px!important;
+  box-shadow:none!important;
+}
+#salesManagementSection [style*="background:white"] *,
+#salesManagementSection [style*="background: white"] *,
+#salesManagementSection [style*="background:#f7fafc"] *,
+#salesManagementSection [style*="background: #f7fafc"] *,
+#employeeDaysOffSection .dayoff-history-panel *{color:inherit}
+#salesManagementSection [style*="background:white"] h2,
+#salesManagementSection [style*="background: white"] h2{
+  font-weight:800!important;line-height:1.35;
+}
+#salesManagementSection table,
+#employeeDaysOffSection table{
+  width:100%;border-collapse:separate!important;border-spacing:0;
+  overflow:hidden;border:1px solid var(--mgr-border);
+  border-radius:14px;background:var(--mgr-surface);color:var(--mgr-text);
+}
+#salesManagementSection th,
+#employeeDaysOffSection th{
+  background:#183b52!important;color:#fff!important;
+  padding:13px 11px!important;font-weight:800;white-space:nowrap;
+}
+#salesManagementSection td,
+#employeeDaysOffSection td{
+  background:var(--mgr-surface);color:var(--mgr-text)!important;
+  border-bottom:1px solid var(--mgr-border)!important;
+  padding:12px 10px!important;line-height:1.6;
+}
+#salesManagementSection tr:last-child td,
+#employeeDaysOffSection tr:last-child td{border-bottom:0!important}
+#salesManagementSection button,
+#employeeDaysOffSection button{
+  min-height:42px;border-radius:12px!important;font-weight:800;
+}
+#salesManagementSection #employeeTargetManagementPanel,
+#salesManagementSection #employeeSalesReviewPanel{
+  background:var(--mgr-surface)!important;color:var(--mgr-text)!important;
+  border:1px solid var(--mgr-border)!important;border-radius:18px!important;
+  box-shadow:var(--mgr-shadow);
+}
+#salesManagementSection #employeeTargetManagerCurrent,
+#salesManagementSection #employeeTargetManagerStatus,
+#salesManagementSection #salesHistorySummary{
+  color:var(--mgr-muted)!important;
+}
+#employeeDaysOffSection .dayoff-history-panel{
+  margin-top:22px!important;padding:18px!important;
+}
+@media(max-width:700px){
+  #salesManagementSection,#employeeDaysOffSection{padding:0 2px 24px}
+  #salesManagementSection > div,#employeeDaysOffSection > div{
+    padding:15px!important;border-radius:17px!important;
+  }
+  #salesManagementSection [style*="grid-template-columns"]{
+    grid-template-columns:1fr!important;
+  }
+  #salesManagementSection table,#employeeDaysOffSection table{font-size:12px}
+  #salesManagementSection th,#employeeDaysOffSection th,
+  #salesManagementSection td,#employeeDaysOffSection td{padding:10px 7px!important}
+}
+
 </style>
 
 </body>
