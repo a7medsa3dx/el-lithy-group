@@ -9298,7 +9298,7 @@ async function loadDayOffRecords() {
   const { data: daysOff, error } = await db
     .from("employee_days_off")
     .select("*")
-    .gte("leave_date", cairoToday())
+    .gte("leave_date", cairoToday)
     .order("leave_date", { ascending: true });
 
   if (error) throw error;
@@ -9932,7 +9932,7 @@ const bell = $('mgrBell'); if (bell) bell.addEventListener('click', () => { cons
 const topLogout = $('mgrLogoutTop'); if (topLogout) topLogout.addEventListener('click', () => $('logoutButton').click());
 
 window.EL = { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, fmtDT, EGY, IC, ICON_NAMES, COLORS, icon, LABELS, lab, applyLabels,
-  errMsg, toast, guard, safe, modal, csv, typeName, typeOptions, appChip, pageHead, sqlWarn, loadSettings, loadTypes, loadEmployees, sortStaff, empName,
+  errMsg, toast, guard, safe, modal, csv, typeName, typeOptions, appChip, pageHead, sqlWarn, loadSettings, loadTypes, loadEmployees, sortStaff, empName, filterReportEmployees,
   buildSidebar, paintActive, navItems, BUILTIN, afterLogin };
 })();
 
