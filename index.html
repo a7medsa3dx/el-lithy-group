@@ -3494,6 +3494,14 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
           font-family:Arial,sans-serif;
           font-size:14px;
         "></textarea>
+      <div id="smartMessageEmojiTools" style="margin-top:10px;position:relative">
+        <button id="smartMessageEmojiToggle" type="button" aria-expanded="false" style="display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid #d5e2e9;border-radius:10px;background:#fff;color:#24465a;font-weight:700;cursor:pointer">😊 الرموز والإيموجي</button>
+        <div id="smartMessageEmojiPicker" hidden style="margin-top:10px;padding:13px;border:1px solid #dce4eb;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(16,43,63,.09)">
+          <div style="font-size:12px;color:#647887;margin-bottom:9px">اضغط على الإيموجي لإضافته في مكان المؤشر داخل الرسالة</div>
+          <div id="smartMessageEmojiGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px"></div>
+        </div>
+      </div>
+
 
     </div>
 
@@ -7978,6 +7986,36 @@ $("smartMessageEvent").addEventListener("change", () => {
 });
 
 
+
+/* WhatsApp-style emoji picker for smart employee messages */
+(() => {
+  const field = $("smartMessageBody");
+  const toggle = $("smartMessageEmojiToggle");
+  const picker = $("smartMessageEmojiPicker");
+  const grid = $("smartMessageEmojiGrid");
+  if (!field || !toggle || !picker || !grid) return;
+  const emojis = ["😀","😃","😄","😁","😆","😂","🤣","😊","😉","😍","🥰","😘","😎","🤩","🥳","😇","🙂","🙃","🤗","🤔","😴","😭","😅","🙏","👏","👍","👎","👌","🤝","💪","❤️","🧡","💛","💚","💙","💜","🖤","🤍","💖","💕","💞","💯","🔥","✨","⭐","🌟","🎉","🎊","🏆","🥇","🚀","🎯","💡","☀️","🌹","🌷","🌸","☕","🍀","🤲","💐","📌","✅","❣️"];
+  grid.innerHTML = emojis.map(emoji => '<button type="button" class="smart-emoji-choice" data-emoji="' + emoji + '" style="min-width:40px;min-height:40px;border:0;border-radius:9px;background:transparent;font-size:23px;cursor:pointer">' + emoji + '</button>').join("");
+  toggle.addEventListener("click", () => {
+    const opening = picker.hidden;
+    picker.hidden = !opening;
+    toggle.setAttribute("aria-expanded", String(opening));
+  });
+  grid.addEventListener("click", event => {
+    const button = event.target.closest("[data-emoji]");
+    if (!button) return;
+    const emoji = button.dataset.emoji;
+    const start = Number.isInteger(field.selectionStart) ? field.selectionStart : field.value.length;
+    const end = Number.isInteger(field.selectionEnd) ? field.selectionEnd : start;
+    const next = field.value.slice(0, start) + emoji + field.value.slice(end);
+    if (next.length > Number(field.maxLength)) return;
+    field.value = next;
+    const caret = start + emoji.length;
+    field.focus();
+    field.setSelectionRange(caret, caret);
+    field.dispatchEvent(new Event("input", {bubbles:true}));
+  });
+})();
 // معاينة الحركة
 $("previewSmartMessageButton").addEventListener("click", () => {
 
@@ -13052,6 +13090,14 @@ body[data-theme="dark"] #customersSection #cuBody{--mc-card:#172635;--mc-soft:#1
 body[data-theme="dark"] #customersSection #cuBody #mtList button.mini.danger{background:#48272d!important;color:#ffdadd!important;border-color:#75434b!important}
 #customersSection #cuBody #mtList .app-chip,#customersSection #cuBody #mtList .appChip{background:var(--mc-chip)!important;color:var(--mc-chip-text)!important;border:1px solid var(--mc-line)!important}
 @media(max-width:760px){#customersSection #mtChips{padding:10px}#customersSection #mtChips .chip{font-size:12px;padding:7px 10px!important}#customersSection #cuBody #mtList .tbl-wrap{max-width:100%}}
+
+
+#smartMessagesSection #smartMessageEmojiPicker[hidden]{display:none!important}
+#smartMessagesSection .smart-emoji-choice:hover{background:#eaf3f7!important;transform:scale(1.08)}
+body[data-theme="dark"] #smartMessagesSection #smartMessageEmojiToggle,
+body[data-theme="dark"] #smartMessagesSection #smartMessageEmojiPicker{background:#172635!important;color:#f1f6fa!important;border-color:#3a5062!important}
+body[data-theme="dark"] #smartMessagesSection #smartMessageEmojiPicker>div:first-child{color:#bdcbd5!important}
+body[data-theme="dark"] #smartMessagesSection .smart-emoji-choice:hover{background:#294355!important}
 
 </style>
 
