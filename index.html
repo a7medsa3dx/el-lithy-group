@@ -10658,21 +10658,85 @@ function stNav() {
   };
   paint();
 }
+
 function stIdentity() {
   $('stBody').innerHTML = '<div class="card"><h3>هوية الشركة وصور الحسابات</h3><p class="muted">ارفع شعار لوحة المدير وشعار واجهة الموظفين وصورة المدير. الموظف يرفع صورته من حسابه.</p><div class="form-grid">' +
     field('شعار لوحة المدير', '<input type="file" id="mgrLogoFile" accept="image/*">') +
     field('شعار واجهة الموظفين', '<input type="file" id="empLogoFile" accept="image/*">') +
-    field('صورة المدير', '<input type="file" id="ownerAvatarFile" accept="image/*">') + '</div><div class="row" style="margin-top:14px"><button class="btn" id="saveBrandAssets">رفع وحفظ الصور</button></div><p class="small muted">الصور تُحفظ في مساحة تخزين الشركة وتظهر على الأجهزة الأخرى بعد تحديث الصفحة.</p></div>';
-  ['mgrLogoFile','empLogoFile','ownerAvatarFile'].forEach(id=>$(id).onchange=()=>{const f=$(id).files[0];if(!f)return;let pv=$(id+'Preview');if(!pv){pv=document.createElement('div');pv.id=id+'Preview';pv.style.marginTop='8px';$(id).parentElement.appendChild(pv);}const u=URL.createObjectURL(f);pv.innerHTML='<img src="'+u+'" alt="معاينة" style="max-width:120px;max-height:90px;object-fit:contain;border-radius:12px">';});
-  $('saveBrandAssets').onclick = e => guard(e.currentTarget, async () => {
-    const up = async (id, path) => { const f = $(id).files[0]; if (!f) return null; if (!f.type.startsWith('image/')) throw new Error('اختر ملف صورة صحيح.'); if (f.size > 4*1024*1024) throw new Error('حجم الصورة يجب ألا يتجاوز 4 ميجابايت.'); const ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg'; const key=path+'.'+ext; const r=await db.storage.from('company-media').upload(key,f,{upsert:true,contentType:f.type}); if(r.error) throw r.error; return db.storage.from('company-media').getPublicUrl(key).data.publicUrl; };
-    const mgr=await up('mgrLogoFile','brand/manager-logo'), emp=await up('empLogoFile','brand/employee-logo'), avatar=await up('ownerAvatarFile','profiles/'+A.profile.id+'/avatar');
-    const patch={}; if(mgr) patch.manager_logo_url=mgr; if(emp) patch.employee_logo_url=emp; if(avatar) patch.avatar_url=avatar;
-    if(Object.keys(patch).length){ const cr=await db.from('company_settings').update(patch).eq('id',true); if(cr.error) throw cr.error; if(avatar){const pr=await db.from('profiles').update({avatar_url:avatar}).eq('id',A.profile.id);if(pr.error)throw pr.error;} }
-    toast('تم حفظ الصور. أعد تحميل الصفحة لرؤية الشعارات في كل المواضع.','ok');
+    field('صورة المدير', '<input type="file" id="ownerAvatarFile" accept="image/*">') +
+    '</div><div class="row" style="margin-top:14px"><button class="btn" id="saveBrandAssets">رفع وحفظ الصور</button><button class="btn sec" id="resetBrandAssets">استعادة الصور الافتراضية</button></div><p class="small muted">الصور تُحفظ في مساحة تخزين الشركة وتظهر على الأجهزة الأخرى بعد تحديث الصفحة.</p></div>';
+
+  ['mgrLogoFile','empLogoFile','ownerAvatarFile'].forEach(id => {
+    $(id).onchange = () => {
+      const f = $(id).files[0];
+      if (!f) return;
+      let pv = $(id + 'Preview');
+      if (!pv) {
+        pv = document.createElement('div');
+        pv.id = id + 'Preview';
+        pv.style.marginTop = '8px';
+        $(id).parentElement.appendChild(pv);
+      }
+      const u = URL.createObjectURL(f);
+      pv.innerHTML = '<img src="' + u + '" alt="معاينة" style="max-width:120px;max-height:90px;object-fit:contain;border-radius:12px">';
+    };
   });
-  $('resetBrandAssets').onclick=e=>guard(e.currentTarget,async()=>{const r=await db.from('company_settings').update({manager_logo_url:null,employee_logo_url:null}).eq('id',true);if(r.error)throw r.error;const p=await db.from('profiles').update({avatar_url:null}).eq('id',A.profile.id);if(p.error)throw p.error;toast('تمت استعادة الصور الافتراضية.','ok');});
+
+  $('saveBrandAssets').onclick = e => guard(e.currentTarget, async () => {
+    const up = async (id, path) => {
+      const f = $(id).files[0];
+      if (!f) return null;
+      if (!f.type.startsWith('image/')) throw new Error('اختر ملف صورة صحيح.');
+      if (f.size > 4 * 1024 * 1024) throw new Error('حجم الصورة يجب ألا يتجاوز 4 ميجابايت.');
+      const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+      const key = path + '.' + ext;
+      const r = await db.storage.from('company-media').upload(key, f, {
+        upsert: true,
+        contentType: f.type
+      });
+      if (r.error) throw r.error;
+      return db.storage.from('company-media').getPublicUrl(key).data.publicUrl;
+    };
+
+    const mgr = await up('mgrLogoFile', 'brand/manager-logo');
+    const emp = await up('empLogoFile', 'brand/employee-logo');
+    const avatar = await up('ownerAvatarFile', 'profiles/' + A.profile.id + '/avatar');
+
+    const patch = {};
+    if (mgr) patch.manager_logo_url = mgr;
+    if (emp) patch.employee_logo_url = emp;
+    if (avatar) patch.avatar_url = avatar;
+
+    if (Object.keys(patch).length) {
+      const cr = await db.from('company_settings').update(patch).eq('id', true);
+      if (cr.error) throw cr.error;
+
+      if (avatar) {
+        const pr = await db.from('profiles').update({ avatar_url: avatar }).eq('id', A.profile.id);
+        if (pr.error) throw pr.error;
+      }
+    }
+
+    toast('تم حفظ الصور. أعد تحميل الصفحة لرؤية الشعارات في كل المواضع.', 'ok');
+  });
+
+  $('resetBrandAssets').onclick = e => guard(e.currentTarget, async () => {
+    if (!confirm('هل تريد استعادة الصور الافتراضية؟')) return;
+
+    const r = await db.from('company_settings')
+      .update({ manager_logo_url: null, employee_logo_url: null })
+      .eq('id', true);
+    if (r.error) throw r.error;
+
+    const p = await db.from('profiles')
+      .update({ avatar_url: null })
+      .eq('id', A.profile.id);
+    if (p.error) throw p.error;
+
+    toast('تمت استعادة الصور الافتراضية.', 'ok');
+  });
 }
+
 function stAccount() {
   $('stBody').innerHTML = '<div class="grid g-2"><div class="card"><h3>حسابك</h3><p class="muted">تغيير كلمة المرور وإعدادات الأمان لحساب المدير.</p><button class="btn" id="stAcc">فتح إعدادات الحساب</button></div>' +
     '<div class="card"><h3>إدارة الموظفين</h3><p class="muted">تعديل الأسماء والمسميات الوظيفية وإيقاف الحسابات من صفحة الموظفين.</p><button class="btn sec" id="stEmp">فتح الموظفين</button></div></div>';
