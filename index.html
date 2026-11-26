@@ -8747,7 +8747,12 @@ try {
     .from("employee_days_off")
     .select("leave_date, reason")
     .eq("employee_id", profile.id)
-    .gte("leave_date", cairoToday())
+    .gte("leave_date", new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Africa/Cairo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date()))
     .order("leave_date", { ascending: true });
 
   if (leavesError) throw leavesError;
