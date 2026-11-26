@@ -10783,9 +10783,27 @@ async function loadDailyReportControlsHistory() {
     host.innerHTML = '<div class="empty">لا توجد تأجيلات أو إعفاءات مسجلة حتى الآن.</div>';
     return;
   }
-  host.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الموظف</th><th>تاريخ التقرير</th><th>الإجراء</th><th>الموعد النهائي</th></tr></thead><tbody>' +
-    rows.map(x => '<tr><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + fmtDate(x.report_date) + '</td><td><span class="pill ' + (x.kind === 'defer' ? 'p-blue' : 'p-green') + '">' + (x.kind === 'defer' ? 'تأجيل' : 'إعفاء نهائي') + '</span></td><td>' + (x.kind === 'defer' ? (x.deadline_at ? fmtDT(x.deadline_at) : fmtDate(x.return_date) + ' · الموعد القديم') : '—') + '</td></tr>').join('') +
+  host.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الموظف</th><th>تاريخ التقرير</th><th>الإجراء</th><th>الموعد النهائي</th><th>إدارة</th></tr></thead><tbody>' +
+    rows.map(x => '<tr><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + fmtDate(x.report_date) + '</td><td><span class="pill ' + (x.kind === 'defer' ? 'p-blue' : 'p-green') + '">' + (x.kind === 'defer' ? 'تأجيل' : 'إعفاء نهائي') + '</span></td><td>' + (x.kind === 'defer' ? (x.deadline_at ? fmtDT(x.deadline_at) : fmtDate(x.return_date) + ' · الموعد القديم') : '—') + '</td><td><button class="mini danger" data-drc-delete="' + x.kind + '|' + x.id + '">' + (x.kind === 'defer' ? 'مسح التأجيل' : 'مسح الإعفاء') + '</button></td></tr>').join('') +
     '</tbody></table></div>';
+  host.onclick = async e => {
+    const btn = e.target.closest('[data-drc-delete]');
+    if (!btn) return;
+    const [kind, id] = btn.dataset.drcDelete.split('|');
+    const isDeferral = kind === 'defer';
+    const label = isDeferral ? 'التأجيل' : 'الإعفاء';
+    const warning = isDeferral
+      ? 'بعد مسح التأجيل سيعود الموعد الطبيعي: اليوم التالي خلال ساعتين من بداية دوام الموظف. إذا كان الموعد الطبيعي قد انتهى بالفعل ولم يُرسل التقرير، فقد يستحق الخصم في الفحص القادم.'
+      : 'بعد مسح الإعفاء سيعود التقرير لشروط التسليم والخصم الطبيعية. إذا كان الموعد الطبيعي قد انتهى ولم يُرسل التقرير، فقد يستحق الخصم في الفحص القادم.';
+    if (!confirm('هل تريد مسح ' + label + ' لهذا الموظف وهذا التاريخ فقط؟\\n\\n' + warning + '\\n\\nأي خصم سُجل بالفعل لن يُحذف تلقائيًا.')) return;
+    await guard(btn, async () => {
+      const table = isDeferral ? 'daily_report_deferrals' : 'daily_report_exemptions';
+      const result = await db.from(table).delete().eq('id', id);
+      if (result.error) throw result.error;
+      toast('تم مسح ' + label + '. عاد التقرير إلى شروطه الطبيعية.', 'ok');
+      await loadDailyReportControlsHistory();
+    });
+  };
 }
 
 // =====================================================================
