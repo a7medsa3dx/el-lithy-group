@@ -12985,6 +12985,44 @@ body[data-theme="dark"] #employeesSection{--emp-card:#172635;--emp-soft:#1d3040;
 #employeesSection #backToDashboardButton{margin-top:18px;background:var(--emp-card)!important;color:var(--emp-text)!important;border:1px solid var(--emp-line)!important}
 @media(max-width:760px){#employeesSection>div[style*="margin-top:20px"]{padding:15px!important}#employeesSection #addEmployeeForm{grid-template-columns:1fr;gap:5px}#employeeAccountsManagerCard{padding:16px!important}#employeeAccountsManagerCard>div:last-child{grid-template-columns:1fr!important}#employeesSection #employeeListContainer{overflow-x:auto}#employeesSection #employeeListContainer table{min-width:560px}}
 
+
+/* Correct add-employee form field pairing and alignment */
+#employeesSection #addEmployeeForm{
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ grid-template-rows:auto auto auto!important;
+ gap:8px 16px!important;
+ align-items:stretch!important;
+}
+#employeesSection #addEmployeeForm label{
+ grid-row:1!important;
+ align-self:end!important;
+ min-height:0!important;
+ margin:0 0 2px!important;
+}
+#employeesSection #addEmployeeForm label[for="newEmployeeName"]{grid-column:1!important}
+#employeesSection #addEmployeeForm label[for="newEmployeeCode"]{grid-column:2!important}
+#employeesSection #addEmployeeForm label[for="newEmployeePassword"]{grid-column:3!important}
+#employeesSection #addEmployeeForm #newEmployeeName{grid-column:1!important;grid-row:2!important}
+#employeesSection #addEmployeeForm #newEmployeeCode{grid-column:2!important;grid-row:2!important}
+#employeesSection #addEmployeeForm #newEmployeePassword{grid-column:3!important;grid-row:2!important}
+#employeesSection #addEmployeeForm button{
+ grid-column:1/-1!important;grid-row:3!important;
+ width:100%!important;margin:10px 0 0!important;
+}
+@media(max-width:760px){
+ #employeesSection #addEmployeeForm{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:none!important;gap:5px!important;
+ }
+ #employeesSection #addEmployeeForm label,
+ #employeesSection #addEmployeeForm input,
+ #employeesSection #addEmployeeForm button{
+  grid-column:1!important;grid-row:auto!important;
+ }
+ #employeesSection #addEmployeeForm label{margin:9px 0 3px!important}
+}
+
 </style>
 
 </body>
