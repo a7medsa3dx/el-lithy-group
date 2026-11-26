@@ -1968,7 +1968,7 @@ body[data-mode="employee"] main.container{padding:0 0 20px}
 #employeeSalesPanel h3{font-size:18px}
 #empNav{position:fixed;z-index:70;bottom:0;left:0;right:0;display:none;grid-template-columns:repeat(5,1fr);align-items:center;background:#fff;border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(15,42,61,.06)}
 body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
-#empNav button{display:flex;flex-direction:column;align-items:center;gap:3px;width:auto !important;margin:0 !important;padding:6px 2px !important;border:0 !important;background:transparent !important;color:var(--muted) !important;font-size:11px !important;font-weight:700;cursor:pointer;min-height:54px}
+#empNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;width:100% !important;margin:0 !important;padding:7px 3px !important;border:0 !important;background:transparent !important;color:var(--muted) !important;font-size:clamp(10px,2.5vw,12px) !important;font-weight:700;cursor:pointer;min-height:54px;white-space:nowrap}
 #empNav button.on{color:var(--brand) !important}
 #empNav button svg{stroke:currentColor}
 .rank-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #EDF2F6}
@@ -11000,7 +11000,9 @@ Emp.buildNav = function () {
   const reportPanel = document.querySelector('.emp-tab[data-tab="report"]');
   if (reportPanel) reportPanel.style.display = excluded ? 'none' : '';
   const visibleTabs = TABS.filter(t => !excluded || t[0] !== 'report');
-  nav.innerHTML = visibleTabs.map(t => '<button type="button" data-etab="' + t[0] + '" style="position:relative">' + icon(t[1], 22) + '<span>' + esc(lab('emp.' + t[0])) + '</span>' +
+  // Distribute the available width evenly across the tabs actually shown.
+  nav.style.gridTemplateColumns = 'repeat(' + visibleTabs.length + ', minmax(0, 1fr))';
+  nav.innerHTML = visibleTabs.map(t => '<button type="button" data-etab="' + t[0] + '" style="position:relative;min-width:0;justify-content:center;white-space:nowrap">' + icon(t[1], 22) + '<span>' + esc(lab('emp.' + t[0])) + '</span>' +
     (t[0] === 'customers' ? '<i id="empCustDot" class="hide-me" style="position:absolute;top:4px;inset-inline-start:calc(50% + 6px);width:10px;height:10px;border-radius:50%;background:var(--red)"></i>' : '') + '</button>').join('');
   qa('[data-etab]', nav).forEach(b => b.onclick = () => Emp.tab(b.dataset.etab));
 };
@@ -11081,24 +11083,13 @@ Emp.renderOwnProfileControls = async function(){
 // بطاقة اليوم
 // ---------------------------------------------------------------------
 Emp.refreshToday = async function () {
-  const box = $('empTodayBox'); if (!box || !me()) return;
-  const today = cairoToday();
-  const reportExcluded = A.profile?.employee_code === REPORT_EXCLUDED_CODE;
-  const [rep, cus, asg] = await Promise.all([
-    reportExcluded ? Promise.resolve({ data: null, error: null }) : safe(db.from('daily_reports').select('id').eq('employee_id', me()).eq('report_date', today).maybeSingle()),
-    safe(db.from('employee_customers').select('id', { count: 'exact', head: true }).eq('employee_id', me()).eq('report_date', today)),
-    safe(db.from('customer_assignments').select('id', { count: 'exact', head: true }).eq('assigned_to', me()).is('result', null))
-  ]);
-  if (rep.error && cus.error && asg.error) { box.classList.add('hide-me'); return; }
-  const repTxt = !A.campaign && !rep.data ? 'لا حملة اليوم' : rep.data ? 'تم الإرسال' : 'لم يُرسل';
-  const repCls = rep.data ? 'p-green' : !A.campaign ? 'p-gray' : 'p-amber';
-  box.classList.remove('hide-me');
-  box.innerHTML = '<h3 style="margin:0 0 12px;font-size:18px">ملخص يومك</h3><div class="grid" style="grid-template-columns:repeat(' + (reportExcluded ? 2 : 3) + ',minmax(0,1fr));gap:10px">' +
-    (reportExcluded ? '' : '<button type="button" class="stat" data-go="report" style="border:0;cursor:pointer;background:#F5F9FB;text-align:center"><div class="t muted">' + esc(lab('emp.report')) + '</div><span class="pill ' + repCls + '" style="margin-top:6px">' + repTxt + '</span></button>') +
-    '<button type="button" class="stat" data-go="customers" style="border:0;cursor:pointer;background:#F5F9FB;text-align:center"><div class="t muted">عملاء اليوم</div><div class="n">' + num(cus.count || 0) + '</div></button>' +
-    '<button type="button" class="stat" data-go="customers" style="border:0;cursor:pointer;background:' + ((asg.count || 0) ? 'var(--amber-l)' : '#F5F9FB') + ';text-align:center"><div class="t muted">متابعات بانتظارك</div><div class="n">' + num(asg.count || 0) + '</div></button></div>';
-  qa('[data-go]', box).forEach(b => b.onclick = () => Emp.tab(b.dataset.go));
-  const dot = $('empCustDot'); if (dot) dot.classList.toggle('hide-me', !(asg.count || 0));
+  // ملخص اليوم غير مطلوب في لوحة الموظف؛ تظل بيانات العملاء المحوّلة من المدير
+  // متاحة داخل تبويب العملاء من خلال Emp.loadAssignments دون تغيير.
+  const box = $('empTodayBox');
+  if (box) {
+    box.innerHTML = '';
+    box.classList.add('hide-me');
+  }
 };
 Emp.pendingDot = async function () {
   if (!me()) return;
