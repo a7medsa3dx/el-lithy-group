@@ -8441,23 +8441,32 @@ targetSaveButton.onclick = async () => {
       `${monthlyTripleCount.toLocaleString("ar-EG-u-nu-latn")} عملية`;
 
     if (company) {
+      const reportCompanySales = (employees || []).reduce(
+        (sum, employee) => sum + Number(employee.total_sales || 0), 0
+      );
+      const reportCompanyTarget = Number(company.company_target || 0);
+      const reportCompanyAchievement = reportCompanyTarget > 0
+        ? reportCompanySales / reportCompanyTarget * 100
+        : 0;
+      const reportCompanyRemaining = reportCompanyTarget - reportCompanySales;
+
       $("companyMonthlyTarget").textContent =
-        formatMoney(company.company_target);
+        formatMoney(reportCompanyTarget);
 
       $("companyMonthlySales").textContent =
-        formatMoney(company.total_sales);
+        formatMoney(reportCompanySales);
 
       $("companyAchievement").textContent =
-        Number(company.achievement_percentage || 0).toLocaleString("ar-EG-u-nu-latn") + "%";
+        reportCompanyAchievement.toLocaleString("ar-EG-u-nu-latn", { maximumFractionDigits: 2 }) + "%";
 
       const companyProgress = Math.max(
   0,
-  Math.min(100, Number(company.achievement_percentage || 0))
+  Math.min(100, reportCompanyAchievement)
 );
 
 $("companyProgressBar").style.width = companyProgress + "%";
       
-      const remaining = Number(company.remaining_target || 0);
+      const remaining = reportCompanyRemaining;
 
       $("companyRemainingTarget").textContent =
         remaining >= 0
@@ -8474,7 +8483,7 @@ $("companyProgressBar").style.width = companyProgress + "%";
     const body = $("monthlySalesBody");
     body.replaceChildren();
 
-    if (!employees || employees.length === 0) {
+    if (!eligibleEmployees || eligibleEmployees.length === 0) {
       const row = body.insertRow();
       const cell = row.insertCell();
       cell.colSpan = 6;
@@ -8484,7 +8493,7 @@ $("companyProgressBar").style.width = companyProgress + "%";
           return;
     }
 
-const employeeTargetsTotal = (employees || [])
+const employeeTargetsTotal = (eligibleEmployees || [])
   .filter(employee => employee.employee_code !== "EMP002")
   .reduce((sum, employee) => sum + Number(employee.target_amount || 0), 0);
 
@@ -8738,7 +8747,8 @@ try {
     .from("employee_days_off")
     .select("leave_date, reason")
     .eq("employee_id", profile.id)
-    .order("leave_date", { ascending: false });
+    .gte("leave_date", cairoToday())
+    .order("leave_date", { ascending: true });
 
   if (leavesError) throw leavesError;
   leaves = employeeLeaves || [];
@@ -9283,7 +9293,8 @@ async function loadDayOffRecords() {
   const { data: daysOff, error } = await db
     .from("employee_days_off")
     .select("*")
-    .order("leave_date", { ascending: false });
+    .gte("leave_date", cairoToday())
+    .order("leave_date", { ascending: true });
 
   if (error) throw error;
 
@@ -9733,6 +9744,10 @@ async function loadTypes() {
   A.types = t.data || [];
 }
 const STAFF_ORDER=['أحمد طارق','أحمد حجازي','شادن','چومانه','يسرا'];
+const REPORT_EXCLUDED_CODE = 'EMP002';
+const isReportExcluded = employee => !!employee && employee.employee_code === REPORT_EXCLUDED_CODE;
+const filterReportEmployees = rows => (rows || []).filter(employee => !isReportExcluded(employee));
+const excludedReportEmployeeId = () => (A.employees || []).find(isReportExcluded)?.id || null;
 const sortStaff=rows=>(rows||[]).slice().sort((a,b)=>{const ia=STAFF_ORDER.indexOf(a.full_name),ib=STAFF_ORDER.indexOf(b.full_name);return (ia<0?999:ia)-(ib<0?999:ib)||String(a.employee_code||'').localeCompare(String(b.employee_code||''));});
 async function loadEmployees() {
   const r = await safe(db.from('profiles').select('id,full_name,employee_code,job_title,active').eq('role', 'employee').order('employee_code'));
@@ -9740,6 +9755,44 @@ async function loadEmployees() {
   return A.employees;
 }
 const empName = id => { const e = A.employees.find(x => x.id === id); return e ? e.full_name : '—'; };
+async function campaignStatsWithoutExcludedEmployee(campaigns) {
+  const items = (campaigns || []).map(c => Object.assign({}, c));
+  if (!items.length) return items;
+  if (!A.employees?.length) await loadEmployees();
+  const campaignIds = items.map(c => c.campaign_id).filter(Boolean);
+  if (!campaignIds.length) return items;
+  let rq = db.from('daily_reports')
+    .select('campaign_id,employee_id,report_date,total_messages,interested,no_reply,not_interested')
+    .in('campaign_id', campaignIds);
+  const excludedId = excludedReportEmployeeId();
+  if (excludedId) rq = rq.neq('employee_id', excludedId);
+  const rr = await rq;
+  if (rr.error) throw rr.error;
+  const reportRows = rr.data || [];
+  const employeeIds = [...new Set(reportRows.map(r => r.employee_id).filter(Boolean))];
+  const dates = [...new Set(reportRows.map(r => r.report_date).filter(Boolean))];
+  let customers = [];
+  if (employeeIds.length && dates.length) {
+    const cr = await db.from('employee_customers')
+      .select('employee_id,report_date')
+      .in('employee_id', employeeIds)
+      .in('report_date', dates);
+    if (cr.error) throw cr.error;
+    customers = cr.data || [];
+  }
+  return items.map(c => {
+    const rows = reportRows.filter(r => r.campaign_id === c.campaign_id);
+    const keys = new Set(rows.map(r => String(r.employee_id) + '|' + String(r.report_date)));
+    return Object.assign({}, c, {
+      total_messages: rows.reduce((sum, r) => sum + Number(r.total_messages || 0), 0),
+      interested: rows.reduce((sum, r) => sum + Number(r.interested || 0), 0),
+      no_reply: rows.reduce((sum, r) => sum + Number(r.no_reply || 0), 0),
+      not_interested: rows.reduce((sum, r) => sum + Number(r.not_interested || 0), 0),
+      reports_count: rows.length,
+      customers_registered: customers.filter(x => keys.has(String(x.employee_id) + '|' + String(x.report_date))).length
+    });
+  });
+}
 
 // ---------------- التنقل ----------------
 const MGR = ['dashboardSection', 'employeesSection', 'salesManagementSection', 'employeeDaysOffSection', 'accountSettingsSection',
@@ -9892,6 +9945,7 @@ const kpi = (cc, ic, label, val, sub) => '<div class="card kpi ' + cc + '"><div 
 const field = (label, inner, cls, hint) => '<div class="field ' + (cls || '') + '"><label>' + esc(label) + '</label>' + inner + (hint ? '<span class="hint">' + hint + '</span>' : '') + '</div>';
 const parseAmount = v => { const n = Number(toEn(v).replace(/[,\s]/g, '')); return Number.isFinite(n) ? n : NaN; };
 const empOptions = (sel, all) => (all ? '<option value="">كل الموظفين</option>' : '<option value="">اختر الموظف</option>') + A.employees.map(e => '<option value="' + e.id + '"' + (e.id === sel ? ' selected' : '') + '>' + esc(e.full_name) + (e.active ? '' : ' (موقوف)') + '</option>').join('');
+const reportEmpOptions = (sel, all) => (all ? '<option value="">كل الموظفين</option>' : '<option value="">اختر الموظف</option>') + filterReportEmployees(A.employees).map(e => '<option value="' + e.id + '"' + (e.id === sel ? ' selected' : '') + '>' + esc(e.full_name) + (e.active ? '' : ' (موقوف)') + '</option>').join('');
 const waLink = p => p ? 'https://wa.me/' + String(p).replace(/^0/, '20') : '';
 
 // ---------- محرر أبلكيشنات (نوع + مبلغ لكل واحد) ----------
@@ -9948,14 +10002,16 @@ Owner.renderHome = async function () {
   const homeErrors = homeResults
     .map((r, i) => r && r.error ? ['الموظفون','الحضور والانصراف','مبيعات الشركة','تقارير اليوم','الحملة الحالية','التنبيهات','التنبيهات غير المقروءة','مبيعات الموظفين'][i] + ': ' + (r.error.message || 'تعذر التحميل') : null)
     .filter(Boolean);
-  const E = sortStaff(emps.data || []), rec = new Map((att.data || []).map(r => [r.employee_id, r]));
+  const E = sortStaff(emps.data || []), reportEmployees = filterReportEmployees(E), rec = new Map((att.data || []).map(r => [r.employee_id, r]));
   let present = 0, onBreak = 0;
   E.forEach(e => { const r = rec.get(e.id); if (r && r.check_in && !r.check_out) { if (r.break_start && !r.break_end) onBreak++; else present++; } });
   const here = present + onBreak;
-  const repSet = new Set((reps.data || []).map(r => r.employee_id));
-  const notSent = A.campaign ? E.filter(e => !repSet.has(e.id)) : [];
-  const c = comp.data || {}, cs = camp.data;
+  const eligibleIds = new Set(reportEmployees.map(e => e.id));
+  const repSet = new Set((reps.data || []).map(r => r.employee_id).filter(id => eligibleIds.has(id)));
+  const notSent = A.campaign ? reportEmployees.filter(e => !repSet.has(e.id)) : [];
   const sales = esales.data || [];
+  const c = comp.data || {};
+  const cs = camp.data ? (await campaignStatsWithoutExcludedEmployee([camp.data]))[0] : null;
   const plus = sales.reduce((s, r) => s + Number(r.plus_sales || 0), 0), triple = sales.reduce((s, r) => s + Number(r.triple_zero_sales || 0), 0);
   const pct = Number(c.achievement_percentage || 0);
 
@@ -10098,7 +10154,7 @@ Owner.renderReports = async function () {
   sec.innerHTML = pageHead(lab('nav.reports'), 'اختر موظفاً لتشوف تقاريره يوماً بيوم بالأرقام والعملاء.', '<button class="btn sec" id="rpExport">' + icon('download', 18) + 'تصدير Excel</button>') +
     '<div class="card"><div class="form-grid">' +
     field('الحملة', '<select id="rpCamp"><option value="">كل الحملات</option>' + (camps.data || []).map(c => '<option value="' + c.id + '">' + esc(c.title) + (c.status === 'open' ? ' (مفتوحة)' : '') + '</option>').join('') + '</select>') +
-    field('الموظف', '<select id="rpEmp">' + empOptions('', true) + '</select>') +
+    field('الموظف', '<select id="rpEmp">' + reportEmpOptions('', true) + '</select>') +
     field('من تاريخ', '<input type="date" id="rpFrom" value="' + from + '">') +
     field('إلى تاريخ', '<input type="date" id="rpTo" value="' + today + '">') + '</div>' +
     '<div class="row" style="margin-top:14px"><button class="btn" id="rpLoad">عرض التقارير</button></div></div><div id="rpResult" style="margin-top:16px"></div>';
@@ -10109,9 +10165,11 @@ Owner.renderReports = async function () {
 async function loadReports() {
   let qy = db.from('daily_reports').select('*').order('report_date', { ascending: false }).limit(800);
   const camp = $('rpCamp').value, emp = $('rpEmp').value, f = $('rpFrom').value, t = $('rpTo').value;
+  const excludedId = excludedReportEmployeeId();
+  if (excludedId) qy = qy.neq('employee_id', excludedId);
   if (camp) qy = qy.eq('campaign_id', camp); if (emp) qy = qy.eq('employee_id', emp); if (f) qy = qy.gte('report_date', f); if (t) qy = qy.lte('report_date', t);
   const r = await qy; if (r.error) throw r.error;
-  const rows = r.data || []; Owner.rpRows = rows;
+  const rows = (r.data || []).filter(x => x.employee_id !== excludedId); Owner.rpRows = rows;
   const sum = k => rows.reduce((s, x) => s + Number(x[k] || 0), 0);
   let html = '<div class="grid g-auto" style="margin-bottom:16px">' +
     '<div class="stat" style="background:#fff;border:1px solid var(--line)"><div class="t muted">إجمالي الرسائل</div><div class="n">' + num(sum('total_messages')) + '</div></div>' +
@@ -10335,7 +10393,7 @@ Owner.renderCampaigns = async function () {
     return;
   }
 
-  const list = r.data || [];
+  const list = await campaignStatsWithoutExcludedEmployee(r.data || []);
 
   // فصل الحملات المفتوحة والعادية والمؤرشفة
   const open = list.find(c => c.status === 'open' && !c.archived_at);
@@ -10593,7 +10651,7 @@ Owner.renderMonthlyReport = async function () {
   const sec=$('monthlyReportSection'); await loadEmployees();
   const now=cairoToday(), month=now.slice(0,7);
   sec.innerHTML=pageHead('التقرير الشهري الشامل','الحضور والانصراف والتأخير والاستراحات والمبيعات والتارجت — للمدير فقط.')+
-    '<div class="card"><div class="form-grid">'+field('الشهر','<input type="month" id="mrMonth" value="'+month+'">')+field('الموظف','<select id="mrEmp"><option value="">كل الموظفين</option>'+empOptions('',true)+'</select>')+'</div><div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn" id="mrLoad">عرض التقرير</button><button class="btn sec" id="mrExcel">تصدير Excel</button><button class="btn sec" id="mrPdf">طباعة / حفظ PDF</button></div></div><div id="mrResult" style="margin-top:16px"></div>';
+    '<div class="card"><div class="form-grid">'+field('الشهر','<input type="month" id="mrMonth" value="'+month+'">')+field('الموظف','<select id="mrEmp">'+empOptions('',true)+'</select>')+'</div><div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn" id="mrLoad">عرض التقرير</button><button class="btn sec" id="mrExcel">تصدير Excel</button><button class="btn sec" id="mrPdf">طباعة / حفظ PDF</button></div></div><div id="mrResult" style="margin-top:16px"></div>';
   $('mrLoad').onclick=e=>guard(e.currentTarget,loadMonthlyReport); $('mrExcel').onclick=()=>{if(!Owner.monthlyRows)return toast('اعرض التقرير أولاً.','err');const rows=Owner.monthlyRows, daily=Owner.monthlyAttendanceRows||[];const escX=v=>String(v??'').replace(/[&<>]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[x]));const tableX=a=>'<table dir="rtl">'+a.map((r,i)=>'<tr>'+r.map(c=>'<'+(i?'td':'th')+'>'+escX(c)+'</'+(i?'td':'th')+'>').join('')+'</tr>').join('')+'</table>';const html='<html><meta charset="utf-8"><h2>ملخص الموظفين</h2>'+tableX(rows)+'<h2>تفاصيل الحضور والانصراف</h2>'+tableX(daily)+'</html>';const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='EL-LITHY-monthly-report.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}; $('mrPdf').onclick=()=>{if(!Owner.monthlyPrint)return toast('اعرض التقرير أولاً.','err');const w=window.open('','_blank');if(!w)return toast('اسمح بالنوافذ المنبثقة لحفظ PDF.','err');w.document.write(Owner.monthlyPrint);w.document.close();w.focus();w.print();};
   await loadMonthlyReport();
 };
@@ -10931,7 +10989,11 @@ const TABS = [['today', 'clock'], ['report', 'doc'], ['sales', 'trend'], ['custo
 
 Emp.buildNav = function () {
   const nav = $('empNav'); if (!nav) return;
-  nav.innerHTML = TABS.map(t => '<button type="button" data-etab="' + t[0] + '" style="position:relative">' + icon(t[1], 22) + '<span>' + esc(lab('emp.' + t[0])) + '</span>' +
+  const excluded = A.profile?.employee_code === REPORT_EXCLUDED_CODE;
+  const reportPanel = document.querySelector('.emp-tab[data-tab="report"]');
+  if (reportPanel) reportPanel.style.display = excluded ? 'none' : '';
+  const visibleTabs = TABS.filter(t => !excluded || t[0] !== 'report');
+  nav.innerHTML = visibleTabs.map(t => '<button type="button" data-etab="' + t[0] + '" style="position:relative">' + icon(t[1], 22) + '<span>' + esc(lab('emp.' + t[0])) + '</span>' +
     (t[0] === 'customers' ? '<i id="empCustDot" class="hide-me" style="position:absolute;top:4px;inset-inline-start:calc(50% + 6px);width:10px;height:10px;border-radius:50%;background:var(--red)"></i>' : '') + '</button>').join('');
   qa('[data-etab]', nav).forEach(b => b.onclick = () => Emp.tab(b.dataset.etab));
 };
@@ -10947,6 +11009,8 @@ Emp.paintHero = function () {
 
 Emp.onShow = function () {
   Emp.paintHero();
+  const reportPanel = document.querySelector('.emp-tab[data-tab="report"]');
+  if (reportPanel) reportPanel.style.display = (!isPreview() && A.profile?.employee_code === REPORT_EXCLUDED_CODE) ? 'none' : '';
   if (isPreview()) {
     // معاينة المدير: كل الأقسام القديمة ظاهرة، وأقسام النظام الجديد مخفية
     qa('.emp-tab').forEach(t => t.classList.add('on'));
@@ -10985,6 +11049,7 @@ Emp.checkForgottenCheckout = async function(){
 };
 
 Emp.tab = function (name, silent) {
+  if (name === 'report' && A.profile?.employee_code === REPORT_EXCLUDED_CODE) name = 'today';
   A.empTab = name;
   qa('.emp-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === name));
   qa('#empNav [data-etab]').forEach(b => b.classList.toggle('on', b.dataset.etab === name));
@@ -11011,8 +11076,9 @@ Emp.renderOwnProfileControls = async function(){
 Emp.refreshToday = async function () {
   const box = $('empTodayBox'); if (!box || !me()) return;
   const today = cairoToday();
+  const reportExcluded = A.profile?.employee_code === REPORT_EXCLUDED_CODE;
   const [rep, cus, asg] = await Promise.all([
-    safe(db.from('daily_reports').select('id').eq('employee_id', me()).eq('report_date', today).maybeSingle()),
+    reportExcluded ? Promise.resolve({ data: null, error: null }) : safe(db.from('daily_reports').select('id').eq('employee_id', me()).eq('report_date', today).maybeSingle()),
     safe(db.from('employee_customers').select('id', { count: 'exact', head: true }).eq('employee_id', me()).eq('report_date', today)),
     safe(db.from('customer_assignments').select('id', { count: 'exact', head: true }).eq('assigned_to', me()).is('result', null))
   ]);
@@ -11020,8 +11086,8 @@ Emp.refreshToday = async function () {
   const repTxt = !A.campaign && !rep.data ? 'لا حملة اليوم' : rep.data ? 'تم الإرسال' : 'لم يُرسل';
   const repCls = rep.data ? 'p-green' : !A.campaign ? 'p-gray' : 'p-amber';
   box.classList.remove('hide-me');
-  box.innerHTML = '<h3 style="margin:0 0 12px;font-size:18px">ملخص يومك</h3><div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">' +
-    '<button type="button" class="stat" data-go="report" style="border:0;cursor:pointer;background:#F5F9FB;text-align:center"><div class="t muted">' + esc(lab('emp.report')) + '</div><span class="pill ' + repCls + '" style="margin-top:6px">' + repTxt + '</span></button>' +
+  box.innerHTML = '<h3 style="margin:0 0 12px;font-size:18px">ملخص يومك</h3><div class="grid" style="grid-template-columns:repeat(' + (reportExcluded ? 2 : 3) + ',minmax(0,1fr));gap:10px">' +
+    (reportExcluded ? '' : '<button type="button" class="stat" data-go="report" style="border:0;cursor:pointer;background:#F5F9FB;text-align:center"><div class="t muted">' + esc(lab('emp.report')) + '</div><span class="pill ' + repCls + '" style="margin-top:6px">' + repTxt + '</span></button>') +
     '<button type="button" class="stat" data-go="customers" style="border:0;cursor:pointer;background:#F5F9FB;text-align:center"><div class="t muted">عملاء اليوم</div><div class="n">' + num(cus.count || 0) + '</div></button>' +
     '<button type="button" class="stat" data-go="customers" style="border:0;cursor:pointer;background:' + ((asg.count || 0) ? 'var(--amber-l)' : '#F5F9FB') + ';text-align:center"><div class="t muted">متابعات بانتظارك</div><div class="n">' + num(asg.count || 0) + '</div></button></div>';
   qa('[data-go]', box).forEach(b => b.onclick = () => Emp.tab(b.dataset.go));
@@ -11050,6 +11116,7 @@ Emp.renderTeam = async function () {
 // ---------------------------------------------------------------------
 Emp.renderReport = async function () {
   const box = $('empReportBox'); if (!box) return;
+  if (A.profile?.employee_code === REPORT_EXCLUDED_CODE) { box.innerHTML = ''; return; }
   const today = cairoToday(), date = Emp.repDate || today;
   const list = await safe(db.from('daily_reports').select('*').eq('employee_id', me()).order('report_date', { ascending: false }).limit(8));
   if (list.error) { box.innerHTML = '<div class="empty">النظام الجديد غير مفعّل بعد. تواصل مع المدير.</div>'; return; }
