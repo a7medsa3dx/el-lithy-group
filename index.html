@@ -11316,7 +11316,7 @@ Emp.buildAddForm = function () {
   if (!host) return;
 
   host.innerHTML = '<h3 style="margin:0 0 12px;font-size:18px">تسجيل عميل جديد</h3><div class="stack">' +
-    '<div class="field"><label for="ecPhone">رقم الهاتف</label><input id="ecPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint">11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015</span></div>' +
+    '<div class="field"><label for="ecPhone">رقم الهاتف</label><input id="ecPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint"></span></div>' +
     '<div class="field"><label for="ecWhatsApp">اسم مستخدم واتساب</label><input id="ecWhatsApp" type="text" value="@" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
     '<label class="row" style="gap:8px;margin:0;font-weight:700"><input type="checkbox" id="ecForeign" style="width:20px;height:20px"> رقم غير مصري</label>' +
     '<div class="field" id="ecInternationalWrap" style="display:none"><label for="ecCountryCode">رقم العميل الدولي</label><div class="row" style="gap:8px;align-items:stretch"><select id="ecCountryCode" dir="ltr" style="max-width:46%;min-width:145px"></select><input id="ecInternationalPhone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="رقم الهاتف" dir="ltr" style="text-align:start;flex:1;min-width:0"></div><span class="hint">اختر كود الدولة ثم اكتب الرقم بدون كود الدولة.</span></div>' +
@@ -11359,7 +11359,7 @@ Emp.buildAddForm = function () {
     const ok = EGY.test(v);
     hint.style.color = !v ? '' : ok ? 'var(--green-t)' : 'var(--red-t)';
     hint.textContent = !v
-      ? '11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015'
+      ? ''
       : ok
         ? 'رقم صحيح ✓'
         : v.length + ' من 11 رقم' + (v.length >= 3 && !/^(010|011|012|015)/.test(v)
