@@ -8414,7 +8414,11 @@ targetSaveButton.onclick = async () => {
       .gte("sale_date", monthStart)
       .lt("sale_date", nextMonthStart);
     if (excludedId) monthlyTransactionsQuery = monthlyTransactionsQuery.neq("employee_id", excludedId);
-    const { data: monthlyTransactions, error: transactionsError } = await monthlyTransactionsQuery;
+    const { data: monthlyTransactions, error: transactionsError } = await db
+      .from("sales_transactions")
+      .select("sale_type, amount")
+      .gte("sale_date", monthStart)
+      .lt("sale_date", nextMonthStart);
 
     if (transactionsError) throw transactionsError;
 
@@ -8444,7 +8448,7 @@ targetSaveButton.onclick = async () => {
       `${monthlyTripleCount.toLocaleString("ar-EG-u-nu-latn")} عملية`;
 
     if (company) {
-      const reportCompanySales = eligibleEmployees.reduce(
+      const reportCompanySales = (employees || []).reduce(
         (sum, employee) => sum + Number(employee.total_sales || 0), 0
       );
       const reportCompanyTarget = Number(company.company_target || 0);
@@ -8538,7 +8542,7 @@ if (employeeTargetsTotal === companyTarget) {
   warning.style.display = "block";
 }
     
-eligibleEmployees.forEach(employee => {
+employees.forEach(employee => {
   const row = body.insertRow();
 
   const values = [
@@ -8750,7 +8754,8 @@ try {
     .from("employee_days_off")
     .select("leave_date, reason")
     .eq("employee_id", profile.id)
-    .order("leave_date", { ascending: false });
+    .gte("leave_date", cairoToday())
+    .order("leave_date", { ascending: true });
 
   if (leavesError) throw leavesError;
   leaves = employeeLeaves || [];
@@ -9086,7 +9091,6 @@ async function loadAttendanceReport() {
       .select("id, full_name, employee_code")
       .eq("role", "employee")
       .eq("active", true)
-      .neq("employee_code", REPORT_EXCLUDED_CODE)
       .order("employee_code");
 
     if (employeesError) throw employeesError;
@@ -9296,7 +9300,8 @@ async function loadDayOffRecords() {
   const { data: daysOff, error } = await db
     .from("employee_days_off")
     .select("*")
-    .order("leave_date", { ascending: false });
+    .gte("leave_date", cairoToday())
+    .order("leave_date", { ascending: true });
 
   if (error) throw error;
 
@@ -10004,22 +10009,15 @@ Owner.renderHome = async function () {
   const homeErrors = homeResults
     .map((r, i) => r && r.error ? ['الموظفون','الحضور والانصراف','مبيعات الشركة','تقارير اليوم','الحملة الحالية','التنبيهات','التنبيهات غير المقروءة','مبيعات الموظفين'][i] + ': ' + (r.error.message || 'تعذر التحميل') : null)
     .filter(Boolean);
-  const E = filterReportEmployees(sortStaff(emps.data || [])), rec = new Map((att.data || []).map(r => [r.employee_id, r]));
+  const E = sortStaff(emps.data || []), reportEmployees = filterReportEmployees(E), rec = new Map((att.data || []).map(r => [r.employee_id, r]));
   let present = 0, onBreak = 0;
   E.forEach(e => { const r = rec.get(e.id); if (r && r.check_in && !r.check_out) { if (r.break_start && !r.break_end) onBreak++; else present++; } });
   const here = present + onBreak;
-  const eligibleIds = new Set(E.map(e => e.id));
+  const eligibleIds = new Set(reportEmployees.map(e => e.id));
   const repSet = new Set((reps.data || []).map(r => r.employee_id).filter(id => eligibleIds.has(id)));
-  const notSent = A.campaign ? E.filter(e => !repSet.has(e.id)) : [];
-  const sales = filterReportEmployees(esales.data || []);
-  const rawCompany = comp.data || {};
-  const reportTotalSales = sales.reduce((sum, row) => sum + Number(row.total_sales || 0), 0);
-  const reportCompanyTarget = Number(rawCompany.company_target || 0);
-  const c = Object.assign({}, rawCompany, {
-    total_sales: reportTotalSales,
-    achievement_percentage: reportCompanyTarget > 0 ? reportTotalSales / reportCompanyTarget * 100 : 0
-  });
-  c.remaining_target = reportCompanyTarget - reportTotalSales;
+  const notSent = A.campaign ? reportEmployees.filter(e => !repSet.has(e.id)) : [];
+  const sales = esales.data || [];
+  const c = comp.data || {};
   const cs = camp.data ? (await campaignStatsWithoutExcludedEmployee([camp.data]))[0] : null;
   const plus = sales.reduce((s, r) => s + Number(r.plus_sales || 0), 0), triple = sales.reduce((s, r) => s + Number(r.triple_zero_sales || 0), 0);
   const pct = Number(c.achievement_percentage || 0);
@@ -10660,7 +10658,7 @@ Owner.renderMonthlyReport = async function () {
   const sec=$('monthlyReportSection'); await loadEmployees();
   const now=cairoToday(), month=now.slice(0,7);
   sec.innerHTML=pageHead('التقرير الشهري الشامل','الحضور والانصراف والتأخير والاستراحات والمبيعات والتارجت — للمدير فقط.')+
-    '<div class="card"><div class="form-grid">'+field('الشهر','<input type="month" id="mrMonth" value="'+month+'">')+field('الموظف','<select id="mrEmp">'+reportEmpOptions('',true)+'</select>')+'</div><div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn" id="mrLoad">عرض التقرير</button><button class="btn sec" id="mrExcel">تصدير Excel</button><button class="btn sec" id="mrPdf">طباعة / حفظ PDF</button></div></div><div id="mrResult" style="margin-top:16px"></div>';
+    '<div class="card"><div class="form-grid">'+field('الشهر','<input type="month" id="mrMonth" value="'+month+'">')+field('الموظف','<select id="mrEmp">'+empOptions('',true)+'</select>')+'</div><div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn" id="mrLoad">عرض التقرير</button><button class="btn sec" id="mrExcel">تصدير Excel</button><button class="btn sec" id="mrPdf">طباعة / حفظ PDF</button></div></div><div id="mrResult" style="margin-top:16px"></div>';
   $('mrLoad').onclick=e=>guard(e.currentTarget,loadMonthlyReport); $('mrExcel').onclick=()=>{if(!Owner.monthlyRows)return toast('اعرض التقرير أولاً.','err');const rows=Owner.monthlyRows, daily=Owner.monthlyAttendanceRows||[];const escX=v=>String(v??'').replace(/[&<>]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[x]));const tableX=a=>'<table dir="rtl">'+a.map((r,i)=>'<tr>'+r.map(c=>'<'+(i?'td':'th')+'>'+escX(c)+'</'+(i?'td':'th')+'>').join('')+'</tr>').join('')+'</table>';const html='<html><meta charset="utf-8"><h2>ملخص الموظفين</h2>'+tableX(rows)+'<h2>تفاصيل الحضور والانصراف</h2>'+tableX(daily)+'</html>';const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='EL-LITHY-monthly-report.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}; $('mrPdf').onclick=()=>{if(!Owner.monthlyPrint)return toast('اعرض التقرير أولاً.','err');const w=window.open('','_blank');if(!w)return toast('اسمح بالنوافذ المنبثقة لحفظ PDF.','err');w.document.write(Owner.monthlyPrint);w.document.close();w.focus();w.print();};
   await loadMonthlyReport();
 };
@@ -10670,13 +10668,10 @@ async function loadMonthlyReport(){
   let aq=db.from('attendance').select('employee_id,work_date,check_in,check_out,late_minutes,break_start,break_end').gte('work_date',from).lt('work_date',next).order('work_date');
   let sq=db.from('sales_transactions').select('employee_id,sale_date,amount,sale_type').gte('sale_date',from).lt('sale_date',next);
   let tq=db.from('monthly_employee_targets').select('employee_id,month_start,target_amount').eq('month_start',from);
-  const excludedId = excludedReportEmployeeId();
-  if(emp && emp === excludedId) throw new Error('هذا الموظف مستبعد من التقارير.');
-  if(!emp && excludedId){aq=aq.neq('employee_id',excludedId);sq=sq.neq('employee_id',excludedId);tq=tq.neq('employee_id',excludedId);}
   if(emp){aq=aq.eq('employee_id',emp);sq=sq.eq('employee_id',emp);tq=tq.eq('employee_id',emp);}
-  const [ar,sr,tr,pr]=await Promise.all([aq,sq,tq,db.from('profiles').select('id,full_name,job_title').eq('role','employee').eq('active',true).neq('employee_code',REPORT_EXCLUDED_CODE)]);
+  const [ar,sr,tr,pr]=await Promise.all([aq,sq,tq,db.from('profiles').select('id,full_name,job_title').eq('role','employee').eq('active',true)]);
   for(const r of [ar,sr,tr,pr])if(r.error)throw r.error;
-  const names=new Map((pr.data||[]).map(x=>[x.id,x.full_name])); const ids=emp?[emp]:filterReportEmployees(A.employees).map(x=>x.id);
+  const names=new Map((pr.data||[]).map(x=>[x.id,x.full_name])); const ids=emp?[emp]:A.employees.map(x=>x.id);
   const target=new Map((tr.data||[]).map(x=>[x.employee_id,Number(x.target_amount||0)]));
   const sales=new Map(), att=new Map(); (sr.data||[]).forEach(x=>sales.set(x.employee_id,(sales.get(x.employee_id)||0)+Number(x.amount||0)));
   (ar.data||[]).forEach(x=>{const a=att.get(x.employee_id)||{days:0,late:0,breaks:0,breakMinutes:0,checkedOut:0,missingOut:0};a.days++;a.late+=Number(x.late_minutes||0);if(x.break_start){a.breaks++;if(x.break_end){const bs=new Date(x.break_start).getTime(),be=new Date(x.break_end).getTime();if(Number.isFinite(bs)&&Number.isFinite(be)&&be>=bs)a.breakMinutes+=Math.round((be-bs)/60000);}}if(x.check_out)a.checkedOut++;else if(x.check_in)a.missingOut++;att.set(x.employee_id,a);});
