@@ -11656,40 +11656,41 @@ Emp.loadAssignments = async function () {
 
   async function refreshCurrentView() {
     if (refreshing) return;
-    if (!window.db || !window.EL || !window.EL.A || !window.EL.A.profile) return;
+    if (!window.EL || !window.EL.A || !window.EL.A.profile) return;
     refreshing = true;
     showIndicator('جارٍ تحديث البيانات...', true);
+    const y = window.scrollY;
     try {
       const A = window.EL.A;
       if (A.isOwner) {
         const key = A.activeNav || 'home';
-        if (key === 'home' || key === 'attendance') {
-          await window.Owner.renderHome();
-        } else {
-          const item = window.EL.navItems().find(x => x.key === key);
-          if (item && typeof item.go === 'function') {
-            const y = window.scrollY;
-            item.go();
-            window.scrollTo(0, y);
-          } else if (key === 'account') {
-            const y = window.scrollY;
-            const section = document.querySelector('#accountSettingsSection');
-            if (section && !section.classList.contains('hidden')) {
-              const reloadButton = document.querySelector('#openAccountSettingsButton');
-              if (reloadButton) reloadButton.click();
-            }
-            window.scrollTo(0, y);
-          }
+        const O = window.Owner;
+        if (key === 'home' || key === 'attendance') await O.renderHome();
+        else if (key === 'reports') await O.renderReports();
+        else if (key === 'monthly') await O.renderMonthlyReport();
+        else if (key === 'customers') await O.renderCustomers();
+        else if (key === 'campaigns') await O.renderCampaigns();
+        else if (key === 'alerts') await O.renderAlerts();
+        else if (key === 'settings') await O.renderSettings();
+        else if (key.startsWith('cs:')) await O.renderCustom(key.slice(3));
+        else {
+          const buttons = {employees:'manageEmployeesButton',sales:'manageSalesButton',daysoff:'openEmployeeDaysOffButton',smart:'openSmartMessagesButton',contracts:'openEmploymentTermsButton',account:'openAccountSettingsButton'};
+          const id = buttons[key], button = id && document.getElementById(id);
+          if (button) button.click();
         }
-        if (window.Owner && typeof window.Owner.refreshBell === 'function') {
-          await window.Owner.refreshBell();
-        }
+        await window.EL.loadSettings();
+        if (typeof O.refreshBell === 'function') await O.refreshBell();
       } else if (window.Emp) {
         const tab = A.empTab || 'today';
-        window.Emp.tab(tab, true);
+        if (tab === 'today') await window.Emp.refreshToday();
+        else if (tab === 'sales') await window.Emp.renderTeam();
+        else if (tab === 'report') await window.Emp.renderReport();
+        else if (tab === 'customers') await window.Emp.renderCustomers();
+        else if (tab === 'account') await window.Emp.renderOwnProfileControls();
         await window.Emp.pendingDot();
         if (tab === 'today') await window.Emp.checkForgottenCheckout();
       }
+      window.scrollTo(0, y);
       showIndicator('تم تحديث البيانات', true);
     } catch (e) {
       console.error('[EL-LITHY] Pull refresh failed:', e);
