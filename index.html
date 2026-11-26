@@ -2722,9 +2722,9 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 </div> 
     
     <div>
-      <label for="saleType">نوع العرض</label>
+      <label for="saleType">العرض</label>
       <select id="saleType" required>
-        <option value="">اختر نوع العرض</option>
+        <option value="">اختر العرض</option>
         <option value="plus">Plus</option>
         <option value="triple_zero">Triple Zero</option>
       </select>
@@ -3002,7 +3002,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
       <thead>
         <tr style="background:#102b3f;color:white">
           <th style="padding:13px">تاريخ البيع</th>
-          <th style="padding:13px">نوع العرض</th>
+          <th style="padding:13px">العرض</th>
           <th style="padding:13px">المبلغ</th>
           <th style="padding:13px">الإجراءات</th>
         </tr>
@@ -8083,7 +8083,7 @@ async function loadSalesList() {
       const dateCell = row.insertCell();
       dateCell.textContent = sale.sale_date || "—";
 
-      // نوع العرض
+      // العرض
       const typeCell = row.insertCell();
       typeCell.textContent =
         sale.sale_type === "plus" ? "Plus" : "Triple Zero";
@@ -8716,7 +8716,7 @@ const renderSaleCard = (sale, index) => {
   top.style.cssText = "display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap";
   const type = document.createElement("strong");
   type.style.cssText = "color:" + (isPlus ? "#2476b8" : "#16865f") + ";font-size:14px";
-  type.textContent = (index + 1) + ". نوع العرض: " + offerType;
+  type.textContent = (index + 1) + ". " + offerType;
   const amount = document.createElement("b");
   amount.style.color = isPlus ? "#2476b8" : "#16865f";
   amount.textContent = formatMoney(Number(sale.amount));
