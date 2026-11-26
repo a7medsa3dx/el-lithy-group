@@ -3831,6 +3831,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 
     
 <section id="reportsSection" class="hidden"></section>
+<section id="dailyReportControlsSection" class="hidden"></section>
 <section id="customersSection" class="hidden"></section>
 <section id="campaignsSection" class="hidden"></section>
 <section id="appTypesSection" class="hidden"></section>
@@ -10044,6 +10045,7 @@ const icon = (n, s, c) => '<svg width="' + (s || 20) + '" height="' + (s || 20) 
 // ---------------- العناوين القابلة للتعديل ----------------
 const LABELS = {
   'nav.home': 'الرئيسية', 'nav.employees': 'الموظفون', 'nav.attendance': 'الحضور والانصراف', 'nav.daysoff': 'الإجازات',
+  'nav.dailycontrols': 'تأجيل وإعفاء التقارير',
   'nav.sales': 'المبيعات والأهداف', 'nav.reports': 'التقارير اليومية', 'nav.customers': 'لوحة العملاء', 'nav.campaigns': 'الحملات الإعلانية',
   'nav.apptypes': 'أنواع الأبلكيشن', 'nav.smart': 'الرسائل الذكية', 'nav.contracts': 'العقود والعمولات', 'nav.alerts': 'التنبيهات', 'nav.settings': 'الإعدادات',
   'emp.today': 'اليوم', 'emp.sales': 'المبيعات', 'emp.report': 'التقرير', 'emp.customers': 'العملاء', 'emp.account': 'حسابي',
@@ -10206,12 +10208,12 @@ async function campaignStatsWithoutExcludedEmployee(campaigns) {
 
 // ---------------- التنقل ----------------
 const MGR = ['dashboardSection', 'employeesSection', 'salesManagementSection', 'employeeDaysOffSection', 'accountSettingsSection',
-  'employmentTermsSection', 'smartMessagesSection', 'passwordChangeSection', 'reportsSection', 'customersSection', 'campaignsSection',
+  'employmentTermsSection', 'smartMessagesSection', 'passwordChangeSection', 'reportsSection', 'dailyReportControlsSection', 'customersSection', 'campaignsSection',
   'appTypesSection', 'alertsSection', 'settingsSection', 'monthlyReportSection', 'customSectionView'];
 const ALL_SECTIONS = ['loginSection', 'recoverySection', 'employeeDashboardSection'].concat(MGR);
 const SEC2NAV = { dashboardSection: 'home', employeesSection: 'employees', salesManagementSection: 'sales', employeeDaysOffSection: 'daysoff',
   employmentTermsSection: 'contracts', smartMessagesSection: 'smart', accountSettingsSection: 'account', passwordChangeSection: 'account',
-  reportsSection: 'reports', customersSection: 'customers', campaignsSection: 'campaigns', appTypesSection: 'apptypes', alertsSection: 'alerts', settingsSection: 'settings', monthlyReportSection: 'monthly' };
+  reportsSection: 'reports', dailyReportControlsSection: 'dailycontrols', customersSection: 'customers', campaignsSection: 'campaigns', appTypesSection: 'apptypes', alertsSection: 'alerts', settingsSection: 'settings', monthlyReportSection: 'monthly' };
 
 const BUILTIN = [
   { key: 'home', icon: 'grid', grp: 'main', go: () => { A.activeNav = 'home'; window.showSection('dashboardSection'); Owner.renderHome(); } },
@@ -10219,6 +10221,7 @@ const BUILTIN = [
   { key: 'daysoff', icon: 'calendar', grp: 'main', go: () => proxy('openEmployeeDaysOffButton', 'daysoff') },
   { key: 'sales', icon: 'trend', grp: 'main', go: () => proxy('manageSalesButton', 'sales') },
   { key: 'reports', icon: 'doc', grp: 'clients', go: () => openOwner('reportsSection', 'reports', () => Owner.renderReports()) },
+  { key: 'dailycontrols', icon: 'calendar', grp: 'clients', go: () => openOwner('dailyReportControlsSection', 'dailycontrols', () => Owner.renderDailyReportControls()) },
   { key: 'monthly', icon: 'calendar-days', grp: 'clients', go: () => openOwner('monthlyReportSection', 'monthly', () => Owner.renderMonthlyReport()) },
   { key: 'customers', icon: 'table', grp: 'clients', go: () => openOwner('customersSection', 'customers', () => Owner.renderCustomers()) },
   { key: 'campaigns', icon: 'megaphone', grp: 'clients', go: () => openOwner('campaignsSection', 'campaigns', () => Owner.renderCampaigns()) },
@@ -10661,6 +10664,102 @@ async function loadReports() {
     const inner = list.length ? '<div class="stack" style="gap:8px">' + list.map(cu => '<div class="row" style="gap:10px"><b dir="ltr">' + (cu.phone ? esc(cu.phone) : (cu.whatsapp_username ? '@'+esc(cu.whatsapp_username) : 'رقم غير مصري')) + '</b>' + (cu.employee_customer_apps || []).map(a => appChip(typeName(a.application_type_id), a.amount)).join('') + (cu.notes ? '<span class="muted small">' + esc(cu.notes) + '</span>' : '') + '</div>').join('') + '</div>' : '<span class="muted">لم يسجّل عملاء في هذا اليوم.</span>';
     tr.insertAdjacentHTML('afterend', '<tr class="cust-row"><td colspan="8" style="background:#F8FBFD">' + inner + '</td></tr>');
   };
+}
+
+
+// =====================================================================
+// إدارة تأجيل وإعفاء تقارير الإعلانات (للمدير فقط)
+// =====================================================================
+Owner.renderDailyReportControls = async function () {
+  const sec = $('dailyReportControlsSection');
+  await loadEmployees();
+  const staff = A.employees.filter(e => e.active && e.employee_code !== 'EMP002');
+  const employeeOptions = '<option value="">اختر الموظف</option>' + staff.map(e =>
+    '<option value="' + e.id + '">' + esc(e.full_name) + '</option>'
+  ).join('');
+  const today = cairoToday();
+  const nextDay = new Date(today + 'T00:00:00Z');
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  const tomorrow = nextDay.toISOString().slice(0, 10);
+  sec.innerHTML = pageHead('تأجيل وإعفاء تقارير الإعلانات', 'إدارة مهلة تقرير محدد لكل موظف. أحمد حجازي مستثنى تلقائيًا من النظام.') +
+    '<div class="grid g-2" style="align-items:start">' +
+      '<div class="card">' +
+        '<h3 style="margin-top:0">إجراء إداري جديد</h3>' +
+        '<div class="stack" style="gap:12px">' +
+          field('الموظف', '<select id="drcEmployee">' + employeeOptions + '</select>') +
+          field('تاريخ التقرير المطلوب', '<input id="drcReportDate" type="date" max="' + today + '" value="' + today + '">') +
+          field('نوع الإجراء', '<select id="drcAction"><option value="defer">تأجيل التقرير</option><option value="exempt">إعفاء نهائي من التقرير</option></select>') +
+          '<div id="drcReturnWrap">' + field('تاريخ العودة / استحقاق التقرير', '<input id="drcReturnDate" type="date" value="' + tomorrow + '">', '', 'المهلة الجديدة تنتهي بعد ساعتين من بداية دوام الموظف في هذا التاريخ.') + '</div>' +
+          '<div class="alert-item" style="background:var(--blue-l);border-color:var(--line)"><b>معلومة مهمة</b><br><span class="small">التأجيل ينقل الموعد النهائي للتقرير. الإعفاء يمنع الخصم نهائيًا عن هذا التاريخ فقط. لا يتم حذف أي تقرير أو خصم قائم.</span></div>' +
+          '<button class="btn" id="drcSave">حفظ الإجراء</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card">' +
+        '<h3 style="margin-top:0">الإجراءات المسجلة</h3>' +
+        '<p class="muted small">سجل التأجيلات والإعفاءات التي أضفتها. يمكن تحديث تأجيل موجود باختيار الموظف والتاريخ نفسيهما.</p>' +
+        '<button class="btn sec" id="drcRefresh">' + icon('refresh', 16) + ' تحديث السجل</button>' +
+        '<div id="drcHistory" style="margin-top:14px"><div class="empty">جارٍ تحميل السجل...</div></div>' +
+      '</div>' +
+    '</div>';
+
+  const action = $('drcAction'), returnWrap = $('drcReturnWrap');
+  action.onchange = () => { returnWrap.style.display = action.value === 'defer' ? '' : 'none'; };
+  $('drcSave').onclick = e => guard(e.currentTarget, async () => {
+    const employeeId = $('drcEmployee').value;
+    const reportDate = $('drcReportDate').value;
+    const kind = $('drcAction').value;
+    const employee = staff.find(x => x.id === employeeId);
+    if (!employee) throw new Error('اختر الموظف أولاً.');
+    if (!reportDate) throw new Error('اختر تاريخ التقرير.');
+    if (employee.employee_code === 'EMP002') throw new Error('أحمد حجازي مستثنى من هذا النظام.');
+
+    if (kind === 'defer') {
+      const returnDate = $('drcReturnDate').value;
+      if (!returnDate) throw new Error('اختر تاريخ العودة.');
+      if (returnDate <= reportDate) throw new Error('تاريخ العودة يجب أن يكون بعد تاريخ التقرير.');
+      const existing = await db.from('daily_report_deferrals').select('id').eq('employee_id', employeeId).eq('report_date', reportDate).maybeSingle();
+      if (existing.error) throw existing.error;
+      const result = existing.data
+        ? await db.from('daily_report_deferrals').update({ return_date: returnDate }).eq('id', existing.data.id)
+        : await db.from('daily_report_deferrals').insert({ employee_id: employeeId, report_date: reportDate, return_date: returnDate });
+      if (result.error) throw result.error;
+      toast(existing.data ? 'تم تحديث موعد التأجيل.' : 'تم تسجيل تأجيل التقرير.', 'ok');
+    } else {
+      const existing = await db.from('daily_report_exemptions').select('id').eq('employee_id', employeeId).eq('report_date', reportDate).maybeSingle();
+      if (existing.error) throw existing.error;
+      if (existing.data) throw new Error('هذا التقرير عليه إعفاء مسجل بالفعل.');
+      const result = await db.from('daily_report_exemptions').insert({ employee_id: employeeId, report_date: reportDate });
+      if (result.error) throw result.error;
+      toast('تم تسجيل الإعفاء النهائي لهذا التقرير.', 'ok');
+    }
+    await loadDailyReportControlsHistory();
+  });
+  $('drcRefresh').onclick = e => guard(e.currentTarget, loadDailyReportControlsHistory);
+  await loadDailyReportControlsHistory();
+};
+
+async function loadDailyReportControlsHistory() {
+  const host = $('drcHistory');
+  if (!host) return;
+  const [deferrals, exemptions] = await Promise.all([
+    safe(db.from('daily_report_deferrals').select('id,employee_id,report_date,return_date').order('report_date', { ascending: false }).limit(200), 'تحميل التأجيلات'),
+    safe(db.from('daily_report_exemptions').select('id,employee_id,report_date').order('report_date', { ascending: false }).limit(200), 'تحميل الإعفاءات')
+  ]);
+  if (deferrals.error || exemptions.error) {
+    host.innerHTML = sqlWarn + '<p class="muted small">لو استمرت الرسالة، ابعتلي نص الخطأ عشان نراجع صلاحيات الجدولين.</p>';
+    return;
+  }
+  const rows = [
+    ...(deferrals.data || []).map(x => Object.assign({ kind: 'defer' }, x)),
+    ...(exemptions.data || []).map(x => Object.assign({ kind: 'exempt' }, x))
+  ].sort((a, b) => String(b.report_date).localeCompare(String(a.report_date)));
+  if (!rows.length) {
+    host.innerHTML = '<div class="empty">لا توجد تأجيلات أو إعفاءات مسجلة حتى الآن.</div>';
+    return;
+  }
+  host.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الموظف</th><th>تاريخ التقرير</th><th>الإجراء</th><th>التاريخ الجديد</th></tr></thead><tbody>' +
+    rows.map(x => '<tr><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + fmtDate(x.report_date) + '</td><td><span class="pill ' + (x.kind === 'defer' ? 'p-blue' : 'p-green') + '">' + (x.kind === 'defer' ? 'تأجيل' : 'إعفاء نهائي') + '</span></td><td>' + (x.kind === 'defer' ? fmtDate(x.return_date) : '—') + '</td></tr>').join('') +
+    '</tbody></table></div>';
 }
 
 // =====================================================================
