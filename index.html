@@ -10634,7 +10634,19 @@ Owner.renderSettings = async function () {
   sec.innerHTML = pageHead(lab('nav.settings'), 'تحكم كامل في عناوين التطبيق وترتيب القائمة والإدارات الجديدة. هذه الصفحة للمدير فقط.') +
     tabsHtml([['labels', 'العناوين والأسماء'], ['nav', 'القائمة والترتيب'], ['custom', 'الإدارات المخصصة'], ['apps', 'إدارة أنواع التطبيقات'], ['identity', 'الهوية والصور'], ['account', 'الحساب']], Owner.sTab, 'data-stab') + '<div id="stBody"></div>';
   qa('[data-stab]', sec).forEach(b => b.onclick = () => { Owner.sTab = b.dataset.stab; Owner.renderSettings(); });
-  if (Owner.sTab === 'labels') stLabels(); else if (Owner.sTab === 'nav') stNav(); else if (Owner.sTab === 'custom') stCustom(); else if (Owner.sTab === 'apps') { $('stBody').innerHTML = '<div id="settingsAppTypes"></div>'; await loadTypes(); const tmp = $('appTypesSection'); await Owner.renderAppTypes(); $('settingsAppTypes').innerHTML = tmp.innerHTML; tmp.innerHTML = ''; } else if (Owner.sTab === 'identity') stIdentity(); else stAccount();
+  if (Owner.sTab === 'labels') stLabels(); else if (Owner.sTab === 'nav') stNav(); else if (Owner.sTab === 'custom') stCustom(); 
+else if (Owner.sTab === 'apps') {
+  $('stBody').innerHTML = '<div id="settingsAppTypes"></div>';
+  await loadTypes();
+  const tmp = $('appTypesSection');
+  await Owner.renderAppTypes();
+
+  const target = $('settingsAppTypes');
+  while (tmp.firstChild) {
+    target.appendChild(tmp.firstChild);
+  }
+}
+ else if (Owner.sTab === 'identity') stIdentity(); else stAccount();
 };
 async function saveSetting(key, value) { const r = await db.from('app_settings').upsert({ key, value }, { onConflict: 'key' }); if (r.error) throw r.error; }
 function stLabels() {
