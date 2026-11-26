@@ -12518,6 +12518,151 @@ body[data-theme="dark"] #employeeDaysOffSection{
   #salesManagementSection td,#employeeDaysOffSection td{padding:10px 7px!important}
 }
 
+
+/* ===== Manager desktop sections visual refresh ===== */
+#smartMessagesSection,#employmentTermsSection,#employeeTargetManagementPanel,
+#employeeSalesReviewPanel,#accountSettingsSection{
+ --mgr-bg:#f3f7fa;--mgr-card:#fff;--mgr-soft:#f7fafc;
+ --mgr-line:#dce6ee;--mgr-ink:#183247;--mgr-muted:#647b8b;
+ color:var(--mgr-ink);width:100%;box-sizing:border-box;
+}
+body[data-theme="dark"] #smartMessagesSection,
+body[data-theme="dark"] #employmentTermsSection,
+body[data-theme="dark"] #employeeTargetManagementPanel,
+body[data-theme="dark"] #employeeSalesReviewPanel,
+body[data-theme="dark"] #accountSettingsSection{
+ --mgr-bg:#101c28;--mgr-card:#172635;--mgr-soft:#1d3040;
+ --mgr-line:#344b5d;--mgr-ink:#f1f6fa;--mgr-muted:#bdcbd5;
+}
+#smartMessagesSection,#employmentTermsSection,#accountSettingsSection{padding-bottom:24px}
+#smartMessagesSection h2,#employmentTermsSection h2,#accountSettingsSection h2{
+ color:var(--mgr-ink);font-weight:850;letter-spacing:-.2px
+}
+#smartMessagesSection h3,#employmentTermsSection h3,#accountSettingsSection h3,
+#employeeTargetManagementPanel h3,#employeeSalesReviewPanel h3{
+ color:var(--mgr-ink)!important;font-weight:800;line-height:1.55
+}
+#smartMessagesSection p,#employmentTermsSection p,#accountSettingsSection p,
+#employeeTargetManagementPanel p,#employeeSalesReviewPanel p{color:var(--mgr-muted)}
+#smartMessagesSection>div:not(#smartMessagePreview),
+#employmentTermsSection>div:not(#employmentTermsPreviewModal),
+#accountSettingsSection>div,
+#employeeTargetManagementPanel,#employeeSalesReviewPanel{
+ border:1px solid var(--mgr-line)!important;border-radius:18px!important;
+ box-shadow:0 8px 24px rgba(16,43,63,.07)!important;
+ color:var(--mgr-ink)!important;
+}
+body[data-theme="dark"] #smartMessagesSection>div:not(#smartMessagePreview),
+body[data-theme="dark"] #employmentTermsSection>div:not(#employmentTermsPreviewModal),
+body[data-theme="dark"] #accountSettingsSection>div,
+body[data-theme="dark"] #employeeTargetManagementPanel,
+body[data-theme="dark"] #employeeSalesReviewPanel{box-shadow:0 8px 24px rgba(0,0,0,.2)!important}
+#smartMessagesSection>div:not(:first-child),
+#employmentTermsSection>div:not(#employmentTermsPreviewModal),
+#accountSettingsSection>div,
+#employeeTargetManagementPanel,#employeeSalesReviewPanel{
+ background:var(--mgr-card)!important;
+}
+#smartMessagesSection label,#employmentTermsSection label,
+#accountSettingsSection label,#employeeTargetManagementPanel label,
+#employeeSalesReviewPanel label{
+ color:var(--mgr-ink)!important;font-weight:700;font-size:14px
+}
+#smartMessagesSection input:not([type="checkbox"]):not([type="color"]),
+#smartMessagesSection select,#smartMessagesSection textarea,
+#employmentTermsSection input,#employmentTermsSection select,
+#employmentTermsSection textarea,#accountSettingsSection input,
+#accountSettingsSection select,#accountSettingsSection textarea,
+#employeeTargetManagementPanel input,#employeeTargetManagementPanel select,
+#employeeSalesReviewPanel input,#employeeSalesReviewPanel select{
+ color:var(--mgr-ink)!important;background:var(--mgr-soft)!important;
+ border:1px solid var(--mgr-line)!important;border-radius:11px!important;
+}
+#smartMessagesSection input::placeholder,#smartMessagesSection textarea::placeholder,
+#employmentTermsSection input::placeholder,#employmentTermsSection textarea::placeholder,
+#employeeTargetManagementPanel input::placeholder{color:var(--mgr-muted)!important;opacity:1}
+#smartMessagesSection input:focus,#smartMessagesSection select:focus,
+#smartMessagesSection textarea:focus,#employmentTermsSection input:focus,
+#employmentTermsSection select:focus,#employmentTermsSection textarea:focus,
+#employeeTargetManagementPanel input:focus,#employeeTargetManagementPanel select:focus,
+#employeeSalesReviewPanel input:focus,#employeeSalesReviewPanel select:focus{
+ outline:none;border-color:#2994a6!important;box-shadow:0 0 0 3px rgba(41,148,166,.15)!important
+}
+#smartMessagesSection [style*="background:white"],
+#smartMessagesSection [style*="background: white"],
+#smartMessagesSection [style*="background:#f3f7fb"],
+#smartMessagesSection [style*="background: #f3f7fb"],
+#employmentTermsSection [style*="background:#fff"],
+#employmentTermsSection [style*="background: #fff"],
+#employmentTermsSection [style*="background:#f1f7fa"],
+#employmentTermsSection [style*="background: #f1f7fa"],
+#accountSettingsSection [style*="background:#f1f7fa"],
+#accountSettingsSection [style*="background: #f1f7fa"],
+#employeeTargetManagementPanel #employeeTargetManagerCurrent,
+#employeeSalesReviewPanel #salesHistorySummary{
+ background:var(--mgr-soft)!important;border-color:var(--mgr-line)!important;
+ color:var(--mgr-ink)!important;border-radius:13px!important;
+}
+#smartMessagesSection [style*="background:white"] h3,
+#smartMessagesSection [style*="background: white"] h3,
+#employmentTermsSection [style*="background:#fff"] h3,
+#employmentTermsSection [style*="background: #fff"] h3,
+#employmentTermsSection [style*="background:#f1f7fa"] h3,
+#employmentTermsSection [style*="background: #f1f7fa"] h3{
+ color:var(--mgr-ink)!important
+}
+#smartMessagesSection [style*="background:white"] p,
+#smartMessagesSection [style*="background: white"] p,
+#employmentTermsSection [style*="background:#fff"] p,
+#employmentTermsSection [style*="background: #fff"] p,
+#employmentTermsSection [style*="background:#f1f7fa"] p,
+#employmentTermsSection [style*="background: #f1f7fa"] p{
+ color:var(--mgr-muted)!important
+}
+#employeeTargetManagementPanel #employeeTargetManagerCurrent,
+#employeeTargetManagementPanel #employeeTargetManagerStatus,
+#employeeTargetManagementPanel .employee-target-field,
+#employeeSalesReviewPanel #salesHistorySummary{color:var(--mgr-ink)!important}
+#employeeSalesReviewPanel table,#employmentTermsSection table{
+ width:100%;border-collapse:separate!important;border-spacing:0;
+ border:1px solid var(--mgr-line);border-radius:13px;overflow:hidden;
+ background:var(--mgr-card);color:var(--mgr-ink)
+}
+#employeeSalesReviewPanel th,#employmentTermsSection th{
+ background:#183b52!important;color:#fff!important;padding:13px!important
+}
+#employeeSalesReviewPanel td,#employmentTermsSection td{
+ background:var(--mgr-card);color:var(--mgr-ink)!important;
+ border-bottom:1px solid var(--mgr-line)!important;padding:12px!important
+}
+#smartMessagesSection button,#employmentTermsSection button,
+#accountSettingsSection button,#employeeTargetManagementPanel button,
+#employeeSalesReviewPanel button{border-radius:11px;font-weight:800}
+#employmentTermsSection .employment-page-header{
+ border-radius:20px;padding:24px;background:linear-gradient(120deg,#102b3f,#176477);
+ box-shadow:0 10px 26px rgba(16,43,63,.13)
+}
+#employmentTermsSection .employment-intro-card,
+#employmentTermsSection .employment-employee-card{
+ background:var(--mgr-card)!important;border:1px solid var(--mgr-line)!important;
+ border-radius:18px!important;box-shadow:0 8px 24px rgba(16,43,63,.06)
+}
+#smartMessagesSection #smartMessagePreview{
+ background:#fff!important;color:#183247!important;
+ border-color:#2994a6!important;
+}
+#smartMessagesSection #smartMessagePreviewTitle{color:#183247!important}
+#smartMessagesSection #smartMessagePreviewBody{color:#526779!important}
+@media(min-width:900px){
+ #smartMessagesSection,#employmentTermsSection,#accountSettingsSection{max-width:1120px;margin-inline:auto}
+ #smartMessagesSection>div,#employmentTermsSection>div,#accountSettingsSection>div{padding:24px}
+ #employeeTargetManagementPanel,#employeeSalesReviewPanel{padding:24px!important}
+}
+@media(max-width:700px){
+ #smartMessagesSection>div,#employmentTermsSection>div,#accountSettingsSection>div{padding:16px!important}
+ #smartMessagesSection [style*="grid-template-columns"]{grid-template-columns:1fr!important}
+}
+
 </style>
 
 </body>
