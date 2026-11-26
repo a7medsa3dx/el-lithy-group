@@ -10027,7 +10027,7 @@ Owner.renderHome = async function () {
   }
   const timeOnly = value => value ? new Date(value).toLocaleTimeString('ar-EG-u-nu-latn', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit' }) : '—';
   html += '<div class="grid g-auto" style="margin:12px 0">' + kpi('c-green','clock','الحاضرون الآن',here+' <small>من '+E.length+'</small>',onBreak+' في فترة راحة') + '</div>';
-  const attendanceRows = E.map(emp => {
+  const attendanceRows = E.slice().sort((a, b) => String(a.employee_code || '').localeCompare(String(b.employee_code || ''), 'en', { numeric: true })).map(emp => {
     const r = rec.get(emp.id);
     let state = 'لم يسجل الحضور', tone = 'p-gray';
     if (r?.check_out) { state = 'انصرف'; tone = 'p-gray'; }
