@@ -12953,6 +12953,38 @@ body[data-theme="dark"] #employeeAccountsManagerCard{
  #employeeAccountsManagerCard{max-width:100%}
 }
 
+
+/* Employees page palette override */
+#employeesSection{--emp-card:#fff;--emp-soft:#f5f8fb;--emp-line:#d8e3eb;--emp-text:#183247;--emp-muted:#61798a;--emp-input:#fff;--emp-primary:#176477;color:var(--emp-text)!important}
+body[data-theme="dark"] #employeesSection{--emp-card:#172635;--emp-soft:#1d3040;--emp-line:#3a5062;--emp-text:#f1f6fa;--emp-muted:#bdcbd5;--emp-input:#142331;--emp-primary:#238da0}
+#employeesSection>h2{color:var(--emp-text)!important;font-size:clamp(24px,2.2vw,30px)!important;font-weight:850!important;margin:8px 0 16px!important}
+#employeesSection>.notice{background:var(--emp-soft)!important;color:var(--emp-muted)!important;border:1px solid var(--emp-line)!important;border-radius:15px!important;padding:15px 18px!important}
+#employeesSection>div[style*="margin-top:20px"]{background:var(--emp-card)!important;color:var(--emp-text)!important;border:1px solid var(--emp-line)!important;border-radius:18px!important;padding:22px!important;box-shadow:0 8px 24px rgba(16,43,63,.07)!important}
+#employeesSection h3,#employeesSection h4{color:var(--emp-text)!important;font-weight:850!important}
+#employeesSection p{color:var(--emp-muted)!important;line-height:1.8}
+#employeesSection label{display:block;color:var(--emp-text)!important;font-weight:750!important;margin:12px 0 7px}
+#employeesSection input:not([type=checkbox]):not([type=radio]),#employeesSection select,#employeesSection textarea{width:100%;min-height:46px;box-sizing:border-box;background:var(--emp-input)!important;color:var(--emp-text)!important;border:1px solid var(--emp-line)!important;border-radius:11px!important;padding:11px 13px!important;font:inherit!important;box-shadow:none!important}
+#employeesSection input::placeholder,#employeesSection textarea::placeholder{color:var(--emp-muted)!important;opacity:1}
+#employeesSection input:focus,#employeesSection select:focus,#employeesSection textarea:focus{outline:none!important;border-color:var(--emp-primary)!important;box-shadow:0 0 0 3px rgba(35,141,160,.16)!important}
+#employeesSection #addEmployeeForm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 14px;align-items:end}
+#employeesSection #addEmployeeForm button{grid-column:1/-1;min-height:46px;margin-top:8px;background:var(--emp-primary)!important;color:#fff!important;border:1px solid var(--emp-primary)!important;border-radius:12px!important;font-weight:850!important}
+#employeeAccountsManagerCard{background:var(--emp-soft)!important;border:1px solid var(--emp-line)!important;border-radius:17px!important;padding:22px!important;box-shadow:none!important;color:var(--emp-text)!important}
+#employeeAccountsManagerCard h3,#employeeAccountsManagerCard #selectedEmployeeDetails strong{color:var(--emp-text)!important}
+#employeeAccountsManagerCard>p,#employeeAccountsManagerCard #selectedEmployeeDetails p{color:var(--emp-muted)!important}
+#employeeAccountsManagerCard #selectedEmployee,#employeeAccountsManagerCard #selectedEmployeeDetails{background:var(--emp-card)!important;color:var(--emp-text)!important;border:1px solid var(--emp-line)!important;border-radius:12px!important}
+#employeeAccountsManagerCard #changeSelectedEmployeePassword{background:var(--emp-primary)!important;color:#fff!important;border:1px solid var(--emp-primary)!important}
+#employeeAccountsManagerCard #previewSelectedEmployee{background:var(--emp-card)!important;color:var(--emp-text)!important;border:1px solid var(--emp-line)!important}
+#employeesSection #empEditCard{background:var(--emp-soft)!important;border:1px solid var(--emp-line)!important;border-radius:15px!important;color:var(--emp-text)!important;padding:20px!important}
+#employeesSection #empEditCard h3,#employeesSection #empEditCard label{color:var(--emp-text)!important}
+#employeesSection #empEditCard input,#employeesSection #empEditCard select{background:var(--emp-input)!important;color:var(--emp-text)!important;border:1px solid var(--emp-line)!important}
+#employeesSection #employeeListContainer{margin-top:18px;padding:16px;background:var(--emp-soft)!important;border:1px solid var(--emp-line);border-radius:15px;color:var(--emp-muted)!important}
+#employeesSection #employeeListContainer table{width:100%;border-collapse:separate!important;border-spacing:0;background:var(--emp-card)!important;border:1px solid var(--emp-line);border-radius:13px;overflow:hidden;color:var(--emp-text)!important}
+#employeesSection #employeeListContainer th{background:#183b52!important;color:#fff!important;padding:12px!important}
+#employeesSection #employeeListContainer td{background:var(--emp-card)!important;color:var(--emp-text)!important;border-bottom:1px solid var(--emp-line)!important;padding:11px!important}
+#employeesSection button{min-height:42px;border-radius:11px!important;font-weight:800!important}
+#employeesSection #backToDashboardButton{margin-top:18px;background:var(--emp-card)!important;color:var(--emp-text)!important;border:1px solid var(--emp-line)!important}
+@media(max-width:760px){#employeesSection>div[style*="margin-top:20px"]{padding:15px!important}#employeesSection #addEmployeeForm{grid-template-columns:1fr;gap:5px}#employeeAccountsManagerCard{padding:16px!important}#employeeAccountsManagerCard>div:last-child{grid-template-columns:1fr!important}#employeesSection #employeeListContainer{overflow-x:auto}#employeesSection #employeeListContainer table{min-width:560px}}
+
 </style>
 
 </body>
