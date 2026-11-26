@@ -10047,7 +10047,7 @@ const LABELS = {
   'nav.sales': 'المبيعات والأهداف', 'nav.reports': 'التقارير اليومية', 'nav.customers': 'لوحة العملاء', 'nav.campaigns': 'الحملات الإعلانية',
   'nav.apptypes': 'أنواع الأبلكيشن', 'nav.smart': 'الرسائل الذكية', 'nav.contracts': 'العقود والعمولات', 'nav.alerts': 'التنبيهات', 'nav.settings': 'الإعدادات',
   'emp.today': 'اليوم', 'emp.sales': 'المبيعات', 'emp.report': 'التقرير', 'emp.customers': 'العملاء', 'emp.account': 'حسابي',
-  'cat.interested': 'مهتم', 'cat.noreply': 'لم يرد', 'cat.notinterested': 'غير مهتم',
+  'cat.interested': 'مهتم', 'cat.noreply': 'لم يرد', 'cat.notinterested': 'غير مهتم', 'cat.withthem': 'معاهم',
   'brand.name': 'EL-LITHY GROUP', 'brand.sub': 'لوحة إدارة الشركة'
 };
 const lab = k => (A.labels && A.labels[k]) || LABELS[k] || k;
@@ -10171,7 +10171,7 @@ async function campaignStatsWithoutExcludedEmployee(campaigns) {
   const campaignIds = items.map(c => c.campaign_id).filter(Boolean);
   if (!campaignIds.length) return items;
   let rq = db.from('daily_reports')
-    .select('campaign_id,employee_id,report_date,total_messages,interested,no_reply,not_interested')
+    .select('campaign_id,employee_id,report_date,total_messages,interested,no_reply,not_interested,with_them')
     .in('campaign_id', campaignIds);
   const excludedId = excludedReportEmployeeId();
   if (excludedId) rq = rq.neq('employee_id', excludedId);
@@ -10197,6 +10197,7 @@ async function campaignStatsWithoutExcludedEmployee(campaigns) {
       interested: rows.reduce((sum, r) => sum + Number(r.interested || 0), 0),
       no_reply: rows.reduce((sum, r) => sum + Number(r.no_reply || 0), 0),
       not_interested: rows.reduce((sum, r) => sum + Number(r.not_interested || 0), 0),
+      with_them: rows.reduce((sum, r) => sum + Number(r.with_them || 0), 0),
       reports_count: rows.length,
       customers_registered: customers.filter(x => keys.has(String(x.employee_id) + '|' + String(x.report_date))).length
     });
@@ -10470,8 +10471,9 @@ Owner.renderHome = async function () {
       '<div class="stat" style="background:#F5F9FB"><div class="t muted">إجمالي الرسائل</div><div class="n">' + num(cs.total_messages) + '</div></div>' +
       '<div class="stat" style="background:var(--green-l)"><div class="t" style="color:var(--green-t)">' + esc(lab('cat.interested')) + '</div><div class="n" style="color:var(--green-t)">' + num(cs.interested) + '</div></div>' +
       '<div class="stat" style="background:var(--gray-l)"><div class="t" style="color:var(--gray-t)">' + esc(lab('cat.noreply')) + '</div><div class="n" style="color:var(--gray-t)">' + num(cs.no_reply) + '</div></div>' +
-      '<div class="stat" style="background:var(--red-l)"><div class="t" style="color:var(--red-t)">' + esc(lab('cat.notinterested')) + '</div><div class="n" style="color:var(--red-t)">' + num(cs.not_interested) + '</div></div></div>' +
-      '<div class="seg" style="margin-top:14px"><div style="flex:' + cs.interested + ';background:var(--green)"></div><div style="flex:' + cs.no_reply + ';background:#9AA9B6"></div><div style="flex:' + cs.not_interested + ';background:var(--red)"></div></div>' +
+      '<div class="stat" style="background:var(--red-l)"><div class="t" style="color:var(--red-t)">' + esc(lab('cat.notinterested')) + '</div><div class="n" style="color:var(--red-t)">' + num(cs.not_interested) + '</div></div>' +
+      '<div class="stat" style="background:var(--blue-l)"><div class="t" style="color:var(--blue-t)">' + esc(lab('cat.withthem')) + '</div><div class="n" style="color:var(--blue-t)">' + num(cs.with_them) + '</div></div></div>' +
+      '<div class="seg" style="margin-top:14px"><div style="flex:' + cs.interested + ';background:var(--green)"></div><div style="flex:' + cs.no_reply + ';background:#9AA9B6"></div><div style="flex:' + cs.not_interested + ';background:var(--red)"></div><div style="flex:' + cs.with_them + ';background:var(--blue)"></div></div>' +
       '<p class="small muted" style="margin:10px 0 0">عملاء سجّلهم الموظفون في هذه الحملة: ' + num(cs.customers_registered) + ' · تقارير مرسلة: ' + num(cs.reports_count) + '</p>';
   } else html += '<div class="empty">لا توجد حملة مفتوحة. التقرير اليومي يتخطى الأيام بدون حملة تلقائياً.</div><button class="btn" style="margin-top:12px !important" id="homeOpenCamp">فتح حملة جديدة</button>';
   html += '</div>';
@@ -10625,7 +10627,7 @@ Owner.renderReports = async function () {
     field('إلى تاريخ', '<input type="date" id="rpTo" value="' + today + '">') + '</div>' +
     '<div class="row" style="margin-top:14px"><button class="btn" id="rpLoad">عرض التقارير</button></div></div><div id="rpResult" style="margin-top:16px"></div>';
   $('rpLoad').onclick = e => guard(e.currentTarget, loadReports);
-  $('rpExport').onclick = () => { if (!Owner.rpRows) return toast('اعرض التقارير أولاً.', 'err'); csv('daily-reports', [['التاريخ', 'الحملة وقت إرسال التقرير', 'الموظف', 'إجمالي الرسائل', lab('cat.interested'), lab('cat.noreply'), lab('cat.notinterested'), 'ملاحظات']].concat(Owner.rpRows.map(r => [r.report_date, r.campaign_title_snapshot || '—', empName(r.employee_id), r.total_messages, r.interested, r.no_reply, r.not_interested, r.notes || '']))); };
+  $('rpExport').onclick = () => { if (!Owner.rpRows) return toast('اعرض التقارير أولاً.', 'err'); csv('daily-reports', [['التاريخ', 'الحملة وقت إرسال التقرير', 'الموظف', 'إجمالي الرسائل', lab('cat.interested'), lab('cat.noreply'), lab('cat.notinterested'), lab('cat.withthem'), 'ملاحظات']].concat(Owner.rpRows.map(r => [r.report_date, r.campaign_title_snapshot || '—', empName(r.employee_id), r.total_messages, r.interested, r.no_reply, r.not_interested, r.with_them || 0, r.notes || '']))); };
   await loadReports();
 };
 async function loadReports() {
@@ -10641,11 +10643,12 @@ async function loadReports() {
     '<div class="stat" style="background:#fff;border:1px solid var(--line)"><div class="t muted">إجمالي الرسائل</div><div class="n">' + num(sum('total_messages')) + '</div></div>' +
     '<div class="stat" style="background:var(--green-l)"><div class="t" style="color:var(--green-t)">' + esc(lab('cat.interested')) + '</div><div class="n" style="color:var(--green-t)">' + num(sum('interested')) + '</div></div>' +
     '<div class="stat" style="background:var(--gray-l)"><div class="t" style="color:var(--gray-t)">' + esc(lab('cat.noreply')) + '</div><div class="n" style="color:var(--gray-t)">' + num(sum('no_reply')) + '</div></div>' +
-    '<div class="stat" style="background:var(--red-l)"><div class="t" style="color:var(--red-t)">' + esc(lab('cat.notinterested')) + '</div><div class="n" style="color:var(--red-t)">' + num(sum('not_interested')) + '</div></div></div>';
+    '<div class="stat" style="background:var(--red-l)"><div class="t" style="color:var(--red-t)">' + esc(lab('cat.notinterested')) + '</div><div class="n" style="color:var(--red-t)">' + num(sum('not_interested')) + '</div></div>' +
+    '<div class="stat" style="background:var(--blue-l)"><div class="t" style="color:var(--blue-t)">' + esc(lab('cat.withthem')) + '</div><div class="n" style="color:var(--blue-t)">' + num(sum('with_them')) + '</div></div></div>';
   if (!rows.length) html += '<div class="empty">لا توجد تقارير في هذه الفترة.</div>';
   else {
-    html += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>الموظف</th><th>الرسائل</th><th>' + esc(lab('cat.interested')) + '</th><th>' + esc(lab('cat.noreply')) + '</th><th>' + esc(lab('cat.notinterested')) + '</th><th>ملاحظات</th><th></th></tr></thead><tbody>' +
-      rows.map(x => '<tr><td>' + fmtDate(x.report_date) + (x.edit_count ? '<br><span class="pill p-blue" title="آخر تعديل ' + fmtDT(x.last_edited_at) + '">معدّل</span>' : '') + '</td><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + num(x.total_messages) + '</td><td>' + num(x.interested) + '</td><td>' + num(x.no_reply) + '</td><td>' + num(x.not_interested) + '</td><td class="small">' + esc(x.notes || '') + '</td>' +
+    html += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>الموظف</th><th>الرسائل</th><th>' + esc(lab('cat.interested')) + '</th><th>' + esc(lab('cat.noreply')) + '</th><th>' + esc(lab('cat.notinterested')) + '</th><th>' + esc(lab('cat.withthem')) + '</th><th>ملاحظات</th><th></th></tr></thead><tbody>' +
+      rows.map(x => '<tr><td>' + fmtDate(x.report_date) + (x.edit_count ? '<br><span class="pill p-blue" title="آخر تعديل ' + fmtDT(x.last_edited_at) + '">معدّل</span>' : '') + '</td><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + num(x.total_messages) + '</td><td>' + num(x.interested) + '</td><td>' + num(x.no_reply) + '</td><td>' + num(x.not_interested) + '</td><td>' + num(x.with_them || 0) + '</td><td class="small">' + esc(x.notes || '') + '</td>' +
         '<td><button class="mini" data-cust="' + x.employee_id + '|' + x.report_date + '">العملاء</button></td></tr>').join('') + '</tbody></table></div>';
   }
   $('rpResult').innerHTML = html;
@@ -10996,6 +10999,7 @@ Owner.renderCampaigns = async function () {
       ' · ' + esc(lab('cat.interested')) + ' ' + num(c.interested) +
       ' · ' + esc(lab('cat.noreply')) + ' ' + num(c.no_reply) +
       ' · ' + esc(lab('cat.notinterested')) + ' ' + num(c.not_interested) +
+      ' · ' + esc(lab('cat.withthem')) + ' ' + num(c.with_them || 0) +
       ' · عملاء مسجلون ' + num(c.customers_registered) +
       '</span>' +
 
@@ -11666,19 +11670,20 @@ Emp.renderReport = async function () {
   if (!cur && !canInsert) {
     html += '<div class="empty">لا توجد حملة إعلانية مفتوحة حالياً، فلا يلزمك تقرير اليوم.</div>';
   } else {
-    html += '<p class="muted small" style="margin:0 0 12px">' + (A.campaign ? 'الحملة: ' + esc(A.campaign.title) + ' · ' : '') + (cur ? 'تم إرساله، ويمكنك تعديله.' : 'اكتب إجمالي الرسائل ثم وزّعها على الحالات الثلاث.') + '</p>' +
+    html += '<p class="muted small" style="margin:0 0 12px">' + (A.campaign ? 'الحملة: ' + esc(A.campaign.title) + ' · ' : '') + (cur ? 'تم إرساله، ويمكنك تعديله.' : 'اكتب إجمالي الرسائل ثم وزّعها على الحالات الأربع.') + '</p>' +
       '<div class="rep-num" style="background:#F5F9FB;margin-bottom:10px"><label for="rpTotal">إجمالي الرسائل</label><input id="rpTotal" inputmode="numeric" autocomplete="off" value="' + (cur ? cur.total_messages : '') + '" placeholder="0"></div>' +
-      '<div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">' +
+      '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">' +
       '<div class="rep-num" style="background:var(--green-l)"><label for="rpInt" style="color:var(--green-t)">' + esc(lab('cat.interested')) + '</label><input id="rpInt" inputmode="numeric" autocomplete="off" value="' + (cur ? cur.interested : '') + '" placeholder="0"></div>' +
       '<div class="rep-num" style="background:var(--gray-l)"><label for="rpNo" style="color:var(--gray-t)">' + esc(lab('cat.noreply')) + '</label><input id="rpNo" inputmode="numeric" autocomplete="off" value="' + (cur ? cur.no_reply : '') + '" placeholder="0"></div>' +
-      '<div class="rep-num" style="background:var(--red-l)"><label for="rpNot" style="color:var(--red-t)">' + esc(lab('cat.notinterested')) + '</label><input id="rpNot" inputmode="numeric" autocomplete="off" value="' + (cur ? cur.not_interested : '') + '" placeholder="0"></div></div>' +
+      '<div class="rep-num" style="background:var(--red-l)"><label for="rpNot" style="color:var(--red-t)">' + esc(lab('cat.notinterested')) + '</label><input id="rpNot" inputmode="numeric" autocomplete="off" value="' + (cur ? cur.not_interested : '') + '" placeholder="0"></div>' +
+      '<div class="rep-num" style="background:var(--blue-l)"><label for="rpWith" style="color:var(--blue-t)">' + esc(lab('cat.withthem')) + '</label><input id="rpWith" inputmode="numeric" autocomplete="off" value="' + (cur ? (cur.with_them || 0) : '') + '" placeholder="0"></div></div>' +
       '<div id="rpCheck" class="pill" style="margin:12px 0;display:flex;justify-content:center;padding:10px"></div>' +
       '<div class="field"><label for="rpNotes">ملاحظات (اختياري)</label><textarea id="rpNotes">' + esc(cur ? cur.notes || '' : '') + '</textarea></div>' +
       '<button type="button" class="btn" id="rpSave" style="margin-top:12px !important;width:100%">' + (cur ? 'تحديث التقرير' : 'إرسال التقرير') + '</button>';
   }
   if (rows.length) {
     html += '<h3 style="margin:22px 0 8px;font-size:16px">تقاريري السابقة</h3><div class="stack" style="gap:8px">' + rows.map(r =>
-      '<div class="alert-item"><div class="sp small"><b>' + fmtDate(r.report_date) + '</b> · رسائل ' + num(r.total_messages) + '<br><span class="muted">' + esc(lab('cat.interested')) + ' ' + num(r.interested) + ' · ' + esc(lab('cat.noreply')) + ' ' + num(r.no_reply) + ' · ' + esc(lab('cat.notinterested')) + ' ' + num(r.not_interested) + '</span>' + (r.edit_count ? ' <span class="pill p-blue">معدّل</span>' : '') + '</div>' +
+      '<div class="alert-item"><div class="sp small"><b>' + fmtDate(r.report_date) + '</b> · رسائل ' + num(r.total_messages) + '<br><span class="muted">' + esc(lab('cat.interested')) + ' ' + num(r.interested) + ' · ' + esc(lab('cat.noreply')) + ' ' + num(r.no_reply) + ' · ' + esc(lab('cat.notinterested')) + ' ' + num(r.not_interested) + ' · ' + esc(lab('cat.withthem')) + ' ' + num(r.with_them || 0) + '</span>' + (r.edit_count ? ' <span class="pill p-blue">معدّل</span>' : '') + '</div>' +
       (r.report_date >= yesterday() && r.report_date !== date ? '<button class="mini" data-repedit="' + r.report_date + '">تعديل</button>' : '') + '</div>').join('') + '</div>';
   }
   if (date !== today) html += '<button type="button" class="btn sec" id="rpBack" style="margin-top:14px !important">العودة لتقرير اليوم</button>';
@@ -11688,16 +11693,16 @@ Emp.renderReport = async function () {
   if (!$('rpSave')) return;
   const val = id => { const v = toEn($(id).value).replace(/[^0-9]/g, ''); return v === '' ? 0 : parseInt(v, 10); };
   const check = () => {
-    const t = val('rpTotal'), s = val('rpInt') + val('rpNo') + val('rpNot'), c = $('rpCheck'), diff = t - s;
+    const t = val('rpTotal'), s = val('rpInt') + val('rpNo') + val('rpNot') + val('rpWith'), c = $('rpCheck'), diff = t - s;
     c.className = 'pill ' + (diff === 0 && t > 0 ? 'p-green' : diff > 0 ? 'p-amber' : diff < 0 ? 'p-red' : 'p-gray');
     c.textContent = diff === 0 ? (t > 0 ? 'المجموع مطابق للإجمالي ✓' : 'اكتب إجمالي الرسائل') : diff > 0 ? 'متبقي ' + diff + ' رسالة لم تُصنَّف' : 'التصنيفات تزيد عن الإجمالي بمقدار ' + (-diff);
     $('rpSave').disabled = !(diff === 0 && t > 0);
   };
-  ['rpTotal', 'rpInt', 'rpNo', 'rpNot'].forEach(id => $(id).addEventListener('input', e => { e.target.value = toEn(e.target.value).replace(/[^0-9]/g, ''); check(); }));
+  ['rpTotal', 'rpInt', 'rpNo', 'rpNot', 'rpWith'].forEach(id => $(id).addEventListener('input', e => { e.target.value = toEn(e.target.value).replace(/[^0-9]/g, ''); check(); }));
   check();
   $('rpSave').onclick = e => guard(e.currentTarget, async () => {
-    const body = { total_messages: val('rpTotal'), interested: val('rpInt'), no_reply: val('rpNo'), not_interested: val('rpNot'), notes: $('rpNotes').value.trim() || null };
-    if (body.interested + body.no_reply + body.not_interested !== body.total_messages) throw new Error('مجموع الحالات الثلاث لازم يساوي إجمالي الرسائل.');
+    const body = { total_messages: val('rpTotal'), interested: val('rpInt'), no_reply: val('rpNo'), not_interested: val('rpNot'), with_them: val('rpWith'), notes: $('rpNotes').value.trim() || null };
+    if (body.interested + body.no_reply + body.not_interested + body.with_them !== body.total_messages) throw new Error('مجموع الحالات الأربع لازم يساوي إجمالي الرسائل.');
     const r = cur ? await db.from('daily_reports').update(body).eq('id', cur.id) : await db.from('daily_reports').insert(Object.assign({ employee_id: me(), report_date: today, campaign_title_snapshot: A.campaign ? A.campaign.title : null }, body));
     if (r.error) throw r.error;
     toast(cur ? 'تم تحديث التقرير.' : 'تم إرسال التقرير.', 'ok'); Emp.repDate = null; await Emp.renderReport(); Emp.refreshToday();
