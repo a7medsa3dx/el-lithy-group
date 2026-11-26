@@ -8407,13 +8407,6 @@ targetSaveButton.onclick = async () => {
       ? `${year + 1}-01-01`
       : `${year}-${String(monthNumber + 1).padStart(2, "0")}-01`;
 
-    const excludedId = excludedReportEmployeeId();
-    let monthlyTransactionsQuery = db
-      .from("sales_transactions")
-      .select("employee_id, sale_type, amount")
-      .gte("sale_date", monthStart)
-      .lt("sale_date", nextMonthStart);
-    if (excludedId) monthlyTransactionsQuery = monthlyTransactionsQuery.neq("employee_id", excludedId);
     const { data: monthlyTransactions, error: transactionsError } = await db
       .from("sales_transactions")
       .select("sale_type, amount")
