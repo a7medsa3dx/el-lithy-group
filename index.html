@@ -11912,7 +11912,7 @@ Emp.renderReport = async function () {
       .eq('employee_id',me()).eq('report_date',date).order('created_at');
     if(oldCustomers.error)throw oldCustomers.error;
     const foundRows=oldCustomers.data||[];
-    if(foundRows.length===Number(cur.with_them||0))existingWithThemRows=foundRows;
+    existingWithThemRows=foundRows;
   }
   withCards=createReportWithThemCards($('rpWithCustomers'),val('rpWith'),me(),date,check,existingWithThemRows);
   ['rpTotal', 'rpInt', 'rpNo', 'rpNot'].forEach(id => $(id).addEventListener('input', e => { e.target.value = toEn(e.target.value).replace(/[^0-9]/g, ''); check(); }));
