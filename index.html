@@ -11752,6 +11752,109 @@ Emp.renderTeam = async function () {
   box.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><h3 style="margin:0 0 5px;font-size:18px">مساهمتك في مبيعات الشركة</h3><p class="muted small" style="margin:0">نسبة مبيعاتك من إجمالي مبيعات الشركة خلال الشهر الحالي</p></div><strong style="font-size:26px;color:var(--brand)">' + pct.toFixed(2) + '%</strong></div><div style="height:10px;background:#e8eef5;border-radius:20px;overflow:hidden;margin-top:14px"><i style="display:block;width:' + Math.max(0,Math.min(100,pct)) + '%;height:100%;background:linear-gradient(90deg,#1c7890,#20a675);border-radius:20px"></i></div>';
 };
 
+
+/* بطاقات عملاء «معاهم» — تستخدم نفس محرر الأبلكيشنات وحقول تسجيل العميل */
+function createReportWithThemCards(host, initialCount, employeeId, reportDate, onChange) {
+  const countryCodes = [
+    ['مصر','+20'],['السعودية','+966'],['الإمارات','+971'],['الكويت','+965'],['قطر','+974'],['البحرين','+973'],['عمان','+968'],['الأردن','+962'],['لبنان','+961'],['العراق','+964'],['فلسطين','+970'],['اليمن','+967'],['ليبيا','+218'],['السودان','+249'],['المغرب','+212'],['الجزائر','+213'],['تونس','+216'],['موريتانيا','+222'],['تركيا','+90'],['الولايات المتحدة','+1'],['كندا','+1'],['المملكة المتحدة','+44'],['ألمانيا','+49'],['فرنسا','+33'],['إيطاليا','+39'],['إسبانيا','+34'],['هولندا','+31'],['بلجيكا','+32'],['سويسرا','+41'],['النمسا','+43'],['السويد','+46'],['النرويج','+47'],['الدنمارك','+45'],['فنلندا','+358'],['أيرلندا','+353'],['اليونان','+30'],['قبرص','+357'],['روسيا','+7'],['أوكرانيا','+380'],['بولندا','+48'],['رومانيا','+40'],['التشيك','+420'],['المجر','+36'],['البرتغال','+351'],['أستراليا','+61'],['نيوزيلندا','+64'],['الصين','+86'],['اليابان','+81'],['كوريا الجنوبية','+82'],['الهند','+91'],['باكستان','+92'],['بنغلاديش','+880'],['سريلانكا','+94'],['نيبال','+977'],['إندونيسيا','+62'],['ماليزيا','+60'],['سنغافورة','+65'],['تايلاند','+66'],['فيتنام','+84'],['الفلبين','+63'],['هونغ كونغ','+852'],['تايوان','+886'],['إيران','+98'],['أفغانستان','+93'],['جنوب أفريقيا','+27'],['نيجيريا','+234'],['غانا','+233'],['كينيا','+254'],['إثيوبيا','+251'],['أوغندا','+256'],['تنزانيا','+255'],['السنغال','+221'],['ساحل العاج','+225'],['الكاميرون','+237'],['الصومال','+252'],['البرازيل','+55'],['الأرجنتين','+54'],['المكسيك','+52'],['تشيلي','+56'],['كولومبيا','+57'],['بيرو','+51'],['فنزويلا','+58'],['أوروغواي','+598'],['باراغواي','+595'],['بوليفيا','+591'],['كوستاريكا','+506'],['بنما','+507'],['جامايكا','+1-876'],['جمهورية الدومينيكان','+1-809'],['آيسلندا','+354'],['لوكسمبورغ','+352'],['مالطا','+356'],['بلغاريا','+359'],['كرواتيا','+385'],['صربيا','+381'],['سلوفاكيا','+421'],['سلوفينيا','+386'],['ليتوانيا','+370'],['لاتفيا','+371'],['إستونيا','+372'],['جورجيا','+995'],['أرمينيا','+374'],['أذربيجان','+994'],['كازاخستان','+7'],['أوزبكستان','+998'],['قرغيزستان','+996'],['طاجيكستان','+992'],['تركمانستان','+993'],['منغوليا','+976'],['كمبوديا','+855'],['لاوس','+856'],['ميانمار','+95'],['المالديف','+960'],['موريشيوس','+230'],['سيشل','+248'],['زيمبابوي','+263'],['زامبيا','+260'],['رواندا','+250'],['الكونغو','+242'],['الكونغو الديمقراطية','+243'],['أنغولا','+244'],['موزمبيق','+258'],['مدغشقر','+261'],['ناميبيا','+264'],['بوتسوانا','+267'],['السلفادور','+503'],['غواتيمالا','+502'],['هندوراس','+504'],['نيكاراغوا','+505'],['الإكوادور','+593'],['غيانا','+592'],['سورينام','+597'],
+    ['ألبانيا','+355'],['أندورا','+376'],['البوسنة والهرسك','+387'],['الجبل الأسود','+382'],['مقدونيا الشمالية','+389'],['مولدوفا','+373'],['بيلاروس','+375'],['ليختنشتاين','+423'],['موناكو','+377'],['سان مارينو','+378'],['جزر فارو','+298'],['جرينلاند','+299'],['جبل طارق','+350'],['كوسوفو','+383'],
+    ['جزر البهاما','+1-242'],['بربادوس','+1-246'],['أنغويلا','+1-264'],['أنتيغوا وبربودا','+1-268'],['جزر العذراء البريطانية','+1-284'],['جزر كايمان','+1-345'],['برمودا','+1-441'],['غرينادا','+1-473'],['جزر تركس وكايكوس','+1-649'],['مونتسرات','+1-664'],['سانت لوسيا','+1-758'],['دومينيكا','+1-767'],['سانت فنسنت والغرينادين','+1-784'],['بورتوريكو','+1-787'],['ترينيداد وتوباغو','+1-868'],['سانت كيتس ونيفيس','+1-869'],['هايتي','+509'],['أروبا','+297'],['كوراساو','+599'],['سينت مارتن','+1-721'],['غوادلوب','+590'],['مارتينيك','+596'],['غيانا الفرنسية','+594'],
+    ['بنين','+229'],['بوركينا فاسو','+226'],['بوروندي','+257'],['الرأس الأخضر','+238'],['جمهورية أفريقيا الوسطى','+236'],['تشاد','+235'],['جزر القمر','+269'],['جيبوتي','+253'],['غينيا الاستوائية','+240'],['إريتريا','+291'],['الغابون','+241'],['غامبيا','+220'],['غينيا','+224'],['غينيا بيساو','+245'],['ليسوتو','+266'],['ليبيريا','+231'],['ملاوي','+265'],['مالي','+223'],['النيجر','+227'],['ساو تومي وبرينسيب','+239'],['سيراليون','+232'],['جنوب السودان','+211'],['توغو','+228'],['إسواتيني','+268'],
+    ['بوتان','+975'],['بروناي','+673'],['تيمور الشرقية','+670'],['كوريا الشمالية','+850'],['ماكاو','+853'],['سوريا','+963'],['إسرائيل','+972'],
+    ['فيجي','+679'],['بابوا غينيا الجديدة','+675'],['ساموا','+685'],['تونغا','+676'],['فانواتو','+678'],['جزر سليمان','+677'],['كيريباتي','+686'],['ولايات ميكرونيسيا المتحدة','+691'],['جزر مارشال','+692'],['بالاو','+680'],['ناورو','+674'],['توفالو','+688'],['جزر كوك','+682'],['نيوي','+683'],['كاليدونيا الجديدة','+687'],['بولينيزيا الفرنسية','+689']
+  ];
+  const states = [];
+  const escId = n => 'rpWithCustomer' + n;
+  const createOne = (n, existing) => {
+    const id = escId(n), row = existing || {};
+    const html = '<details class="card rp-with-customer" style="padding:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--card)">' +
+      '<summary style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;cursor:pointer;list-style:none;font-weight:800">' +
+      '<span>العميل ' + n + '</span><span class="pill p-amber" data-rw-status>استكمال البيانات</span></summary>' +
+      '<div style="padding:14px;border-top:1px solid var(--line);display:grid;gap:10px">' +
+      '<div class="field"><label>رقم الهاتف</label><input data-rw-phone type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"></div>' +
+      '<div class="field"><label>اسم مستخدم واتساب</label><input data-rw-wa type="text" value="@" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
+      '<label class="row" style="gap:8px;margin:0;font-weight:700"><input data-rw-foreign type="checkbox" style="width:20px;height:20px"> رقم غير مصري</label>' +
+      '<div class="field" data-rw-intl-wrap style="display:none"><label>رقم العميل الدولي</label><div class="row" style="gap:8px;align-items:stretch"><select data-rw-code dir="ltr" style="max-width:46%;min-width:145px"></select><input data-rw-intl type="tel" inputmode="tel" autocomplete="tel-national" placeholder="رقم الهاتف" dir="ltr" style="text-align:start;flex:1;min-width:0"></div><span class="hint">اختر كود الدولة ثم اكتب الرقم بدون كود الدولة.</span></div>' +
+      '<div class="field"><label>الأبلكيشنات</label><div data-rw-apps></div></div>' +
+      '<div class="field"><label>ملاحظات</label><textarea data-rw-notes placeholder="ملاحظات عن العميل"></textarea></div></div></details>';
+    host.insertAdjacentHTML('beforeend', html);
+    const card=host.lastElementChild, phone=card.querySelector('[data-rw-phone]'), wa=card.querySelector('[data-rw-wa]');
+    const foreign=card.querySelector('[data-rw-foreign]'), wrap=card.querySelector('[data-rw-intl-wrap]');
+    const code=card.querySelector('[data-rw-code]'), intl=card.querySelector('[data-rw-intl]'), notes=card.querySelector('[data-rw-notes]');
+    const appsHost=card.querySelector('[data-rw-apps]'), status=card.querySelector('[data-rw-status]');
+    code.innerHTML=countryCodes.map(([name,c])=>'<option value="'+esc(c)+'"'+(c==='+20'?' selected':'')+'>'+esc(name)+' ('+esc(c)+')</option>').join('');
+    const appInitial=(row.employee_customer_apps||[]).map(a=>({type:a.application_type_id,amount:a.amount}));
+    const editor=EL.appEditor(appsHost,appInitial,true);
+    phone.value=row.is_foreign?'':(row.phone||'');
+    wa.value=row.whatsapp_username||'@';
+    notes.value=row.notes||'';
+    if(row.is_foreign){
+      foreign.checked=true; phone.disabled=true; wa.disabled=true; intl.disabled=false; wrap.style.display='block';
+      const full=String(row.phone||''); const match=countryCodes.find(x=>full.startsWith(x[1].replace(/[^+0-9]/g,'')));
+      if(match){code.value=match[1];intl.value=full.slice(match[1].replace(/[^0-9]/g,'').length);}
+      else intl.value=full.replace(/[^0-9]/g,'');
+    } else { intl.disabled=true; }
+    wa.addEventListener('input',()=>{wa.value='@'+wa.value.replace(/^@+/,'');updateStatus();});
+    phone.addEventListener('input',()=>{phone.value=toEn(phone.value).replace(/[^0-9]/g,'').slice(0,11);updateStatus();});
+    intl.addEventListener('input',()=>{intl.value=toEn(intl.value).replace(/[^0-9]/g,'').slice(0,15);updateStatus();});
+    notes.addEventListener('input',updateStatus);
+    appsHost.addEventListener('input',updateStatus); appsHost.addEventListener('change',updateStatus); appsHost.addEventListener('click',()=>setTimeout(updateStatus,0));
+    foreign.addEventListener('change',()=>{
+      const on=foreign.checked; phone.disabled=on; wa.disabled=on; intl.disabled=!on; wrap.style.display=on?'block':'none';
+      if(on){phone.value='';wa.value='@';}else{intl.value='';wa.value='@';}
+      updateStatus();
+    });
+    function read(){
+      const isForeign=foreign.checked, local=phone.value.trim();
+      const username=(wa.value||'').trim().replace(/^@+/,'').trim();
+      const whatsapp=username?'@'+username:'';
+      const intlDigits=toEn(intl.value).replace(/[^0-9]/g,'');
+      const fullPhone=isForeign?code.value.replace(/[^+0-9]/g,'')+intlDigits:local;
+      if(isForeign&&!intlDigits)throw new Error('اكتب رقم الهاتف الدولي للعميل '+n+'.');
+      if(isForeign&&intlDigits.length<5)throw new Error('رقم الهاتف الدولي للعميل '+n+' قصير جدًا.');
+      if(!isForeign&&local&&!EGY.test(local))throw new Error('رقم الهاتف للعميل '+n+' لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.');
+      if(!isForeign&&!local&&!whatsapp)throw new Error('اكتب رقم الهاتف أو اسم مستخدم واتساب للعميل '+n+'.');
+      const selectedApps=editor.get(true);
+      return {phone:fullPhone||null,whatsapp_username:isForeign?null:(whatsapp||null),is_foreign:isForeign,notes:notes.value.trim()||null,apps:selectedApps};
+    }
+    function updateStatus(){
+      let ok=false;try{read();ok=true;}catch(_){}
+      status.className='pill '+(ok?'p-green':'p-amber');status.textContent=ok?'مكتمل ✓':'استكمال البيانات';
+      if(onChange)onChange();
+    }
+    const state={card,read,updateStatus,existingId:row.id||null};
+    updateStatus(); return state;
+  };
+  function sync(count){
+    count=Math.max(0,Math.min(100,Number(count)||0));
+    while(states.length>count){const st=states.pop();st.card.remove();}
+    while(states.length<count){const st=createOne(states.length+1,null);states.push(st);if(states.length===1)st.card.open=true;}
+    states.forEach((st,i)=>{const title=st.card.querySelector('summary span:first-child');if(title)title.textContent='العميل '+(i+1);});
+    if(onChange)onChange();
+  }
+  function validate(){
+    if(states.some(st=>{try{st.read();return false;}catch(_){return true;}}))throw new Error('استكمل بيانات كل العملاء في قسم «معاهم» قبل إرسال التقرير.');
+    const seen=new Set();
+    states.forEach(st=>{const d=st.read(),key=(d.phone||d.whatsapp_username||'').toLowerCase();if(key&&seen.has(key))throw new Error('يوجد عميل مكرر في البطاقات. راجع أرقام الهاتف وواتساب.');if(key)seen.add(key);});
+  }
+  async function save(){
+    validate();
+    for(const st of states){
+      const d=st.read(); let found=null;
+      if(d.phone){const q1=await db.from('employee_customers').select('id').eq('employee_id',employeeId).eq('report_date',reportDate).eq('phone',d.phone).maybeSingle();if(q1.error)throw q1.error;found=q1.data;}
+      if(!found&&d.whatsapp_username){let q2=await db.from('employee_customers').select('id').eq('employee_id',employeeId).eq('report_date',reportDate).ilike('whatsapp_username',d.whatsapp_username).maybeSingle();if(q2.error)throw q2.error;found=q2.data;}
+      const payload={employee_id:employeeId,report_date:reportDate,phone:d.phone,whatsapp_username:d.whatsapp_username,is_foreign:d.is_foreign,notes:d.notes};
+      let customerId;
+      if(found){const u=await db.from('employee_customers').update(payload).eq('id',found.id);if(u.error)throw u.error;customerId=found.id;}
+      else{const ins=await db.from('employee_customers').insert(payload).select('id').single();if(ins.error)throw ins.error;customerId=ins.data.id;}
+      const del=await db.from('employee_customer_apps').delete().eq('customer_id',customerId);if(del.error)throw del.error;
+      if(d.apps.length){const insApps=await db.from('employee_customer_apps').insert(d.apps.map(a=>({customer_id:customerId,application_type_id:a.type,amount:a.amount})));if(insApps.error)throw insApps.error;}
+    }
+  }
+  sync(initialCount);
+  return {states,sync,validate,save,isValid:()=>{try{validate();return true;}catch(_){return false;}}};
+}
+
 // ---------------------------------------------------------------------
 // التقرير اليومي
 // ---------------------------------------------------------------------
@@ -11774,6 +11877,7 @@ Emp.renderReport = async function () {
       '<div class="rep-num" style="background:var(--gray-l)"><label for="rpNo" style="color:var(--gray-t)">' + esc(lab('cat.noreply')) + '</label><input id="rpNo" inputmode="numeric" autocomplete="off" value="' + (cur ? cur.no_reply : '') + '" placeholder="0"></div>' +
       '<div class="rep-num" style="background:var(--red-l)"><label for="rpNot" style="color:var(--red-t)">' + esc(lab('cat.notinterested')) + '</label><input id="rpNot" inputmode="numeric" autocomplete="off" value="' + (cur ? cur.not_interested : '') + '" placeholder="0"></div>' +
       '<div class="rep-num" style="background:var(--blue-l)"><label for="rpWith" style="color:var(--blue-t)">' + esc(lab('cat.withthem')) + '</label><input id="rpWith" inputmode="numeric" autocomplete="off" value="' + (cur ? (cur.with_them || 0) : '') + '" placeholder="0"></div></div>' +
+      '<div id="rpWithCustomers" class="stack" style="gap:9px;margin-top:10px"></div>' +
       '<div id="rpCheck" class="pill" style="margin:12px 0;display:flex;justify-content:center;padding:10px"></div>' +
       '<div class="field"><label for="rpNotes">ملاحظات (اختياري)</label><textarea id="rpNotes">' + esc(cur ? cur.notes || '' : '') + '</textarea></div>' +
       '<button type="button" class="btn" id="rpSave" style="margin-top:12px !important;width:100%">' + (cur ? 'تحديث التقرير' : 'إرسال التقرير') + '</button>';
@@ -11789,20 +11893,26 @@ Emp.renderReport = async function () {
   const back = $('rpBack'); if (back) back.onclick = () => { Emp.repDate = null; Emp.renderReport(); };
   if (!$('rpSave')) return;
   const val = id => { const v = toEn($(id).value).replace(/[^0-9]/g, ''); return v === '' ? 0 : parseInt(v, 10); };
+  let withCards;
   const check = () => {
     const t = val('rpTotal'), s = val('rpInt') + val('rpNo') + val('rpNot') + val('rpWith'), c = $('rpCheck'), diff = t - s;
     c.className = 'pill ' + (diff === 0 && t > 0 ? 'p-green' : diff > 0 ? 'p-amber' : diff < 0 ? 'p-red' : 'p-gray');
     c.textContent = diff === 0 ? (t > 0 ? 'المجموع مطابق للإجمالي ✓' : 'اكتب إجمالي الرسائل') : diff > 0 ? 'متبقي ' + diff + ' رسالة لم تُصنَّف' : 'التصنيفات تزيد عن الإجمالي بمقدار ' + (-diff);
-    $('rpSave').disabled = !(diff === 0 && t > 0);
+    const customersOk = !withCards || withCards.isValid();
+    $('rpSave').disabled = !(diff === 0 && t > 0 && customersOk);
   };
-  ['rpTotal', 'rpInt', 'rpNo', 'rpNot', 'rpWith'].forEach(id => $(id).addEventListener('input', e => { e.target.value = toEn(e.target.value).replace(/[^0-9]/g, ''); check(); }));
+  withCards=createReportWithThemCards($('rpWithCustomers'),val('rpWith'),me(),date,check);
+  ['rpTotal', 'rpInt', 'rpNo', 'rpNot'].forEach(id => $(id).addEventListener('input', e => { e.target.value = toEn(e.target.value).replace(/[^0-9]/g, ''); check(); }));
+  $('rpWith').addEventListener('input', e => { e.target.value = toEn(e.target.value).replace(/[^0-9]/g, '').slice(0,3); withCards.sync(val('rpWith')); check(); });
   check();
   $('rpSave').onclick = e => guard(e.currentTarget, async () => {
     const body = { total_messages: val('rpTotal'), interested: val('rpInt'), no_reply: val('rpNo'), not_interested: val('rpNot'), with_them: val('rpWith'), notes: $('rpNotes').value.trim() || null };
     if (body.interested + body.no_reply + body.not_interested + body.with_them !== body.total_messages) throw new Error('مجموع الحالات الأربع لازم يساوي إجمالي الرسائل.');
+    withCards.validate();
     const r = cur ? await db.from('daily_reports').update(body).eq('id', cur.id) : await db.from('daily_reports').insert(Object.assign({ employee_id: me(), report_date: today, campaign_title_snapshot: A.campaign ? A.campaign.title : null }, body));
     if (r.error) throw r.error;
-    toast(cur ? 'تم تحديث التقرير.' : 'تم إرسال التقرير.', 'ok'); Emp.repDate = null; await Emp.renderReport(); Emp.refreshToday();
+    await withCards.save();
+    toast(cur ? 'تم تحديث التقرير والعملاء المرتبطين به.' : 'تم إرسال التقرير وحفظ بيانات العملاء.', 'ok'); Emp.repDate = null; await Emp.renderReport(); Emp.refreshToday();
   });
 };
 
