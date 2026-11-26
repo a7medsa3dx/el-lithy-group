@@ -10979,6 +10979,8 @@ const me = $('manageEmployeesButton'); if (me) me.addEventListener('click', () =
 // =====================================================================
 (function () {
 'use strict';
+// ثابت محلي داخل نطاق واجهة الموظف؛ التعريف العام موجود في نطاق سكربت آخر.
+const REPORT_EXCLUDED_CODE = 'EMP002';
 const { A, $, q, qa, esc, num, cairoToday, toEn, fmtDate, fmtDT, EGY, icon, lab, toast, guard, safe, modal, typeName, appChip } = EL;
 const Emp = window.Emp = { repDate: null, loaded: {} };
 const isPreview = () => document.body.dataset.preview === '1';
