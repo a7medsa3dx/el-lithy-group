@@ -2551,7 +2551,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
   </div>
 
 
-<div style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
+<div id="employeeAccountsManagerCard" style="margin-top:20px;padding:18px;background:#f1f7fa;border-radius:12px">
 
   <h3>إدارة حسابات الموظفين</h3>
   <p>اختر الموظف لإدارة حسابه أو معاينة لوحة العمل الخاصة به.</p>
@@ -12801,6 +12801,156 @@ body[data-theme="dark"] #settingsSection{
 @media(min-width:761px){
  #managerSmartMessageReplies>article{min-width:0}
  #settingsSection #stBody .grid.g-2{align-items:stretch}
+}
+
+
+/* ===== Customer dashboard and employee account manager final polish ===== */
+#customersSection{
+ --cu-card:#ffffff;--cu-soft:#f4f8fb;--cu-line:#dce6ee;
+ --cu-ink:#183247;--cu-muted:#647b8b;
+ width:100%;max-width:100%;color:var(--cu-ink);
+}
+body[data-theme="dark"] #customersSection{
+ --cu-card:#172635;--cu-soft:#1d3040;--cu-line:#344b5d;
+ --cu-ink:#f1f6fa;--cu-muted:#bdcbd5;
+}
+#customersSection>.page-head,
+#customersSection>.page-header{margin-bottom:18px}
+#customersSection .tabs{
+ display:flex;flex-wrap:wrap;gap:9px;padding:10px;margin:0 0 20px;
+ background:var(--cu-soft)!important;border:1px solid var(--cu-line);
+ border-radius:16px;
+}
+#customersSection .tabs .tab-btn{
+ flex:1 1 145px;min-height:45px;padding:10px 14px!important;
+ border:1px solid var(--cu-line)!important;border-radius:11px!important;
+ background:var(--cu-card)!important;color:var(--cu-ink)!important;
+ font-weight:800;transition:background .15s,border-color .15s;
+}
+#customersSection .tabs .tab-btn.on{
+ background:#176477!important;color:#fff!important;border-color:#176477!important;
+ box-shadow:0 4px 12px rgba(23,100,119,.18);
+}
+#customersSection #cuBody{min-width:0}
+#customersSection #cuBody>.card,
+#customersSection #cuBody>div.card,
+#customersSection #cuBody .card{
+ background:var(--cu-card)!important;color:var(--cu-ink)!important;
+ border:1px solid var(--cu-line)!important;border-radius:17px!important;
+ box-shadow:0 7px 20px rgba(16,43,63,.06)!important;
+}
+#customersSection #cuBody h2,
+#customersSection #cuBody h3,
+#customersSection #cuBody h4{color:var(--cu-ink)!important;font-weight:850}
+#customersSection #cuBody p,
+#customersSection #cuBody .muted,
+#customersSection #cuBody .hint{color:var(--cu-muted)!important}
+#customersSection #cuBody label{color:var(--cu-ink)!important;font-weight:750}
+#customersSection #cuBody input:not([type=checkbox]):not([type=radio]),
+#customersSection #cuBody select,
+#customersSection #cuBody textarea{
+ min-height:43px;background:var(--cu-soft)!important;color:var(--cu-ink)!important;
+ border:1px solid var(--cu-line)!important;border-radius:11px!important;
+}
+#customersSection #cuBody input::placeholder,
+#customersSection #cuBody textarea::placeholder{color:var(--cu-muted)!important;opacity:1}
+#customersSection #cuBody input:focus,
+#customersSection #cuBody select:focus,
+#customersSection #cuBody textarea:focus{
+ outline:none;border-color:#2994a6!important;
+ box-shadow:0 0 0 3px rgba(41,148,166,.15)!important;
+}
+#customersSection #cuBody table{
+ width:100%;border-collapse:separate!important;border-spacing:0;
+ border:1px solid var(--cu-line);border-radius:13px;overflow:hidden;
+ background:var(--cu-card);color:var(--cu-ink);
+}
+#customersSection #cuBody th{
+ background:#183b52!important;color:#fff!important;padding:12px!important;
+ font-weight:800;white-space:nowrap;
+}
+#customersSection #cuBody td{
+ background:var(--cu-card);color:var(--cu-ink)!important;
+ border-bottom:1px solid var(--cu-line)!important;padding:11px!important;
+}
+#customersSection #cuBody tr:last-child td{border-bottom:0!important}
+#customersSection #cuBody .empty{
+ padding:24px!important;text-align:center;border:1px dashed var(--cu-line);
+ border-radius:14px;background:var(--cu-soft);color:var(--cu-muted)!important;
+}
+#customersSection #cuBody button{border-radius:11px;font-weight:800}
+#customersSection #cuAdd{
+ min-height:43px;border-radius:12px!important;font-weight:800;
+ box-shadow:0 4px 12px rgba(23,100,119,.12)
+}
+#employeeAccountsManagerCard{
+ --ea-card:#fff;--ea-soft:#f5f8fb;--ea-line:#dce6ee;
+ --ea-ink:#183247;--ea-muted:#647b8b;
+ background:var(--ea-soft)!important;border:1px solid var(--ea-line)!important;
+ border-radius:19px!important;padding:24px!important;
+ box-shadow:0 8px 22px rgba(16,43,63,.07)!important;color:var(--ea-ink)!important;
+}
+body[data-theme="dark"] #employeeAccountsManagerCard{
+ --ea-card:#172635;--ea-soft:#1d3040;--ea-line:#344b5d;
+ --ea-ink:#f1f6fa;--ea-muted:#bdcbd5;
+}
+#employeeAccountsManagerCard h3{
+ color:var(--ea-ink)!important;font-size:21px;font-weight:850;margin:0 0 8px;
+}
+#employeeAccountsManagerCard>p{color:var(--ea-muted)!important;line-height:1.8}
+#employeeAccountsManagerCard>label{display:block;color:var(--ea-ink)!important;font-weight:800;margin:18px 0 8px}
+#employeeAccountsManagerCard #selectedEmployee{
+ min-height:48px!important;width:100%;padding:12px 14px!important;
+ background:var(--ea-card)!important;color:var(--ea-ink)!important;
+ border:1px solid var(--ea-line)!important;border-radius:12px!important;
+ font:inherit;box-shadow:none!important;
+}
+#employeeAccountsManagerCard #selectedEmployeeDetails{
+ background:var(--ea-card)!important;border:1px solid var(--ea-line)!important;
+ border-radius:14px!important;padding:17px!important;
+ box-shadow:0 4px 14px rgba(16,43,63,.04);
+}
+#employeeAccountsManagerCard #selectedEmployeeDetails strong{
+ display:block;color:var(--ea-ink)!important;font-size:17px;font-weight:850;margin-bottom:8px;
+}
+#employeeAccountsManagerCard #selectedEmployeeDetails p{
+ color:var(--ea-muted)!important;margin:6px 0;line-height:1.7;
+}
+#employeeAccountsManagerCard>div:last-child{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important;
+}
+#employeeAccountsManagerCard button{
+ min-height:45px;border-radius:12px!important;font-weight:800;
+}
+#employeeAccountsManagerCard #changeSelectedEmployeePassword{
+ background:#176477!important;color:#fff!important;border:1px solid #176477!important;
+}
+#employeeAccountsManagerCard #previewSelectedEmployee{
+ background:var(--ea-card)!important;color:var(--ea-ink)!important;
+ border:1px solid var(--ea-line)!important;
+}
+#employeesSection #empEditCard{
+ background:var(--ea-card,#fff)!important;border:1px solid var(--ea-line,#dce6ee)!important;
+ border-radius:17px!important;box-shadow:0 7px 20px rgba(16,43,63,.06)!important;
+ color:var(--ea-ink,#183247)!important;
+}
+#employeesSection #empEditCard h3{color:var(--ea-ink,#183247)!important}
+#employeesSection #empEditCard label{color:var(--ea-ink,#183247)!important;font-weight:750}
+#employeesSection #empEditCard input,
+#employeesSection #empEditCard select{
+ background:var(--ea-card,#fff)!important;color:var(--ea-ink,#183247)!important;
+ border:1px solid var(--ea-line,#dce6ee)!important;border-radius:11px!important;
+}
+@media(max-width:760px){
+ #customersSection .tabs .tab-btn{flex:1 1 calc(50% - 9px)}
+ #customersSection #cuBody{overflow-x:auto}
+ #customersSection #cuBody table{min-width:620px}
+ #employeeAccountsManagerCard{padding:17px!important}
+ #employeeAccountsManagerCard>div:last-child{grid-template-columns:1fr}
+}
+@media(min-width:761px){
+ #customersSection{max-width:1200px;margin-inline:auto}
+ #employeeAccountsManagerCard{max-width:100%}
 }
 
 </style>
