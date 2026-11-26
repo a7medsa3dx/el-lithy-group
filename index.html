@@ -10668,6 +10668,27 @@ async function loadReports() {
 // =====================================================================
 // إدارة تأجيل وإعفاء تقارير الإعلانات (للمدير فقط)
 // =====================================================================
+function cairoDateTimeInputToISO(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(value || ''));
+  if (!m) throw new Error('اختر تاريخ ووقت الموعد النهائي.');
+  const parts = m.slice(1).map(Number);
+  const utcGuess = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], 0);
+  const cairoParts = {};
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(new Date(utcGuess)).forEach(x => {
+    if (x.type !== 'literal') cairoParts[x.type] = Number(x.value);
+  });
+  const cairoAsUTC = Date.UTC(
+    cairoParts.year, cairoParts.month - 1, cairoParts.day,
+    cairoParts.hour, cairoParts.minute, cairoParts.second
+  );
+  return new Date(utcGuess - (cairoAsUTC - utcGuess)).toISOString();
+}
+
 Owner.renderDailyReportControls = async function () {
   const sec = $('dailyReportControlsSection');
   await loadEmployees();
@@ -10687,14 +10708,16 @@ Owner.renderDailyReportControls = async function () {
           field('الموظف', '<select id="drcEmployee">' + employeeOptions + '</select>') +
           field('تاريخ التقرير المطلوب', '<input id="drcReportDate" type="date" max="' + today + '" value="' + today + '">') +
           field('نوع الإجراء', '<select id="drcAction"><option value="defer">تأجيل التقرير</option><option value="exempt">إعفاء نهائي من التقرير</option></select>') +
-          '<div id="drcReturnWrap">' + field('تاريخ العودة / استحقاق التقرير', '<input id="drcReturnDate" type="date" value="' + tomorrow + '">', '', 'المهلة الجديدة تنتهي بعد ساعتين من بداية دوام الموظف في هذا التاريخ.') + '</div>' +
-          '<div class="alert-item" style="background:var(--blue-l);border-color:var(--line)"><b>معلومة مهمة</b><br><span class="small">التأجيل ينقل الموعد النهائي للتقرير. الإعفاء يمنع الخصم نهائيًا عن هذا التاريخ فقط. لا يتم حذف أي تقرير أو خصم قائم.</span></div>' +
+          '<div id="drcReturnWrap">' +
+            field('الموعد النهائي لتسليم التقرير', '<input id="drcDeadlineAt" type="datetime-local" value="' + tomorrow + 'T16:00" step="60">', '', 'حدد اليوم والساعة والدقيقة بتوقيت القاهرة. بعد هذا الموعد يستحق التقرير الخصم إذا لم يتم تسليمه.') +
+          '</div>' +
+          '<div class="alert-item" style="background:var(--blue-l);border-color:var(--line)"><b>معلومة مهمة</b><br><span class="small">التأجيل يحدد موعدًا نهائيًا دقيقًا للتقرير. الإعفاء يمنع الخصم نهائيًا عن هذا التاريخ فقط. لا يتم حذف أي تقرير أو خصم قائم.</span></div>' +
           '<button class="btn" id="drcSave">حفظ الإجراء</button>' +
         '</div>' +
       '</div>' +
       '<div class="card">' +
         '<h3 style="margin-top:0">الإجراءات المسجلة</h3>' +
-        '<p class="muted small">سجل التأجيلات والإعفاءات التي أضفتها. يمكن تحديث تأجيل موجود باختيار الموظف والتاريخ نفسيهما.</p>' +
+        '<p class="muted small">سجل التأجيلات والإعفاءات التي أضفتها. يمكن تحديث موعد التأجيل باختيار الموظف والتاريخ نفسيهما.</p>' +
         '<button class="btn sec" id="drcRefresh">' + icon('refresh', 16) + ' تحديث السجل</button>' +
         '<div id="drcHistory" style="margin-top:14px"><div class="empty">جارٍ تحميل السجل...</div></div>' +
       '</div>' +
@@ -10712,16 +10735,21 @@ Owner.renderDailyReportControls = async function () {
     if (employee.employee_code === 'EMP002') throw new Error('أحمد حجازي مستثنى من هذا النظام.');
 
     if (kind === 'defer') {
-      const returnDate = $('drcReturnDate').value;
-      if (!returnDate) throw new Error('اختر تاريخ العودة.');
-      if (returnDate <= reportDate) throw new Error('تاريخ العودة يجب أن يكون بعد تاريخ التقرير.');
+      const localDeadline = $('drcDeadlineAt').value;
+      if (!localDeadline) throw new Error('حدد تاريخ ووقت الموعد النهائي.');
+      const deadlineAt = cairoDateTimeInputToISO(localDeadline);
+      if (new Date(deadlineAt).getTime() <= Date.now()) {
+        throw new Error('الموعد النهائي يجب أن يكون في المستقبل.');
+      }
+      const returnDate = localDeadline.slice(0, 10);
       const existing = await db.from('daily_report_deferrals').select('id').eq('employee_id', employeeId).eq('report_date', reportDate).maybeSingle();
       if (existing.error) throw existing.error;
+      const payload = { return_date: returnDate, deadline_at: deadlineAt };
       const result = existing.data
-        ? await db.from('daily_report_deferrals').update({ return_date: returnDate }).eq('id', existing.data.id)
-        : await db.from('daily_report_deferrals').insert({ employee_id: employeeId, report_date: reportDate, return_date: returnDate });
+        ? await db.from('daily_report_deferrals').update(payload).eq('id', existing.data.id)
+        : await db.from('daily_report_deferrals').insert(Object.assign({ employee_id: employeeId, report_date: reportDate }, payload));
       if (result.error) throw result.error;
-      toast(existing.data ? 'تم تحديث موعد التأجيل.' : 'تم تسجيل تأجيل التقرير.', 'ok');
+      toast(existing.data ? 'تم تحديث الموعد النهائي للتقرير.' : 'تم تسجيل تأجيل التقرير بالموعد المحدد.', 'ok');
     } else {
       const existing = await db.from('daily_report_exemptions').select('id').eq('employee_id', employeeId).eq('report_date', reportDate).maybeSingle();
       if (existing.error) throw existing.error;
@@ -10740,7 +10768,7 @@ async function loadDailyReportControlsHistory() {
   const host = $('drcHistory');
   if (!host) return;
   const [deferrals, exemptions] = await Promise.all([
-    safe(db.from('daily_report_deferrals').select('id,employee_id,report_date,return_date').order('report_date', { ascending: false }).limit(200), 'تحميل التأجيلات'),
+    safe(db.from('daily_report_deferrals').select('id,employee_id,report_date,return_date,deadline_at').order('report_date', { ascending: false }).limit(200), 'تحميل التأجيلات'),
     safe(db.from('daily_report_exemptions').select('id,employee_id,report_date').order('report_date', { ascending: false }).limit(200), 'تحميل الإعفاءات')
   ]);
   if (deferrals.error || exemptions.error) {
@@ -10755,8 +10783,8 @@ async function loadDailyReportControlsHistory() {
     host.innerHTML = '<div class="empty">لا توجد تأجيلات أو إعفاءات مسجلة حتى الآن.</div>';
     return;
   }
-  host.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الموظف</th><th>تاريخ التقرير</th><th>الإجراء</th><th>التاريخ الجديد</th></tr></thead><tbody>' +
-    rows.map(x => '<tr><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + fmtDate(x.report_date) + '</td><td><span class="pill ' + (x.kind === 'defer' ? 'p-blue' : 'p-green') + '">' + (x.kind === 'defer' ? 'تأجيل' : 'إعفاء نهائي') + '</span></td><td>' + (x.kind === 'defer' ? fmtDate(x.return_date) : '—') + '</td></tr>').join('') +
+  host.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الموظف</th><th>تاريخ التقرير</th><th>الإجراء</th><th>الموعد النهائي</th></tr></thead><tbody>' +
+    rows.map(x => '<tr><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + fmtDate(x.report_date) + '</td><td><span class="pill ' + (x.kind === 'defer' ? 'p-blue' : 'p-green') + '">' + (x.kind === 'defer' ? 'تأجيل' : 'إعفاء نهائي') + '</span></td><td>' + (x.kind === 'defer' ? (x.deadline_at ? fmtDT(x.deadline_at) : fmtDate(x.return_date) + ' · الموعد القديم') : '—') + '</td></tr>').join('') +
     '</tbody></table></div>';
 }
 
