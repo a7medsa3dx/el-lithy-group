@@ -4001,7 +4001,8 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
   <p id="attendanceLocationStatus">سيتم تحديد موقعك عند تنفيذ العملية.</p>
 
   <div style="display:grid;gap:10px;margin-top:15px">
-    <button id="checkInButton" type="button">تسجيل الحضور</button>
+    <button id="checkInButton" type="button">تسجيل الحضور من المكتب</button>
+    <button id="offsiteCheckInButton" type="button" style="display:none;background:#2563eb">🧭 بدء الدوام في مأمورية خارج المكتب</button>
     <button id="breakStartButton" type="button">بدء الراحة</button>
     <button id="breakEndButton" type="button">إنهاء الراحة</button>
     <button id="checkOutButton" type="button">تسجيل الانصراف</button>
@@ -6826,6 +6827,8 @@ if (profile.role === "owner") {
   $("staffCode").textContent = profile.employee_code;
   $("staffJobTitle").textContent = profile.job_title || "غير محدد";
   showSection("employeeDashboardSection");
+  const offsiteButton = $("offsiteCheckInButton");
+  if (offsiteButton) offsiteButton.style.display = ["EMP001","EMP002"].includes(String(profile.employee_code || "").toUpperCase()) ? "block" : "none";
   $("attendanceStatus").textContent = "";
   $("attendanceLocationStatus").textContent = "";
 
@@ -7633,6 +7636,7 @@ async function performAttendanceAction(action, buttonId) {
 
   const labels = {
     check_in: "تسجيل الحضور",
+    offsite_check_in: "بدء الدوام في مأمورية",
     break_start: "بدء الراحة",
     break_end: "إنهاء الراحة",
     check_out: "تسجيل الانصراف"
@@ -7640,6 +7644,7 @@ async function performAttendanceAction(action, buttonId) {
 
   const successLabels = {
     check_in: "تم تسجيل الحضور بنجاح",
+    offsite_check_in: "تم تسجيل بداية المأمورية بنجاح",
     break_start: "تم بدء الراحة بنجاح",
     break_end: "تم إنهاء الراحة بنجاح",
     check_out: "تم تسجيل الانصراف بنجاح"
@@ -7648,7 +7653,7 @@ async function performAttendanceAction(action, buttonId) {
   let succeeded = false;
 
   button.disabled = true;
-  button.textContent = "⏳ جارٍ تحديد الموقع...";
+  button.textContent = action === "offsite_check_in" ? "⏳ جارٍ تسجيل المأمورية..." : "⏳ جارٍ تحديد الموقع...";
   button.style.backgroundColor = "#2563eb";
   button.style.color = "#ffffff";
 
@@ -7657,48 +7662,40 @@ async function performAttendanceAction(action, buttonId) {
 
   try {
 
-    if (!navigator.geolocation) {
-      throw new Error("المتصفح لا يدعم تحديد الموقع.");
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit"
+    }).format(new Date());
+    const { data: todayRecord, error: todayRecordError } = await db
+      .from("attendance").select("attendance_type")
+      .eq("employee_id", A.profile?.id || me()).eq("work_date", today).maybeSingle();
+    if (todayRecordError) throw todayRecordError;
+    const isOffsiteFlow = action === "offsite_check_in" || todayRecord?.attendance_type === "offsite";
+    let position = null;
+
+    if (!isOffsiteFlow) {
+      if (!navigator.geolocation) throw new Error("المتصفح لا يدعم تحديد الموقع.");
+      position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, error => {
+          reject(new Error(error.code === 1
+            ? "يجب السماح للموقع بالوصول إلى GPS."
+            : "تعذر تحديد موقعك. حاول مرة أخرى."));
+        }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+      });
     }
 
-    const position = await new Promise((resolve, reject) => {
-
-      navigator.geolocation.getCurrentPosition(
-        resolve,
-
-        error => {
-          reject(new Error(
-            error.code === 1
-              ? "يجب السماح للموقع بالوصول إلى GPS."
-              : "تعذر تحديد موقعك. حاول مرة أخرى."
-          ));
-        },
-
-        {
-          enableHighAccuracy: true,
-          timeout: 20000,
-          maximumAge: 0
-        }
-      );
-
-    });
-
-    locationStatus.textContent =
-      "📍 تم تحديد موقعك، جارٍ تسجيل العملية...";
-
+    locationStatus.textContent = isOffsiteFlow
+      ? "🧭 تسجيل مأمورية خارج المكتب دون اشتراط GPS المكتب."
+      : "📍 تم تحديد موقعك، جارٍ تسجيل العملية...";
     button.textContent = "⏳ جارٍ التسجيل...";
 
-    const { data, error } = await db.functions.invoke(
-      "employee-attendance",
-      {
-        body: {
-          action,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy
-        }
+    const { data, error } = await db.functions.invoke("employee-attendance", {
+      body: {
+        action,
+        latitude: position?.coords?.latitude ?? null,
+        longitude: position?.coords?.longitude ?? null,
+        accuracy: position?.coords?.accuracy ?? null
       }
-    );
+    });
 
     if (error) throw error;
 
@@ -7715,9 +7712,9 @@ async function performAttendanceAction(action, buttonId) {
     status.textContent = "✅ " + data.message;
     status.style.color = "#15803d";
 
-    locationStatus.textContent =
-      "📍 المسافة من مقر الشركة: " +
-      data.distance_meters + " متر";
+    locationStatus.textContent = isOffsiteFlow
+      ? "🧭 تم التسجيل كمأمورية خارج المكتب."
+      : "📍 المسافة من مقر الشركة: " + data.distance_meters + " متر";
 
     showMessage(data.message);
 
@@ -7772,6 +7769,9 @@ async function performAttendanceAction(action, buttonId) {
 // ربط أزرار لوحة الموظف
 $("checkInButton").addEventListener("click", () => {
   performAttendanceAction("check_in", "checkInButton");
+});
+$("offsiteCheckInButton")?.addEventListener("click", () => {
+  performAttendanceAction("offsite_check_in", "offsiteCheckInButton");
 });
 
 $("breakStartButton").addEventListener("click", () => {
@@ -9354,7 +9354,7 @@ section.inert = true;
         });
       };
 
-      let currentStatus = "لم يسجل الحضور";
+      let currentStatus = attendance.attendance_type === "offsite" ? "في مأمورية خارج المكتب" : "لم يسجل الحضور";
 
       if (attendance.check_out) {
         currentStatus = "انصرف";
@@ -9427,6 +9427,14 @@ function reportEscapeHtml(value) {
     '"': "&quot;",
     "'": "&#039;"
   })[char]);
+}
+
+function formatLateDuration(value) {
+  const total = Math.max(0, Math.floor(Number(value) || 0));
+  const hours = Math.floor(total / 60), minutes = total % 60;
+  if (!hours) return minutes + " دقيقة";
+  if (!minutes) return hours + (hours === 1 ? " ساعة" : " ساعات");
+  return hours + (hours === 1 ? " ساعة و" : " ساعات و") + minutes + " دقيقة";
 }
 
 function reportWorkDuration(record) {
@@ -9527,7 +9535,7 @@ const daysOffByEmployee = new Set(
         : "—";
 
       const late = record && record.check_in
-        ? `${record.late_minutes || 0} دقيقة`
+        ? formatLateDuration(record.late_minutes || 0)
         : "—";
 
       const breakTime = record && (record.break_start || record.break_end)
@@ -10387,7 +10395,7 @@ Owner.renderHome = async function () {
   const today = cairoToday(), ms = today.slice(0, 7) + '-01';
   const homeResults = await Promise.all([
     safe(db.from('profiles').select('id,full_name,job_title,employee_code').eq('role', 'employee').eq('active', true).order('employee_code'), 'تحميل قائمة الموظفين'),
-    safe(db.from('attendance').select('employee_id,check_in,check_out,break_start,break_end').eq('work_date', today), 'تحميل الحضور والانصراف'),
+    safe(db.from('attendance').select('employee_id,check_in,check_out,break_start,break_end,attendance_type').eq('work_date', today), 'تحميل الحضور والانصراف'),
     safe(db.from('monthly_company_sales_performance').select('*').eq('month_start', ms).maybeSingle(), 'تحميل مبيعات الشركة'),
     safe(db.from('daily_reports').select('employee_id').eq('report_date', today), 'تحميل تقارير اليوم'),
     safe(db.from('campaign_summary').select('*').eq('status', 'open').maybeSingle(), 'تحميل الحملة الحالية'),
@@ -10425,6 +10433,7 @@ Owner.renderHome = async function () {
     if (r?.check_out) { state = 'انصرف'; tone = 'p-gray'; }
     else if (r?.break_start && !r?.break_end) { state = 'في الاستراحة'; tone = 'p-amber'; }
     else if (r?.break_end) { state = 'عاد من الاستراحة'; tone = 'p-blue'; }
+    else if (r?.check_in && r?.attendance_type === 'offsite') { state = 'في مأمورية خارج المكتب'; tone = 'p-blue'; }
     else if (r?.check_in) { state = 'حاضر'; tone = 'p-green'; }
     return '<tr><td><b>' + esc(emp.full_name) + '</b></td><td>' + timeOnly(r?.check_in) + '</td><td>' + timeOnly(r?.break_start) + '</td><td>' + timeOnly(r?.break_end) + '</td><td>' + timeOnly(r?.check_out) + '</td><td><span class="pill ' + tone + '">' + state + '</span></td></tr>';
   }).join('');
@@ -11189,7 +11198,7 @@ Owner.renderMonthlyReport = async function () {
 async function loadMonthlyReport(){
   const month=$('mrMonth').value, emp=$('mrEmp').value; if(!/^\d{4}-\d{2}$/.test(month))throw new Error('اختر الشهر.');
   const yy=Number(month.slice(0,4)),mm=Number(month.slice(5,7));const from=month+'-01', next=mm===12?String(yy+1)+'-01-01':String(yy)+'-'+String(mm+1).padStart(2,'0')+'-01';
-  let aq=db.from('attendance').select('employee_id,work_date,check_in,check_out,late_minutes,break_start,break_end').gte('work_date',from).lt('work_date',next).order('work_date');
+  let aq=db.from('attendance').select('employee_id,work_date,check_in,check_out,late_minutes,break_start,break_end,attendance_type').gte('work_date',from).lt('work_date',next).order('work_date');
   let sq=db.from('sales_transactions').select('employee_id,sale_date,amount,sale_type').gte('sale_date',from).lt('sale_date',next);
   let tq=db.from('monthly_employee_targets').select('employee_id,month_start,target_amount').eq('month_start',from);
   if(emp){aq=aq.eq('employee_id',emp);sq=sq.eq('employee_id',emp);tq=tq.eq('employee_id',emp);}
@@ -11199,16 +11208,16 @@ async function loadMonthlyReport(){
   const target=new Map((tr.data||[]).map(x=>[x.employee_id,Number(x.target_amount||0)]));
   const sales=new Map(), att=new Map(); (sr.data||[]).forEach(x=>sales.set(x.employee_id,(sales.get(x.employee_id)||0)+Number(x.amount||0)));
   (ar.data||[]).forEach(x=>{const a=att.get(x.employee_id)||{days:0,late:0,breaks:0,breakMinutes:0,checkedOut:0,missingOut:0};a.days++;a.late+=Number(x.late_minutes||0);if(x.break_start){a.breaks++;if(x.break_end){const bs=new Date(x.break_start).getTime(),be=new Date(x.break_end).getTime();if(Number.isFinite(bs)&&Number.isFinite(be)&&be>=bs)a.breakMinutes+=Math.round((be-bs)/60000);}}if(x.check_out)a.checkedOut++;else if(x.check_in)a.missingOut++;att.set(x.employee_id,a);});
-  const rows=[['الموظف','أيام الحضور','إجمالي التأخير بالدقائق','أيام الاستراحة','مدة الاستراحات بالدقائق','أيام الانصراف المسجل','سجلات انصراف ناقصة','إجمالي المبيعات','التارجت','نسبة التحقيق']];
-  const detail=ids.map(id=>{const a=att.get(id)||{days:0,late:0,breaks:0,breakMinutes:0,checkedOut:0,missingOut:0},s=sales.get(id)||0,t=target.get(id)||0,p=t?s/t*100:0;const row=[names.get(id)||'—',a.days,a.late,a.breaks,a.breakMinutes,a.checkedOut,a.missingOut,s,t,t?p.toFixed(2)+'%':'—'];rows.push(row);return row;});
+  const rows=[['الموظف','أيام الحضور','إجمالي التأخير','أيام الاستراحة','مدة الاستراحات بالدقائق','أيام الانصراف المسجل','سجلات انصراف ناقصة','إجمالي المبيعات','التارجت','نسبة التحقيق']];
+  const detail=ids.map(id=>{const a=att.get(id)||{days:0,late:0,breaks:0,breakMinutes:0,checkedOut:0,missingOut:0},s=sales.get(id)||0,t=target.get(id)||0,p=t?s/t*100:0;const row=[names.get(id)||'—',a.days,formatLateDuration(a.late),a.breaks,a.breakMinutes,a.checkedOut,a.missingOut,s,t,t?p.toFixed(2)+'%':'—'];rows.push(row);return row;});
   Owner.monthlyRows=rows;
   const totals=detail.reduce((o,r)=>{for(let i=1;i<=8;i++)o[i]=(o[i]||0)+Number(r[i]||0);return o;},{});
-  const dailyHead=['الموظف','التاريخ','الحضور','الانصراف','التأخير بالدقائق','بداية الاستراحة','نهاية الاستراحة','مدة الاستراحة بالدقائق'];
-  const daily=(ar.data||[]).map(x=>{let mins=0;if(x.break_start&&x.break_end){const a=new Date(x.break_start).getTime(),b=new Date(x.break_end).getTime();if(Number.isFinite(a)&&Number.isFinite(b)&&b>=a)mins=Math.round((b-a)/60000);}return [names.get(x.employee_id)||'—',x.work_date,x.check_in?fmtDT(x.check_in):'—',x.check_out?fmtDT(x.check_out):'لم يسجل',Number(x.late_minutes||0),x.break_start?fmtDT(x.break_start):'—',x.break_end?fmtDT(x.break_end):'—',mins];});
+  const dailyHead=['الموظف','التاريخ','الحضور','الانصراف','التأخير','بداية الاستراحة','نهاية الاستراحة','مدة الاستراحة بالدقائق'];
+  const daily=(ar.data||[]).map(x=>{let mins=0;if(x.break_start&&x.break_end){const a=new Date(x.break_start).getTime(),b=new Date(x.break_end).getTime();if(Number.isFinite(a)&&Number.isFinite(b)&&b>=a)mins=Math.round((b-a)/60000);}return [names.get(x.employee_id)||'—',x.work_date,x.check_in?fmtDT(x.check_in):'—',x.check_out?fmtDT(x.check_out):'لم يسجل',formatLateDuration(x.late_minutes||0),x.break_start?fmtDT(x.break_start):'—',x.break_end?fmtDT(x.break_end):'—',mins];});
   Owner.monthlyAttendanceRows=[dailyHead,...daily];
   const summaryHtml='<div class="card" style="overflow:auto;margin-bottom:14px"><h3>ملخص الموظفين</h3><table class="data-table" style="width:100%;min-width:860px"><thead><tr>'+rows[0].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+detail.map(r=>'<tr>'+r.map(x=>'<td>'+esc(String(x))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
   const dailyHtml='<div class="card" style="overflow:auto"><h3>تفاصيل الحضور والانصراف اليومية</h3><table class="data-table" style="width:100%;min-width:900px"><thead><tr>'+dailyHead.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+daily.map(r=>'<tr>'+r.map(x=>'<td>'+esc(String(x))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
-  $('mrResult').innerHTML='<div class="grid g-auto" style="margin-bottom:14px">'+[['أيام الحضور',totals[1]||0],['التأخير بالدقائق',totals[2]||0],['المبيعات',money(totals[7]||0)],['التارجت',money(totals[8]||0)]].map(x=>'<div class="stat"><div class="t muted">'+x[0]+'</div><div class="n">'+x[1]+'</div></div>').join('')+'</div>'+summaryHtml+dailyHtml;
+  $('mrResult').innerHTML='<div class="grid g-auto" style="margin-bottom:14px">'+[['أيام الحضور',totals[1]||0],['إجمالي التأخير',formatLateDuration(detail.reduce((sum,r,i)=>sum+Number((att.get(ids[i])||{}).late||0),0))],['المبيعات',money(totals[7]||0)],['التارجت',money(totals[8]||0)]].map(x=>'<div class="stat"><div class="t muted">'+x[0]+'</div><div class="n">'+x[1]+'</div></div>').join('')+'</div>'+summaryHtml+dailyHtml;
   const escPrint=v=>String(v??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const printTable=(head,data)=>'<table><thead><tr>'+head.map(x=>'<th>'+escPrint(x)+'</th>').join('')+'</tr></thead><tbody>'+data.map(r=>'<tr>'+r.map(x=>'<td>'+escPrint(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
   Owner.monthlyPrint='<html dir="rtl" lang="ar"><meta charset="utf-8"><title>التقرير الشهري</title><style>body{font-family:Arial;padding:20px}h2,h3{text-align:center}table{border-collapse:collapse;width:100%;margin:12px 0 24px}td,th{border:1px solid #bbb;padding:7px;text-align:center;font-size:10px}th{background:#edf3f6}h3{margin-top:24px}</style><h2>EL-LITHY GROUP — التقرير الشهري '+month+'</h2><h3>ملخص الموظفين</h3>'+printTable(rows[0],detail)+'<h3>تفاصيل الحضور والانصراف</h3>'+printTable(dailyHead,daily)+'</html>';
