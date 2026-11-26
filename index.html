@@ -12103,5 +12103,228 @@ Emp.loadAssignments = async function () {
 })();
 </script>
 
+
+<style id="el-dark-palette-final">
+/* EL-LITHY — لوحة ألوان داكنة موحّدة وواضحة */
+body[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101923;
+  --card:#1B2936;
+  --ink:#EDF3F8;
+  --muted:#B5C3CE;
+  --line:#354958;
+  --brand:#55B9C7;
+  --brand-d:#102B3A;
+  --brand-m:#194557;
+  --brand-l:#203D4B;
+  --blue:#79B9EF;
+  --blue-l:#203B53;
+  --blue-t:#C5E4FF;
+  --green:#55CBA3;
+  --green-l:#19483B;
+  --green-t:#A9F0D5;
+  --amber:#F0C36A;
+  --amber-l:#4B3B20;
+  --amber-t:#FFE3A5;
+  --violet:#C2A9F0;
+  --violet-l:#40345A;
+  --red:#F28C8C;
+  --red-l:#512F34;
+  --red-t:#FFC4C4;
+  --gray-l:#304250;
+  --gray-t:#DCE5EC;
+  --shadow:0 8px 24px rgba(0,0,0,.24);
+}
+html[data-el-theme="dark"],:root[data-el-theme="dark"]{color-scheme:dark}
+body[data-theme="dark"],
+body[data-theme="dark"] .container,
+body[data-theme="dark"] main.container{
+  background:var(--bg)!important;
+  color:var(--ink)!important;
+}
+body[data-theme="dark"] #mgrSidebar{
+  background:linear-gradient(180deg,#101F2C 0%,#153849 100%)!important;
+  border-color:var(--line)!important;
+}
+body[data-theme="dark"] #mgrTopbar,
+body[data-theme="dark"] #empNav{
+  background:#172633!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+  box-shadow:0 5px 18px rgba(0,0,0,.18);
+}
+body[data-theme="dark"] #mgrContent,
+body[data-theme="dark"] #empContent,
+body[data-theme="dark"] #dashboardSection,
+body[data-theme="dark"] #employeeDashboardSection,
+body[data-theme="dark"] #salesManagementSection{
+  color:var(--ink)!important;
+}
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .panel,
+body[data-theme="dark"] .section-card,
+body[data-theme="dark"] .stat-card,
+body[data-theme="dark"] .admin-card,
+body[data-theme="dark"] .cust-card,
+body[data-theme="dark"] .customer-card,
+body[data-theme="dark"] .customer-item,
+body[data-theme="dark"] .sale-card,
+body[data-theme="dark"] .campaign-card,
+body[data-theme="dark"] .employee-card,
+body[data-theme="dark"] .report-card,
+body[data-theme="dark"] .att-card,
+body[data-theme="dark"] .settings-panel,
+body[data-theme="dark"] #employeeSalesPanel,
+body[data-theme="dark"] #employeeSalesHistory,
+body[data-theme="dark"] #employeeLeavesSection,
+body[data-theme="dark"] #employeeEmploymentTermsPanel{
+  background:#1B2B39!important;
+  color:var(--ink)!important;
+  border-color:#3B5060!important;
+  box-shadow:0 6px 20px rgba(0,0,0,.16);
+}
+body[data-theme="dark"] h1,
+body[data-theme="dark"] h2,
+body[data-theme="dark"] h3,
+body[data-theme="dark"] h4,
+body[data-theme="dark"] .card strong,
+body[data-theme="dark"] .panel strong,
+body[data-theme="dark"] #mgrContent strong,
+body[data-theme="dark"] #employeeDashboardSection strong{
+  color:#F4F8FB!important;
+}
+body[data-theme="dark"] p,
+body[data-theme="dark"] li,
+body[data-theme="dark"] td,
+body[data-theme="dark"] label,
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .panel{
+  color:#DCE6ED;
+}
+body[data-theme="dark"] small,
+body[data-theme="dark"] .muted,
+body[data-theme="dark"] .hint,
+body[data-theme="dark"] .subtext,
+body[data-theme="dark"] .help-text{
+  color:#B5C3CE!important;
+}
+/* خلفيات البطاقات الفاتحة المحددة inline تتحول إلى درجات داكنة مع نص مقروء */
+body[data-theme="dark"] #mgrContent [style*="background:#fff"],
+body[data-theme="dark"] #mgrContent [style*="background: #fff"],
+body[data-theme="dark"] #mgrContent [style*="background:white"],
+body[data-theme="dark"] #mgrContent [style*="background: white"],
+body[data-theme="dark"] #mgrContent [style*="background:#ffffff"],
+body[data-theme="dark"] #mgrContent [style*="background: #ffffff"],
+body[data-theme="dark"] #employeeDashboardSection [style*="background:#fff"],
+body[data-theme="dark"] #employeeDashboardSection [style*="background: #fff"],
+body[data-theme="dark"] #employeeDashboardSection [style*="background:white"],
+body[data-theme="dark"] #employeeDashboardSection [style*="background: white"],
+body[data-theme="dark"] #employeeDashboardSection [style*="background:#ffffff"],
+body[data-theme="dark"] #employeeDashboardSection [style*="background: #ffffff"]{
+  background:#223543!important;
+  color:#F0F5F8!important;
+  border-color:#405767!important;
+}
+/* بطاقات وأرقام المبيعات: خلفية هادئة وأرقام وعناوين عالية التباين */
+body[data-theme="dark"] #employeeSalesPanel .stat,
+body[data-theme="dark"] #employeeSalesPanel .rep-num,
+body[data-theme="dark"] #employeeSalesPanel .mini,
+body[data-theme="dark"] #employeeSalesHistory .stat,
+body[data-theme="dark"] #salesManagementSection .stat,
+body[data-theme="dark"] #salesManagementSection .mini,
+body[data-theme="dark"] #mgrContent .stat,
+body[data-theme="dark"] #mgrContent .rep-num{
+  background:#243B4C!important;
+  color:#F4F8FB!important;
+  border:1px solid #456174!important;
+}
+body[data-theme="dark"] #employeeSalesPanel .stat *,
+body[data-theme="dark"] #employeeSalesPanel .rep-num *,
+body[data-theme="dark"] #employeeSalesPanel .mini *,
+body[data-theme="dark"] #employeeSalesHistory .stat *,
+body[data-theme="dark"] #salesManagementSection .stat *,
+body[data-theme="dark"] #salesManagementSection .mini *,
+body[data-theme="dark"] #mgrContent .stat *,
+body[data-theme="dark"] #mgrContent .rep-num *{
+  color:#F2F7FA!important;
+}
+body[data-theme="dark"] #employeeSalesPanel .muted,
+body[data-theme="dark"] #employeeSalesHistory .muted,
+body[data-theme="dark"] #salesManagementSection .muted,
+body[data-theme="dark"] #mgrContent .stat small,
+body[data-theme="dark"] #mgrContent .rep-num small{
+  color:#C0CFD9!important;
+}
+body[data-theme="dark"] .tbl,
+body[data-theme="dark"] table{
+  background:#1B2B39!important;
+  color:#EAF1F6!important;
+  border-color:#3B5060!important;
+}
+body[data-theme="dark"] .tbl th,
+body[data-theme="dark"] table th,
+body[data-theme="dark"] #mgrContent th{
+  background:#29485C!important;
+  color:#F4F8FB!important;
+  border-color:#456174!important;
+}
+body[data-theme="dark"] .tbl td,
+body[data-theme="dark"] table td,
+body[data-theme="dark"] #mgrContent td{
+  color:#E2EAF0!important;
+  border-color:#354B5B!important;
+}
+body[data-theme="dark"] tbody tr:nth-child(even){background:#203442!important}
+body[data-theme="dark"] tbody tr:nth-child(odd){background:#1B2B39!important}
+body[data-theme="dark"] input:not([type=checkbox]):not([type=radio]),
+body[data-theme="dark"] select,
+body[data-theme="dark"] textarea{
+  background:#142532!important;
+  color:#F1F6F9!important;
+  border-color:#486071!important;
+}
+body[data-theme="dark"] input::placeholder,
+body[data-theme="dark"] textarea::placeholder{color:#9FB1BE!important;opacity:1}
+body[data-theme="dark"] .tabs,
+body[data-theme="dark"] .empty,
+body[data-theme="dark"] .alert-item,
+body[data-theme="dark"] .bar,
+body[data-theme="dark"] .tile,
+body[data-theme="dark"] .order-row,
+body[data-theme="dark"] .icon-btn,
+body[data-theme="dark"] .chip,
+body[data-theme="dark"] .mini,
+body[data-theme="dark"] .btn.sec{
+  background:#263B4A!important;
+  color:#EAF2F7!important;
+  border-color:#405767!important;
+}
+body[data-theme="dark"] .p-green{background:#194B3E!important;color:#B5F3DA!important;filter:none!important}
+body[data-theme="dark"] .p-blue{background:#1D405B!important;color:#CBE7FF!important;filter:none!important}
+body[data-theme="dark"] .p-amber{background:#4B3B20!important;color:#FFE6AE!important;filter:none!important}
+body[data-theme="dark"] .p-red{background:#512D33!important;color:#FFD0D0!important;filter:none!important}
+body[data-theme="dark"] .p-violet{background:#40345B!important;color:#E1D5FF!important;filter:none!important}
+body[data-theme="dark"] .p-gray{background:#304252!important;color:#E4ECF2!important;filter:none!important}
+body[data-theme="dark"] button:disabled{opacity:.58}
+body[data-theme="dark"] #employeeDashboardSection .emp-hero{
+  background:linear-gradient(135deg,#123346 0%,#176176 100%)!important;
+  color:#F5FAFD!important;
+  filter:none!important;
+}
+body[data-theme="dark"] #employeeDashboardSection .emp-tab{color:var(--ink)!important}
+body[data-theme="dark"] #employeeDashboardSection .emp-tab h1,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab h2,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab h3,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab h4{color:#F4F8FB!important}
+body[data-theme="dark"] #empNav button{color:#BDCAD5!important}
+body[data-theme="dark"] #empNav button.on{color:#69D4DF!important}
+body[data-theme="dark"] .modal-back .modal{
+  background:#1B2B39!important;color:#F1F6FA!important;border-color:#405767!important;
+}
+body[data-theme="dark"] .modal h2,
+body[data-theme="dark"] .modal h3,
+body[data-theme="dark"] .modal strong{color:#F4F8FB!important}
+</style>
+
 </body>
 </html>
