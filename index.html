@@ -10317,21 +10317,245 @@ function paintFollow() {
 // =====================================================================
 // الحملات
 // =====================================================================
+
+// =====================================================================
+// الحملات - الأرشفة والاستعادة دون حذف البيانات
+// =====================================================================
 Owner.renderCampaigns = async function () {
   const sec = $('campaignsSection');
-  const r = await safe(db.from('campaign_summary').select('*').order('starts_on', { ascending: false }));
-  if (r.error) { sec.innerHTML = pageHead(lab('nav.campaigns')) + sqlWarn; return; }
-  const list = r.data || [], open = list.find(c => c.status === 'open');
-  A.campaign = open ? Object.assign({}, A.campaign || {}, { id: open.campaign_id, title: open.title, starts_on: open.starts_on, status: 'open' }) : null;
-  sec.innerHTML = pageHead(lab('nav.campaigns'), 'لو مفيش حملة مفتوحة، التقرير اليومي بيتخطى اليوم تلقائياً.') +
-    '<div class="grid g-2"><div class="card"><h3>' + (open ? 'الحملة المفتوحة' : 'فتح حملة جديدة') + '</h3>' +
-    (open ? '<p><b>' + esc(open.title) + '</b><br><span class="muted">بدأت ' + fmtDate(open.starts_on) + '</span></p><div class="row"><button class="btn sec" id="cpRename">تعديل اسم الحملة</button><button class="btn danger" id="cpClose">إغلاق الحملة</button></div>' :
-      '<div class="stack">' + field('اسم الإعلان / الحملة', '<input id="cpTitle" type="text" placeholder="مثال: إعلان نوفمبر">') + field('تاريخ البدء', '<input id="cpStart" type="date" value="' + cairoToday() + '">') + '<button class="btn" id="cpOpen">فتح الحملة</button></div>') + '</div>' +
-    '<div class="card"><h3>الحملات السابقة</h3>' + (list.length ? '<div class="stack" style="gap:10px">' + list.map(c => '<div class="alert-item"><div class="sp"><b>' + esc(c.title) + '</b> <span class="pill ' + (c.status === 'open' ? 'p-green' : 'p-gray') + '">' + (c.status === 'open' ? 'مفتوحة' : 'مغلقة') + '</span><br><span class="muted small">' + fmtDate(c.starts_on) + ' ← ' + fmtDate(c.ends_on) + '</span><br><span class="small">رسائل ' + num(c.total_messages) + ' · ' + esc(lab('cat.interested')) + ' ' + num(c.interested) + ' · ' + esc(lab('cat.noreply')) + ' ' + num(c.no_reply) + ' · ' + esc(lab('cat.notinterested')) + ' ' + num(c.not_interested) + ' · عملاء مسجلون ' + num(c.customers_registered) + '</span></div></div>').join('') + '</div>' : '<div class="empty">لا توجد حملات بعد.</div>') + '</div></div>';
-  const o = $('cpOpen'); if (o) o.onclick = e => guard(e.currentTarget, async () => { const t = $('cpTitle').value.trim(); if (!t) throw new Error('اكتب اسم الحملة.'); const r = await db.from('ad_campaigns').insert({ title: t, starts_on: $('cpStart').value || cairoToday() }); if (r.error) throw r.error; toast('تم فتح الحملة.', 'ok'); await loadSettingsCampaign(); Owner.renderCampaigns(); });
-  const rn=$('cpRename');if(rn)rn.onclick=e=>guard(e.currentTarget,async()=>{const title=prompt('اكتب اسم الحملة الجديد:',open.title);if(title===null)return;if(!title.trim())throw new Error('اسم الحملة لا يمكن أن يكون فارغاً.');const u=await db.from('ad_campaigns').update({title:title.trim()}).eq('id',open.campaign_id);if(u.error)throw u.error;toast('تم تعديل اسم الحملة.','ok');await loadSettingsCampaign();Owner.renderCampaigns();});
-  const c = $('cpClose'); if (c) c.onclick = e => { if (!confirm('إغلاق الحملة؟ لن يستطيع الموظفون إرسال تقارير جديدة.')) return; guard(e.currentTarget, async () => { const r = await db.from('ad_campaigns').update({ status: 'closed' }).eq('id', open.campaign_id); if (r.error) throw r.error; toast('تم إغلاق الحملة.', 'ok'); await loadSettingsCampaign(); Owner.renderCampaigns(); }); };
+
+  const r = await safe(
+    db.from('campaign_summary')
+      .select('*')
+      .order('starts_on', { ascending: false })
+  );
+
+  if (r.error) {
+    sec.innerHTML = pageHead(lab('nav.campaigns')) + sqlWarn;
+    return;
+  }
+
+  const list = r.data || [];
+
+  // فصل الحملات المفتوحة والعادية والمؤرشفة
+  const open = list.find(c => c.status === 'open' && !c.archived_at);
+  const previous = list.filter(c => c.status === 'closed' && !c.archived_at);
+  const archived = list.filter(c => !!c.archived_at);
+
+  A.campaign = open
+    ? Object.assign({}, A.campaign || {}, {
+        id: open.campaign_id,
+        title: open.title,
+        starts_on: open.starts_on,
+        status: 'open'
+      })
+    : null;
+
+  // بطاقة الحملة
+  const campaignCard =
+    '<div class="card"><h3>' +
+    (open ? 'الحملة المفتوحة' : 'فتح حملة جديدة') +
+    '</h3>' +
+
+    (open
+      ? '<p><b>' + esc(open.title) + '</b><br>' +
+        '<span class="muted">بدأت ' + fmtDate(open.starts_on) + '</span></p>' +
+        '<div class="row">' +
+        '<button class="btn sec" id="cpRename">تعديل اسم الحملة</button>' +
+        '<button class="btn danger" id="cpClose">إغلاق الحملة</button>' +
+        '</div>'
+
+      : '<div class="stack">' +
+        field('اسم الإعلان / الحملة',
+          '<input id="cpTitle" type="text" placeholder="مثال: إعلان نوفمبر">') +
+        field('تاريخ البدء',
+          '<input id="cpStart" type="date" value="' + cairoToday() + '">') +
+        '<button class="btn" id="cpOpen">فتح الحملة</button>' +
+        '</div>'
+    ) +
+    '</div>';
+
+  // عرض بطاقة حملة سابقة أو مؤرشفة
+  const campaignItem = (c, isArchived) => {
+    return '<div class="alert-item">' +
+      '<div class="sp">' +
+      '<b>' + esc(c.title) + '</b> ' +
+      '<span class="pill p-gray">' +
+      (isArchived ? 'مؤرشفة' : 'مغلقة') +
+      '</span><br>' +
+
+      '<span class="muted small">' +
+      fmtDate(c.starts_on) + ' ← ' + fmtDate(c.ends_on) +
+      '</span><br>' +
+
+      '<span class="small">' +
+      'رسائل ' + num(c.total_messages) +
+      ' · ' + esc(lab('cat.interested')) + ' ' + num(c.interested) +
+      ' · ' + esc(lab('cat.noreply')) + ' ' + num(c.no_reply) +
+      ' · ' + esc(lab('cat.notinterested')) + ' ' + num(c.not_interested) +
+      ' · عملاء مسجلون ' + num(c.customers_registered) +
+      '</span>' +
+
+      '<div class="row" style="margin-top:10px">' +
+
+      (isArchived
+        ? '<button class="btn sec" data-campaign-restore="' +
+          esc(c.campaign_id) + '">استعادة الحملة</button>'
+        : '<button class="btn sec" data-campaign-archive="' +
+          esc(c.campaign_id) + '">أرشفة الحملة</button>'
+      ) +
+
+      '</div></div></div>';
+  };
+
+  // السجل السابق
+  const previousHtml =
+    '<div class="card">' +
+    '<h3>الحملات السابقة</h3>' +
+    (previous.length
+      ? '<div class="stack" style="gap:10px">' +
+        previous.map(c => campaignItem(c, false)).join('') +
+        '</div>'
+      : '<div class="empty">لا توجد حملات سابقة.</div>'
+    ) +
+    '</div>';
+
+  // سجل الأرشيف
+  const archivedHtml =
+    '<div class="card">' +
+    '<h3>الحملات المؤرشفة</h3>' +
+    '<p class="muted small">الحملات هنا مخفية من السجل السابق فقط، وجميع بياناتها محفوظة ويمكن استعادتها.</p>' +
+    (archived.length
+      ? '<div class="stack" style="gap:10px">' +
+        archived.map(c => campaignItem(c, true)).join('') +
+        '</div>'
+      : '<div class="empty">لا توجد حملات مؤرشفة.</div>'
+    ) +
+    '</div>';
+
+  sec.innerHTML =
+    pageHead(
+      lab('nav.campaigns'),
+      'يمكنك أرشفة الحملات المغلقة واستعادتها في أي وقت دون حذف بياناتها.'
+    ) +
+    '<div class="grid g-2">' +
+    campaignCard +
+    previousHtml +
+    archivedHtml +
+    '</div>';
+
+  // فتح حملة جديدة
+  const o = $('cpOpen');
+
+  if (o) {
+    o.onclick = e => guard(e.currentTarget, async () => {
+      const t = $('cpTitle').value.trim();
+
+      if (!t) throw new Error('اكتب اسم الحملة.');
+
+      const result = await db.from('ad_campaigns').insert({
+        title: t,
+        starts_on: $('cpStart').value || cairoToday()
+      });
+
+      if (result.error) throw result.error;
+
+      toast('تم فتح الحملة.', 'ok');
+      await loadSettingsCampaign();
+      await Owner.renderCampaigns();
+    });
+  }
+
+  // تعديل اسم الحملة المفتوحة
+  const rn = $('cpRename');
+
+  if (rn) {
+    rn.onclick = e => guard(e.currentTarget, async () => {
+      const title = prompt('اكتب اسم الحملة الجديد:', open.title);
+
+      if (title === null) return;
+      if (!title.trim()) {
+        throw new Error('اسم الحملة لا يمكن أن يكون فارغاً.');
+      }
+
+      const u = await db.from('ad_campaigns')
+        .update({ title: title.trim() })
+        .eq('id', open.campaign_id);
+
+      if (u.error) throw u.error;
+
+      toast('تم تعديل اسم الحملة.', 'ok');
+      await loadSettingsCampaign();
+      Owner.renderCampaigns();
+    });
+  }
+
+  // إغلاق الحملة
+  const c = $('cpClose');
+
+  if (c) {
+    c.onclick = e => {
+      if (!confirm('إغلاق الحملة؟ لن يستطيع الموظفون إرسال تقارير جديدة.')) return;
+
+      guard(e.currentTarget, async () => {
+        const result = await db.from('ad_campaigns')
+          .update({ status: 'closed' })
+          .eq('id', open.campaign_id);
+
+        if (result.error) throw result.error;
+
+        toast('تم إغلاق الحملة.', 'ok');
+        await loadSettingsCampaign();
+        await await Owner.renderCampaigns();
+      });
+    };
+  }
+
+  // أرشفة الحملات المغلقة فقط
+  qa('[data-campaign-archive]').forEach(btn => {
+    btn.onclick = e => guard(e.currentTarget, async () => {
+      const campaignId = btn.getAttribute('data-campaign-archive');
+
+      if (!confirm(
+        'أرشفة هذه الحملة؟\\n\\n' +
+        'لن يتم حذف أي تقارير أو عملاء أو أرقام أو مبيعات. ' +
+        'يمكنك استعادة الحملة لاحقاً.'
+      )) return;
+
+      const result = await db.from('ad_campaigns')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('id', campaignId)
+        .eq('status', 'closed')
+        .is('archived_at', null);
+
+      if (result.error) throw result.error;
+
+      toast('تمت أرشفة الحملة مع الاحتفاظ بجميع بياناتها.', 'ok');
+      await Owner.renderCampaigns();
+    });
+  });
+
+  // استعادة حملة مؤرشفة
+  qa('[data-campaign-restore]').forEach(btn => {
+    btn.onclick = e => guard(e.currentTarget, async () => {
+      const campaignId = btn.getAttribute('data-campaign-restore');
+
+      if (!confirm('استعادة الحملة إلى سجل الحملات السابقة؟')) return;
+
+      const result = await db.from('ad_campaigns')
+        .update({ archived_at: null })
+        .eq('id', campaignId)
+        .eq('status', 'closed')
+        .not('archived_at', 'is', null);
+
+      if (result.error) throw result.error;
+
+      toast('تمت استعادة الحملة بنجاح.', 'ok');
+      await Owner.renderCampaigns();
+    });
+  });
 };
+
 async function loadSettingsCampaign() { const c = await safe(db.from('ad_campaigns').select('*').eq('status', 'open').maybeSingle()); A.campaign = c.data || null; }
 
 // =====================================================================
