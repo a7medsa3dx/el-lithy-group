@@ -9999,7 +9999,7 @@ Owner.renderHome = async function () {
     safe(db.from('monthly_company_sales_performance').select('*').eq('month_start', ms).maybeSingle(), 'تحميل مبيعات الشركة'),
     safe(db.from('daily_reports').select('employee_id').eq('report_date', today), 'تحميل تقارير اليوم'),
     safe(db.from('campaign_summary').select('*').eq('status', 'open').maybeSingle(), 'تحميل الحملة الحالية'),
-    safe(db.from('manager_alerts').select('*').order('created_at', { ascending: false }).limit(5), 'تحميل التنبيهات'),
+    safe(db.from('manager_alerts').select('*').order('created_at', { ascending: false }).limit(100), 'تحميل التنبيهات'),
     safe(db.from('manager_alerts').select('id', { count: 'exact', head: true }).eq('is_read', false), 'تحميل عدد التنبيهات غير المقروءة'),
     safe(db.from('monthly_employee_sales_performance').select('*').eq('month_start', ms).order('total_sales', { ascending: false }), 'تحميل مبيعات الموظفين')
   ]);
@@ -10070,7 +10070,7 @@ Owner.renderHome = async function () {
   } else html += '<div class="empty">لا توجد حملة مفتوحة. التقرير اليومي يتخطى الأيام بدون حملة تلقائياً.</div><button class="btn" style="margin-top:12px !important" id="homeOpenCamp">فتح حملة جديدة</button>';
   html += '</div>';
 
-  html += '<div class="grid g-2" style="margin-top:16px"><div class="card"><div class="row" style="margin-bottom:12px"><h3 style="margin:0" class="sp">آخر التنبيهات</h3>' + ((unread.count || 0) ? '<span class="pill p-red">' + unread.count + ' جديد</span>' : '') + '</div><div class="stack" style="gap:10px">';
+  html += '<div class="grid g-2" style="margin-top:16px"><div class="card"><div class="row" style="margin-bottom:12px"><h3 style="margin:0" class="sp">آخر التنبيهات</h3>' + ((unread.count || 0) ? '<span class="pill p-red">' + unread.count + ' جديد</span>' : '') + '</div><div class="stack" style="gap:10px;max-height:360px;overflow-y:auto;overscroll-behavior:contain;padding-inline-end:5px">';
   const al = alerts.data || [];
   if (!al.length) html += '<div class="empty">لا توجد تنبيهات.</div>';
   al.forEach(a => { const meta=ALERT_META[a.kind]||['bell','teal','تنبيه','alerts']; html += '<div data-alert-go="'+meta[3]+'" style="cursor:pointer">'+alertItem(a,true)+'</div>'; });
