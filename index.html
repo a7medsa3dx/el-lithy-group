@@ -9942,7 +9942,7 @@ window.EL = { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, 
 (function () {
 'use strict';
 const { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, fmtDT, EGY, ICON_NAMES, COLORS, icon, lab, errMsg, toast, guard, safe, modal, csv,
-  typeName, typeOptions, appChip, pageHead, sqlWarn, loadTypes, loadEmployees, sortStaff, empName, buildSidebar, paintActive, navItems, LABELS, applyLabels, BUILTIN } = EL;
+  typeName, typeOptions, appChip, pageHead, sqlWarn, loadTypes, loadEmployees, sortStaff, empName, filterReportEmployees, buildSidebar, paintActive, navItems, LABELS, applyLabels, BUILTIN } = EL;
 const Owner = window.Owner = { cTab: 'inbox', mType: '', mSel: new Set(), mQuery: '', master: [], inbox: [], iSel: new Set() };
 
 const tabsHtml = (tabs, cur, attr) => '<div class="tabs" role="tablist">' + tabs.map(t => '<button type="button" class="tab-btn' + (t[0] === cur ? ' on' : '') + '" ' + attr + '="' + t[0] + '">' + esc(t[1]) + '</button>').join('') + '</div>';
