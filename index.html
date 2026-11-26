@@ -1840,6 +1840,219 @@ body[data-theme="dark"] [style*="color: #173b55"],
 body[data-theme="dark"] [style*="color:#243746"],
 body[data-theme="dark"] [style*="color: #243746"] { color: var(--ink) !important; }
 
+
+/* ===== EL-LITHY: Dark theme contrast and employee layout refinement ===== */
+body[data-theme="dark"]{
+  --bg:#0D1722;
+  --card:#172635;
+  --ink:#F1F6FA;
+  --muted:#BDCAD5;
+  --line:#3A5062;
+  --brand:#56C4D2;
+  --brand-d:#102D3B;
+  --brand-m:#1A4354;
+  --brand-l:#244757;
+  --blue:#78BDF4;
+  --blue-l:#203F59;
+  --blue-t:#C4E3FF;
+  --green:#4BD0A4;
+  --green-l:#17483C;
+  --green-t:#A0F0D1;
+  --amber:#F2C66D;
+  --amber-l:#4A3B20;
+  --amber-t:#FFE2A3;
+  --violet:#C5AEF4;
+  --violet-l:#40345B;
+  --red:#FF8989;
+  --red-l:#512D33;
+  --red-t:#FFC0C0;
+  --gray-l:#304252;
+  --gray-t:#D7E1E9;
+  --shadow:0 8px 24px rgba(0,0,0,.28);
+}
+body[data-theme="dark"]{
+  background:var(--bg)!important;
+  color:var(--ink)!important;
+}
+body[data-theme="dark"] #employeeDashboardSection{
+  padding-top:12px!important;
+}
+body[data-theme="dark"] #employeeDashboardSection .emp-hero,
+body[data-theme="light"] #employeeDashboardSection .emp-hero{
+  margin-top:0;
+  padding-bottom:24px;
+}
+#employeeDashboardSection .emp-tab{
+  margin-top:16px!important;
+}
+#employeeDashboardSection .emp-tab.on{
+  scroll-margin-top:16px;
+}
+body[data-theme="dark"] #mgrTopbar,
+body[data-theme="dark"] #empNav{
+  background:#142331!important;
+  border-color:var(--line)!important;
+}
+body[data-theme="dark"] #mgrTopbar{
+  color:var(--ink)!important;
+  box-shadow:0 4px 16px rgba(0,0,0,.18);
+}
+body[data-theme="dark"] #employeeDashboardSection .emp-hero{
+  background:linear-gradient(145deg,#102B3D 0%,#155064 100%)!important;
+  filter:none!important;
+  color:#F5FBFF!important;
+}
+body[data-theme="dark"] #employeeDashboardSection .emp-tab > *,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab .card,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab .att-card,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab #employeeSalesPanel,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab #employeeSalesHistory,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab #employeeLeavesSection,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab #employeeEmploymentTermsPanel,
+body[data-theme="dark"] #mgrContent .card,
+body[data-theme="dark"] #mgrContent .panel,
+body[data-theme="dark"] #mgrContent .section-card,
+body[data-theme="dark"] #mgrContent .stat-card{
+  background-color:#172A3A!important;
+  color:#F1F6FA!important;
+  border-color:#3A5062!important;
+  box-shadow:0 7px 20px rgba(0,0,0,.16);
+}
+body[data-theme="dark"] #employeeDashboardSection h1,
+body[data-theme="dark"] #employeeDashboardSection h2,
+body[data-theme="dark"] #employeeDashboardSection h3,
+body[data-theme="dark"] #employeeDashboardSection h4,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab strong,
+body[data-theme="dark"] #mgrContent h1,
+body[data-theme="dark"] #mgrContent h2,
+body[data-theme="dark"] #mgrContent h3,
+body[data-theme="dark"] #mgrContent h4{
+  color:#F5F8FC!important;
+}
+body[data-theme="dark"] #employeeDashboardSection p,
+body[data-theme="dark"] #employeeDashboardSection li,
+body[data-theme="dark"] #employeeDashboardSection td,
+body[data-theme="dark"] #employeeDashboardSection .emp-tab span,
+body[data-theme="dark"] #mgrContent p,
+body[data-theme="dark"] #mgrContent td,
+body[data-theme="dark"] #mgrContent li{
+  color:#D5E0E8;
+}
+body[data-theme="dark"] #employeeDashboardSection label,
+body[data-theme="dark"] #mgrContent label,
+body[data-theme="dark"] .field>label{
+  color:#DCE6ED!important;
+}
+body[data-theme="dark"] #employeeDashboardSection small,
+body[data-theme="dark"] #mgrContent small,
+body[data-theme="dark"] .muted,
+body[data-theme="dark"] .hint,
+body[data-theme="dark"] .subtext{
+  color:#B7C6D1!important;
+}
+body[data-theme="dark"] #employeeDashboardSection .stat,
+body[data-theme="dark"] #employeeDashboardSection .rep-num,
+body[data-theme="dark"] #mgrContent .stat,
+body[data-theme="dark"] #mgrContent .rep-num,
+body[data-theme="dark"] #mgrContent .mini,
+body[data-theme="dark"] #employeeDashboardSection .mini{
+  background:#203648!important;
+  color:#F4F8FB!important;
+  border:1px solid #3A566B!important;
+}
+body[data-theme="dark"] #employeeDashboardSection .stat .n,
+body[data-theme="dark"] #employeeDashboardSection .rep-num input,
+body[data-theme="dark"] #employeeDashboardSection .rep-num strong,
+body[data-theme="dark"] #employeeSalesPanel strong,
+body[data-theme="dark"] #mgrContent .stat .n,
+body[data-theme="dark"] #mgrContent .rep-num strong{
+  color:#FFFFFF!important;
+  font-weight:800!important;
+  font-variant-numeric:tabular-nums;
+}
+body[data-theme="dark"] #employeeDashboardSection .bar,
+body[data-theme="dark"] #mgrContent .bar{
+  background:#263E50!important;
+}
+body[data-theme="dark"] #employeeDashboardSection table,
+body[data-theme="dark"] #mgrContent table{
+  background:#172A3A!important;
+  color:#EAF1F6!important;
+  border-color:#3A5062!important;
+}
+body[data-theme="dark"] #employeeDashboardSection thead th,
+body[data-theme="dark"] #mgrContent thead th,
+body[data-theme="dark"] #mgrContent th{
+  background:#24465B!important;
+  color:#F5FAFD!important;
+  border-color:#405B70!important;
+}
+body[data-theme="dark"] #employeeDashboardSection tbody tr:nth-child(even),
+body[data-theme="dark"] #mgrContent tbody tr:nth-child(even){
+  background:#1B3041!important;
+}
+body[data-theme="dark"] #employeeDashboardSection tbody tr:nth-child(odd),
+body[data-theme="dark"] #mgrContent tbody tr:nth-child(odd){
+  background:#172A3A!important;
+}
+body[data-theme="dark"] #employeeDashboardSection td,
+body[data-theme="dark"] #mgrContent td{
+  color:#E2EBF1!important;
+  border-color:#344B5E!important;
+}
+body[data-theme="dark"] #employeeDashboardSection input:not([type=checkbox]):not([type=radio]),
+body[data-theme="dark"] #employeeDashboardSection select,
+body[data-theme="dark"] #employeeDashboardSection textarea,
+body[data-theme="dark"] #mgrContent input:not([type=checkbox]):not([type=radio]),
+body[data-theme="dark"] #mgrContent select,
+body[data-theme="dark"] #mgrContent textarea{
+  background:#102131!important;
+  color:#F2F7FA!important;
+  border-color:#496276!important;
+}
+body[data-theme="dark"] #employeeDashboardSection input::placeholder,
+body[data-theme="dark"] #employeeDashboardSection textarea::placeholder,
+body[data-theme="dark"] #mgrContent input::placeholder,
+body[data-theme="dark"] #mgrContent textarea::placeholder{
+  color:#AFC0CD!important;
+  opacity:1;
+}
+body[data-theme="dark"] #employeeDashboardSection .empty,
+body[data-theme="dark"] #mgrContent .empty{
+  background:#1C3243!important;
+  color:#DCE7EE!important;
+  border-color:#496276!important;
+}
+body[data-theme="dark"] #employeeDashboardSection .rank-row,
+body[data-theme="dark"] #mgrContent .rank-row{
+  border-color:#3A5062!important;
+}
+body[data-theme="dark"] #employeeDashboardSection .p-green,
+body[data-theme="dark"] #mgrContent .p-green{background:#194B3E!important;color:#A7F0D4!important;filter:none!important}
+body[data-theme="dark"] #employeeDashboardSection .p-blue,
+body[data-theme="dark"] #mgrContent .p-blue{background:#1D405B!important;color:#C4E3FF!important;filter:none!important}
+body[data-theme="dark"] #employeeDashboardSection .p-amber,
+body[data-theme="dark"] #mgrContent .p-amber{background:#4B3B20!important;color:#FFE2A3!important;filter:none!important}
+body[data-theme="dark"] #employeeDashboardSection .p-red,
+body[data-theme="dark"] #mgrContent .p-red{background:#512D33!important;color:#FFC0C0!important;filter:none!important}
+body[data-theme="dark"] #employeeDashboardSection .p-violet,
+body[data-theme="dark"] #mgrContent .p-violet{background:#40345B!important;color:#D9C9FF!important;filter:none!important}
+body[data-theme="dark"] #employeeDashboardSection .p-gray,
+body[data-theme="dark"] #mgrContent .p-gray{background:#304252!important;color:#E0E8EE!important;filter:none!important}
+body[data-theme="dark"] #empNav button.on{color:#69D4DF!important}
+body[data-theme="dark"] #empNav button{color:#BDCAD5!important}
+body[data-theme="dark"] .modal-back .modal{
+  background:#172A3A!important;
+  color:#F1F6FA!important;
+  border:1px solid #40576A!important;
+}
+body[data-theme="dark"] .modal h2,
+body[data-theme="dark"] .modal h3,
+body[data-theme="dark"] .modal strong{color:#F5F8FC!important}
+body[data-theme="dark"] .modal p,
+body[data-theme="dark"] .modal label{color:#D5E0E8!important}
+body[data-theme="dark"] button:disabled{opacity:.58}
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
 <style id="newDesign">
