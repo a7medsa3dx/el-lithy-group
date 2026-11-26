@@ -10127,21 +10127,76 @@ Owner.refreshBell = async function () {
 };
 Owner.renderAlerts = async function () {
   const sec = $('alertsSection');
-  sec.innerHTML = pageHead(lab('nav.alerts'), 'كل التنبيهات الجديدة، بما فيها ردود الموظفين على الرسائل الذكية.', '<button class="btn sec" id="alReadAll">تمت قراءة الكل</button>') +
-    '<div class="card" style="margin-bottom:16px"><div class="row" style="gap:10px;flex-wrap:wrap"><h3 style="margin:0" class="sp">💬 ردود الموظفين على الرسائل الذكية</h3><span class="pill p-blue">تحديث مباشر عند فتح القسم</span></div><div id="managerSmartMessageRepliesAlerts" style="margin-top:12px"><div class="empty">جارٍ تحميل الردود...</div></div></div>' +
-    '<div class="card"><h3 style="margin:0 0 12px">التنبيهات الأخرى</h3><div id="alList" class="stack"><div class="empty">جارٍ التحميل...</div></div></div>';
+  sec.innerHTML = pageHead(lab('nav.alerts'), 'كل إشعارات الشركة في قائمة واحدة مرتبة من الأحدث إلى الأقدم.', '<button class="btn sec" id="alReadAll">تمت قراءة الكل</button>') +
+    '<div class="card"><div id="alList" class="stack" style="gap:10px"><div class="empty">جارٍ تحميل التنبيهات...</div></div></div>';
   const load = async () => {
-    const r = await safe(db.from('manager_alerts').select('*').order('created_at', { ascending: false }).limit(120));
+    const [alertsResult, repliesResult] = await Promise.all([
+      safe(db.from('manager_alerts').select('*').order('created_at', { ascending: false }).limit(120)),
+      safe(db.from('employee_smart_message_deliveries').select('id,employee_id,message_title,message_body,employee_reply,employee_thanks,employee_replied_at,manager_reply_seen').or('employee_reply.not.is.null,employee_thanks.eq.true').order('employee_replied_at', { ascending: false }).limit(100))
+    ]);
     const box = $('alList');
-    if (r.error) { box.innerHTML = sqlWarn; return; }
-    box.innerHTML = (r.data || []).length ? r.data.map(a => alertItem(a)).join('') : '<div class="empty">لا توجد تنبيهات أخرى.</div>';
-    await loadManagerSmartMessageReplies("managerSmartMessageRepliesAlerts");
+    if (alertsResult.error || repliesResult.error) {
+      box.innerHTML = sqlWarn;
+      return;
+    }
+    const replies = repliesResult.data || [];
+    const employeeIds = [...new Set(replies.map(x => x.employee_id).filter(Boolean))];
+    let profileMap = new Map();
+    if (employeeIds.length) {
+      const pr = await safe(db.from('profiles').select('id,full_name').in('id', employeeIds));
+      if (!pr.error) profileMap = new Map((pr.data || []).map(x => [x.id, x.full_name]));
+    }
+    const feed = [
+      ...(alertsResult.data || []).map(a => ({source:'alert', id:a.id, time:a.created_at, data:a})),
+      ...replies.map(r => ({source:'smart_reply', id:r.id, time:r.employee_replied_at, data:r}))
+    ].sort((x,y) => new Date(y.time || 0) - new Date(x.time || 0));
+    box.innerHTML = feed.length ? feed.map(item => {
+      if (item.source === 'smart_reply') {
+        const r = item.data, employee = profileMap.get(r.employee_id) || 'موظف';
+        const body = r.employee_reply || (r.employee_thanks ? 'شكراً ❤️' : '');
+        const when = r.employee_replied_at ? fmtDT(r.employee_replied_at) : '—';
+        return '<button type="button" data-unified-smart-reply="' + esc(r.id) + '" style="width:100%;text-align:start;background:var(--card);color:inherit;border:1px solid var(--line);border-radius:13px;padding:13px;cursor:pointer">' +
+          '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>رد على رسالة ذكية</b><span class="small muted">' + esc(when) + '</span></div>' +
+          '<div class="small" style="margin-top:5px">' + esc(employee) + ' · ' + esc(r.message_title || 'رسالة الإدارة') + '</div>' +
+          '<div style="margin-top:7px;line-height:1.7">' + esc(body) + '</div><div class="small" style="margin-top:6px;color:var(--brand)">إدارة الرسائل الذكية · اضغط لفتح</div></button>';
+      }
+      const a = item.data, m = ALERT_META[a.kind] || ['bell','teal','تنبيه','home'];
+      return '<article class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '" data-unified-alert="' + esc(a.id) + '" style="cursor:pointer">' +
+        '<div class="alert-ico cico">' + icon(m[0],18) + '</div><div class="sp" style="font-size:13px;line-height:1.7"><b>' + m[2] + '</b><br><span class="muted">' + esc(a.message) + '</span><br><span class="small muted">' + fmtDT(a.created_at) + '</span><br><span class="small" style="color:var(--brand)">إدارة ' + esc(m[2]) + ' · اضغط لفتح</span></div></article>';
+    }).join('') : '<div class="empty">لا توجد تنبيهات حاليًا.</div>';
     Owner.refreshBell();
   };
-  $('alReadAll').onclick = e => guard(e.currentTarget, async () => { const r = await db.from('manager_alerts').update({ is_read: true }).eq('is_read', false); if (r.error) throw r.error; await load(); });
-  $('alertsSection').onclick = async e => {
-    const rd = e.target.closest('[data-read]'); if (rd) { await guard(rd, async () => { const r = await db.from('manager_alerts').update({ is_read: true }).eq('id', rd.dataset.read); if (r.error) throw r.error; await load(); }); return; }
-    const go = e.target.closest('[data-alert-go]'); if (go) alertGo(go.dataset.alertGo);
+  $('alReadAll').onclick = e => guard(e.currentTarget, async () => {
+    const [a,r] = await Promise.all([
+      db.from('manager_alerts').update({is_read:true}).eq('is_read',false),
+      db.from('employee_smart_message_deliveries').update({manager_reply_seen:true}).eq('manager_reply_seen',false).or('employee_reply.not.is.null,employee_thanks.eq.true')
+    ]);
+    if (a.error) throw a.error;
+    if (r.error) throw r.error;
+    await load();
+  });
+  sec.onclick = async e => {
+    const smart = e.target.closest('[data-unified-smart-reply]');
+    if (smart) {
+      const id = smart.dataset.unifiedSmartReply;
+      const u = await db.from('employee_smart_message_deliveries').update({manager_reply_seen:true}).eq('id',id);
+      if (u.error) { showMessage(u.error.message); return; }
+      await Owner.refreshBell();
+      proxy('openSmartMessagesButton','smart');
+      return;
+    }
+    const alert = e.target.closest('[data-unified-alert]');
+    if (alert) {
+      const id = alert.dataset.unifiedAlert;
+      const u = await db.from('manager_alerts').update({is_read:true}).eq('id',id);
+      if (u.error) { showMessage(u.error.message); return; }
+      const item = (await safe(db.from('manager_alerts').select('kind').eq('id',id).maybeSingle())).data;
+      await Owner.refreshBell();
+      if (item) {
+        const meta = ALERT_META[item.kind] || [];
+        if (meta[3]) alertGo(meta[3]);
+      }
+    }
   };
   await load();
 };
@@ -11413,18 +11468,36 @@ Emp.loadAssignments = async function () {
   box.classList.toggle('hide-me', !pending.length);
   const dot = $('empCustDot'); if (dot) dot.classList.toggle('hide-me', !pending.length);
   const card = x => {
-    const res = x.result ? EL.RESULTS[x.result] : null, w = x.phone ? waNum(x.phone) : null;
-    return '<div class="cust-card" data-aid="' + x.id + '"><div class="row" style="gap:8px"><b dir="ltr" class="sp" style="text-align:start;font-size:17px">' + esc(x.phone || (x.whatsapp_username ? '@'+x.whatsapp_username : '—')) + '</b>' + (res ? '<span class="pill p-' + res[1] + '">' + res[0] + '</span>' : '<span class="pill p-amber">بانتظار ردك</span>') + '</div>' +
-      '<div class="chips">' + (x.apps_snapshot || []).map(a => appChip(a.app, a.amount)).join('') + '</div>' +
-      (x.manager_note ? '<div class="small" style="background:var(--brand-l);padding:10px;border-radius:12px;white-space:pre-wrap"><b>ملاحظة المدير:</b> ' + esc(x.manager_note) + '</div>' : '') +
+    const w = x.phone ? waNum(x.phone) : null;
+    const detailsId = 'assignmentDetails-' + x.id;
+    return '<article class="cust-card" data-aid="' + x.id + '" style="padding:0;overflow:hidden">' +
+      '<button type="button" data-assignment-toggle="' + esc(x.id) + '" aria-expanded="false" aria-controls="' + detailsId + '" style="display:block;width:100%;padding:11px 13px;border:0;background:transparent;color:inherit;text-align:start;cursor:pointer">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b dir="ltr" style="font-size:15px">' + esc(x.phone || (x.whatsapp_username ? '@'+x.whatsapp_username : '—')) + '</b><span class="pill p-amber">بانتظار ردك</span><span data-assignment-chevron style="color:var(--muted);font-size:13px">⌄</span></div>' +
+      '<div class="chips" style="margin-top:6px;gap:5px">' + (x.apps_snapshot || []).map(a => appChip(a.app, a.amount)).join('') + '</div></button>' +
+      '<div id="' + detailsId + '" data-assignment-details class="hide-me" style="padding:0 13px 13px;display:none">' +
+      (x.manager_note ? '<div class="small" style="background:var(--brand-l);padding:10px;border-radius:12px;white-space:pre-wrap;margin-bottom:10px"><b>ملاحظة المدير:</b> ' + esc(x.manager_note) + '</div>' : '') +
       '<div class="row" style="gap:8px">' + (x.phone ? '<a class="btn sec" style="flex:1;text-decoration:none;text-align:center" href="tel:' + esc(x.phone) + '">اتصال</a><a class="btn sec" style="flex:1;text-decoration:none;text-align:center" target="_blank" rel="noopener" href="https://wa.me/' + esc(w) + '">واتساب</a>' : '<button type="button" class="btn sec" data-copy-wa="' + esc(x.whatsapp_username || '') + '">نسخ اسم واتساب</button><a class="btn sec" style="flex:1;text-decoration:none;text-align:center" target="_blank" rel="noopener" href="https://wa.me/">فتح واتساب</a>') + '</div>' +
       '<div class="field"><label>نتيجة المتابعة</label><select data-res><option value="">اختر النتيجة</option>' + Object.keys(EL.RESULTS).map(k => '<option value="' + k + '"' + (x.result === k ? ' selected' : '') + '>' + EL.RESULTS[k][0] + '</option>').join('') + '</select></div>' +
       '<div class="field"><label>ملاحظتك</label><textarea data-note style="min-height:64px">' + esc(x.employee_note || '') + '</textarea></div>' +
-      '<button class="btn" data-asave style="width:100%">' + (x.result ? 'تحديث الرد' : 'إرسال الرد للمدير') + '</button></div>';
+      '<button class="btn" data-asave style="width:100%">' + (x.result ? 'تحديث الرد' : 'إرسال الرد للمدير') + '</button></div></article>';
   };
   box.innerHTML = '<div class="row" style="margin-bottom:10px"><h3 class="sp" style="margin:0;font-size:18px">أرقام للمتابعة من المدير</h3>' + (pending.length ? '<span class="pill p-amber">' + pending.length + ' بانتظارك</span>' : '') + '</div>' +
-    '<div class="stack" style="gap:12px">' + pending.map(card).join('') + '</div>';
+    '<div class="stack" style="gap:7px">' + pending.map(card).join('') + '</div>';
   box.onclick = async e => {
+    const toggle = e.target.closest('[data-assignment-toggle]');
+    if (toggle) {
+      const current = toggle.closest('[data-aid]');
+      const wasOpen = toggle.getAttribute('aria-expanded') === 'true';
+      box.querySelectorAll('[data-assignment-details]').forEach(el => { el.style.display = 'none'; el.classList.add('hide-me'); });
+      box.querySelectorAll('[data-assignment-toggle]').forEach(el => { el.setAttribute('aria-expanded', 'false'); const ch = el.querySelector('[data-assignment-chevron]'); if (ch) ch.textContent = '⌄'; });
+      if (!wasOpen) {
+        const details = current.querySelector('[data-assignment-details]');
+        details.style.display = 'block'; details.classList.remove('hide-me');
+        toggle.setAttribute('aria-expanded', 'true');
+        const ch = toggle.querySelector('[data-assignment-chevron]'); if (ch) ch.textContent = '⌃';
+      }
+      return;
+    }
     const b = e.target.closest('[data-asave]'); if (!b) return; const c = b.closest('[data-aid]');
     await guard(b, async () => {
       const result = q('[data-res]', c).value; if (!result) throw new Error('اختر نتيجة المتابعة أولاً.');
