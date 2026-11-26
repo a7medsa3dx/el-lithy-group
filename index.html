@@ -10291,7 +10291,7 @@ function paintInbox() {
       '<td dir="ltr" style="text-align:start !important"><b>' + (x.phone ? esc(x.phone) : (x.whatsapp_username ? '@'+esc(x.whatsapp_username) : '<span class="pill p-amber">رقم غير مصري</span>')) + '</b>' + (x.notes ? '<br><span class="muted small">' + esc(x.notes) + '</span>' : '') + '</td>' +
       '<td><div class="chips">' + ((x.apps || []).map(a => appChip(a.app, a.amount)).join('') || '<span class="muted small">بدون</span>') + '</div></td><td>' + esc(x.employee_name) + '</td><td>' + fmtDate(x.report_date) + '</td>' +
       '<td>' + (x.in_master ? '<span class="pill p-green">في لوحتي</span>' : '') + (x.other_employees_count > 0 ? ' <span class="pill p-amber">مكرر عند ' + x.other_employees_count + ' موظف</span>' : '') + '</td>' +
-      '<td>' + (x.in_master && !x.master_customer_id ? '<button class="mini" data-iadd="' + x.id + '">دمج الأبلكيشنات</button>' : !x.in_master ? '<button class="mini pri" data-iadd="' + x.id + '">إضافة للوحة</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
+      '<td><div class="row" style="gap:5px;flex-wrap:wrap">' + (x.in_master && !x.master_customer_id ? '<button class="mini" data-iadd="' + x.id + '">دمج الأبلكيشنات</button>' : !x.in_master ? '<button class="mini pri" data-iadd="' + x.id + '">إضافة للوحة</button>' : '') + '<button class="mini danger" data-idelete="' + x.id + '">حذف الرقم</button></div></td></tr>').join('') + '</tbody></table></div>';
   $('ibList').innerHTML = html;
   const addOne = async (id) => {
     const x = Owner.inbox.find(i => i.id === id);
@@ -10309,6 +10309,19 @@ function paintInbox() {
     const r = await db.rpc('add_customer_to_master', { p_customer_id: id, p_phone: phone }); if (r.error) throw r.error; return r.data;
   };
   $('ibList').onclick = async e => {
+    const del = e.target.closest('[data-idelete]');
+    if (del) {
+      const x = Owner.inbox.find(i => i.id === del.dataset.idelete);
+      const label = x?.phone || (x?.whatsapp_username ? '@' + x.whatsapp_username : 'هذا السجل');
+      if (!confirm('هل تريد حذف ' + label + ' من وارد الموظفين؟ لن يتم حذف نسخة العميل الموجودة في لوحة العملاء الرئيسية.')) return;
+      await guard(del, async () => {
+        const d = await db.from('employee_customers').delete().eq('id', del.dataset.idelete);
+        if (d.error) throw d.error;
+        toast('تم حذف الرقم من وارد الموظفين.', 'ok');
+        await inboxTab();
+      });
+      return;
+    }
     const one = e.target.closest('[data-iadd]');
     if (one) { await guard(one, async () => { const d = await addOne(one.dataset.iadd); if (d) { toast(d.status === 'merged' ? 'الرقم موجود في لوحتك، تم دمج الأبلكيشنات الجديدة.' : 'تمت إضافة العميل للوحتك.', 'ok'); await inboxTab(); } }); return; }
     if (e.target.id === 'ibBulk' || e.target.closest('#ibBulk')) {
@@ -10357,7 +10370,7 @@ function paintMaster() {
   else html = '<div class="muted small" style="margin-bottom:8px">مرتّب من أعلى مبلغ إلى أقل مبلغ</div><div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:34px"></th><th>رقم العميل</th><th>الأبلكيشن والمبلغ</th><th>ملاحظات</th><th></th></tr></thead><tbody>' +
     rows.map(r => '<tr><td><input type="checkbox" data-msel="' + r.m.id + '"' + (Owner.mSel.has(r.m.id) ? ' checked' : '') + '></td><td dir="ltr" style="text-align:start !important"><b>' + esc(r.m.phone || (r.m.whatsapp_username ? '@'+r.m.whatsapp_username : '—')) + '</b>' + (r.m.name ? '<br><span class="muted small">' + esc(r.m.name) + '</span>' : '') + '</td>' +
       '<td><div class="chips">' + (r.shown.map(a => appChip(a.name, a.amount)).join('') || '<span class="muted small">بدون أبلكيشن</span>') + '</div></td><td class="small">' + esc(r.m.notes || '') + '</td>' +
-      '<td><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="mini" data-medit="' + r.m.id + '">تعديل</button><button class="mini danger" data-mdel="' + r.m.id + '" aria-label="حذف">' + icon('trash', 14) + '</button></div></td></tr>').join('') + '</tbody></table></div>';
+      '<td><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="mini" data-medit="' + r.m.id + '">تعديل</button><button class="mini danger" data-mdel="' + r.m.id + '" aria-label="حذف الرقم">حذف الرقم</button></div></td></tr>').join('') + '</tbody></table></div>';
   $('mtList').innerHTML = html;
   $('mtList').onchange = e => { const c = e.target.closest('[data-msel]'); if (c) c.checked ? Owner.mSel.add(c.dataset.msel) : Owner.mSel.delete(c.dataset.msel); };
   $('mtList').onclick = async e => {
@@ -10427,9 +10440,22 @@ async function followTab() {
 function paintFollow() {
   const emp = $('fwEmp').value, res = $('fwRes').value;
   const rows = Owner.follow.filter(x => (!emp || x.assigned_to === emp) && (!res || (res === 'pending' ? !x.result : x.result === res)));
-  $('fwList').innerHTML = rows.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الرقم</th><th>الأبلكيشنات</th><th>الموظف</th><th>ملاحظتك</th><th>النتيجة</th><th>ملاحظة الموظف</th><th>التاريخ</th></tr></thead><tbody>' +
+  $('fwList').innerHTML = rows.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>الرقم</th><th>الأبلكيشنات</th><th>الموظف</th><th>ملاحظتك</th><th>النتيجة</th><th>ملاحظة الموظف</th><th>التاريخ</th><th>إجراء</th></tr></thead><tbody>' +
     rows.map(x => '<tr><td dir="ltr" style="text-align:start !important"><b>' + esc(x.phone || (x.whatsapp_username ? '@'+x.whatsapp_username : '—')) + '</b></td><td><div class="chips">' + (x.apps_snapshot || []).map(a => appChip(a.app, a.amount)).join('') + '</div></td><td>' + esc(empName(x.assigned_to)) + '</td><td class="small">' + esc(x.manager_note || '') + '</td>' +
-      '<td>' + (x.result ? '<span class="pill p-' + RESULTS[x.result][1] + '">' + RESULTS[x.result][0] + '</span>' : '<span class="pill p-amber">بانتظار الرد</span>') + '</td><td class="small">' + esc(x.employee_note || '') + '</td><td class="small">' + fmtDate(x.assigned_at) + '</td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">لا توجد أرقام موزعة.</div>';
+      '<td>' + (x.result ? '<span class="pill p-' + RESULTS[x.result][1] + '">' + RESULTS[x.result][0] + '</span>' : '<span class="pill p-amber">بانتظار الرد</span>') + '</td><td class="small">' + esc(x.employee_note || '') + '</td><td class="small">' + fmtDate(x.assigned_at) + '</td><td><button class="mini danger" data-fdelete="' + x.id + '">حذف الرقم</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="empty">لا توجد أرقام موزعة.</div>';
+  $('fwList').onclick = async e => {
+    const del = e.target.closest('[data-fdelete]');
+    if (!del) return;
+    const item = Owner.follow.find(x => x.id === del.dataset.fdelete);
+    const label = item?.phone || (item?.whatsapp_username ? '@' + item.whatsapp_username : 'هذا الرقم');
+    if (!confirm('هل تريد حذف ' + label + ' من قائمة المتابعة؟ سيتم حذف سجل التوزيع والرد المرتبط به فقط، ولن تُحذف بيانات العميل من لوحة العملاء الرئيسية.')) return;
+    await guard(del, async () => {
+      const d = await db.from('customer_assignments').delete().eq('id', del.dataset.fdelete);
+      if (d.error) throw d.error;
+      toast('تم حذف الرقم من المتابعة.', 'ok');
+      await followTab();
+    });
+  };
 }
 
 // =====================================================================
