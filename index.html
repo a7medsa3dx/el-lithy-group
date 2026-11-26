@@ -2112,12 +2112,14 @@ body[data-mode="manager"] main.container{margin-inline-start:var(--sidebar);min-
 .sb-name{color:#fff;font-weight:800;font-size:15px;line-height:1.3}.sb-sub{color:#8FB2C2;font-size:12px}
 .sb-group{color:#7FA3B3;font-size:11px;font-weight:700;letter-spacing:.5px;padding:10px 12px 4px}
 .sb-item{display:flex;align-items:center;gap:12px;width:100% !important;margin:0 !important;padding:10px 12px !important;border:0 !important;border-radius:12px !important;background:transparent !important;color:#C9DCE5 !important;font-size:14px !important;font-weight:600 !important;text-align:start;cursor:pointer;min-height:44px}
+#mgrSidebar .sb-item{flex:0 0 auto}
+#mgrSidebar .sb-item + .sb-item{margin-top:1px !important}
 .sb-item:hover{background:rgba(255,255,255,.08) !important;color:#fff !important}
 .sb-item.active{background:rgba(31,166,184,.2) !important;color:#fff !important}
 .sb-item svg{flex:0 0 20px}
 .sb-badge{margin-inline-start:auto;background:#E5484D;color:#fff;border-radius:20px;font-size:11px;padding:1px 8px;font-weight:700}
 .sb-sep{height:1px;background:rgba(255,255,255,.1);margin:8px 8px}
-.sb-user{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:rgba(255,255,255,.07)}
+.sb-user{margin-top:0;display:flex;align-items:center;gap:10px;padding:12px;margin-bottom:8px;border-radius:14px;background:rgba(255,255,255,.07);flex:0 0 auto}
 .sb-avatar{width:38px;height:38px;border-radius:12px;background:#1FA6B8;display:grid;place-items:center;color:#06222E;font-weight:800}
 .sb-user b{color:#fff;font-size:14px;display:block}.sb-user small{color:#8FB2C2;font-size:12px}
 
@@ -10047,7 +10049,7 @@ const LABELS = {
   'nav.home': 'الرئيسية', 'nav.employees': 'الموظفون', 'nav.attendance': 'الحضور والانصراف', 'nav.daysoff': 'الإجازات',
   'nav.dailycontrols': 'تأجيل وإعفاء التقارير',
   'nav.sales': 'المبيعات والأهداف', 'nav.reports': 'التقارير اليومية', 'nav.customers': 'لوحة العملاء', 'nav.campaigns': 'الحملات الإعلانية',
-  'nav.apptypes': 'أنواع الأبلكيشن', 'nav.smart': 'الرسائل الذكية', 'nav.contracts': 'العقود والعمولات', 'nav.alerts': 'التنبيهات', 'nav.settings': 'الإعدادات',
+  'nav.apptypes': 'أنواع الأبلكيشن', 'nav.monthly': 'التقرير الشهري', 'nav.smart': 'الرسائل الذكية', 'nav.contracts': 'العقود والعمولات', 'nav.alerts': 'التنبيهات', 'nav.settings': 'الإعدادات',
   'emp.today': 'اليوم', 'emp.sales': 'المبيعات', 'emp.report': 'التقرير', 'emp.customers': 'العملاء', 'emp.account': 'حسابي',
   'cat.interested': 'مهتم', 'cat.noreply': 'لم يرد', 'cat.notinterested': 'غير مهتم', 'cat.withthem': 'معاهم',
   'brand.name': 'EL-LITHY GROUP', 'brand.sub': 'لوحة إدارة الشركة'
@@ -10249,19 +10251,15 @@ function navItems() {
 function buildSidebar() {
   const sb = $('mgrSidebar'); if (!sb) return;
   const hidden = A.nav.hidden || [];
-  let html = '<div class="sb-brand"><div class="sb-logo">EL</div><div><div class="sb-name">' + esc(lab('brand.name')) + '</div><div class="sb-sub">' + esc(lab('brand.sub')) + '</div></div></div>';
-  let prev = null;
-  navItems().forEach(it => {
-    if (hidden.includes(it.key) && it.key !== 'home' && it.key !== 'settings') return;
-    if (it.grp !== prev && prev !== null) html += '<div class="sb-sep"></div>' + (GROUP_NAMES[it.grp] ? '<div class="sb-group">' + GROUP_NAMES[it.grp] + '</div>' : '');
-    else if (it.grp !== prev && GROUP_NAMES[it.grp]) html += '<div class="sb-group">' + GROUP_NAMES[it.grp] + '</div>';
-    prev = it.grp;
-    html += '<button type="button" class="sb-item" data-nav="' + esc(it.key) + '">' + icon(it.icon, 20) + '<span>' + esc(it.label) + '</span>' + (it.key === 'alerts' ? '<span class="sb-badge hide-me" id="sbAlertBadge"></span>' : '') + '</button>';
-  });
   const name = A.profile ? A.profile.full_name : '';
+  let html = '<div class="sb-brand"><div class="sb-logo">EL</div><div><div class="sb-name">' + esc(lab('brand.name')) + '</div><div class="sb-sub">' + esc(lab('brand.sub')) + '</div></div></div>';
   html += '<div class="sb-user"><div class="sb-avatar">' + esc((name || 'م').trim().charAt(0)) + '</div><div class="sp"><b>' + esc(name || 'المدير') + '</b><small>حساب المدير</small></div>' +
     '<button type="button" class="icon-btn" id="sbAccount" aria-label="إعدادات الحساب" style="width:38px !important;height:38px;background:rgba(255,255,255,.1) !important;color:#fff !important;border:0 !important">' + icon('user', 18) + '</button>' +
     '<button type="button" class="icon-btn" id="sbLogout" aria-label="تسجيل الخروج" style="width:38px !important;height:38px;background:rgba(255,255,255,.1) !important;color:#fff !important;border:0 !important">' + icon('logout', 18) + '</button></div>';
+  navItems().forEach(it => {
+    if (hidden.includes(it.key) && it.key !== 'home' && it.key !== 'settings') return;
+    html += '<button type="button" class="sb-item" data-nav="' + esc(it.key) + '">' + icon(it.icon, 20) + '<span>' + esc(it.label) + '</span>' + (it.key === 'alerts' ? '<span class="sb-badge hide-me" id="sbAlertBadge"></span>' : '') + '</button>';
+  });
   sb.innerHTML = html;
   qa('.sb-item', sb).forEach(b => b.addEventListener('click', () => {
     const it = navItems().find(x => x.key === b.getAttribute('data-nav'));
