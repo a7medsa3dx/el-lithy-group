@@ -11111,16 +11111,20 @@ Emp.renderCustomers = async function () {
 };
 
 // ----- نموذج إضافة عميل -----
+
 Emp.buildAddForm = function () {
-  const host = $('empAddBox'); if (!host) return;
+  const host = $('empAddBox');
+  if (!host) return;
+
   host.innerHTML = '<h3 style="margin:0 0 12px;font-size:18px">تسجيل عميل جديد</h3><div class="stack">' +
     '<div class="field"><label for="ecPhone">رقم الهاتف</label><input id="ecPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint">11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015</span></div>' +
-    '<div class="field"><label for="ecWhatsApp">اسم مستخدم واتساب</label><input id="ecWhatsApp" type="text" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
+    '<div class="field"><label for="ecWhatsApp">اسم مستخدم واتساب</label><input id="ecWhatsApp" type="text" value="@" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
     '<label class="row" style="gap:8px;margin:0;font-weight:700"><input type="checkbox" id="ecForeign" style="width:20px;height:20px"> رقم غير مصري</label>' +
     '<div class="field" id="ecInternationalWrap" style="display:none"><label for="ecCountryCode">رقم العميل الدولي</label><div class="row" style="gap:8px;align-items:stretch"><select id="ecCountryCode" dir="ltr" style="max-width:46%;min-width:145px"></select><input id="ecInternationalPhone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="رقم الهاتف" dir="ltr" style="text-align:start;flex:1;min-width:0"></div><span class="hint">اختر كود الدولة ثم اكتب الرقم بدون كود الدولة.</span></div>' +
     '<div class="field"><label>الأبلكيشنات</label><div id="ecApps"></div></div>' +
     '<div class="field"><label for="ecNotes">ملاحظات</label><textarea id="ecNotes" placeholder="ملاحظات عن العميل"></textarea></div>' +
     '<button type="button" class="btn" id="ecSave" style="width:100%">حفظ العميل</button></div>';
+
   const countryCodes = [
     ['مصر','+20'],['السعودية','+966'],['الإمارات','+971'],['الكويت','+965'],['قطر','+974'],['البحرين','+973'],['عمان','+968'],['الأردن','+962'],['لبنان','+961'],['العراق','+964'],['فلسطين','+970'],['اليمن','+967'],['ليبيا','+218'],['السودان','+249'],['المغرب','+212'],['الجزائر','+213'],['تونس','+216'],['موريتانيا','+222'],['تركيا','+90'],['الولايات المتحدة','+1'],['كندا','+1'],['المملكة المتحدة','+44'],['ألمانيا','+49'],['فرنسا','+33'],['إيطاليا','+39'],['إسبانيا','+34'],['هولندا','+31'],['بلجيكا','+32'],['سويسرا','+41'],['النمسا','+43'],['السويد','+46'],['النرويج','+47'],['الدنمارك','+45'],['فنلندا','+358'],['أيرلندا','+353'],['اليونان','+30'],['قبرص','+357'],['روسيا','+7'],['أوكرانيا','+380'],['بولندا','+48'],['رومانيا','+40'],['التشيك','+420'],['المجر','+36'],['البرتغال','+351'],['أستراليا','+61'],['نيوزيلندا','+64'],['الصين','+86'],['اليابان','+81'],['كوريا الجنوبية','+82'],['الهند','+91'],['باكستان','+92'],['بنغلاديش','+880'],['سريلانكا','+94'],['نيبال','+977'],['إندونيسيا','+62'],['ماليزيا','+60'],['سنغافورة','+65'],['تايلاند','+66'],['فيتنام','+84'],['الفلبين','+63'],['هونغ كونغ','+852'],['تايوان','+886'],['إيران','+98'],['أفغانستان','+93'],['جنوب أفريقيا','+27'],['نيجيريا','+234'],['غانا','+233'],['كينيا','+254'],['إثيوبيا','+251'],['أوغندا','+256'],['تنزانيا','+255'],['السنغال','+221'],['ساحل العاج','+225'],['الكاميرون','+237'],['الصومال','+252'],['البرازيل','+55'],['الأرجنتين','+54'],['المكسيك','+52'],['تشيلي','+56'],['كولومبيا','+57'],['بيرو','+51'],['فنزويلا','+58'],['أوروغواي','+598'],['باراغواي','+595'],['بوليفيا','+591'],['كوستاريكا','+506'],['بنما','+507'],['جامايكا','+1-876'],['جمهورية الدومينيكان','+1-809'],['آيسلندا','+354'],['لوكسمبورغ','+352'],['مالطا','+356'],['بلغاريا','+359'],['كرواتيا','+385'],['صربيا','+381'],['سلوفاكيا','+421'],['سلوفينيا','+386'],['ليتوانيا','+370'],['لاتفيا','+371'],['إستونيا','+372'],['جورجيا','+995'],['أرمينيا','+374'],['أذربيجان','+994'],['كازاخستان','+7'],['أوزبكستان','+998'],['قرغيزستان','+996'],['طاجيكستان','+992'],['تركمانستان','+993'],['منغوليا','+976'],['كمبوديا','+855'],['لاوس','+856'],['ميانمار','+95'],['المالديف','+960'],['موريشيوس','+230'],['سيشل','+248'],['زيمبابوي','+263'],['زامبيا','+260'],['رواندا','+250'],['الكونغو','+242'],['الكونغو الديمقراطية','+243'],['أنغولا','+244'],['موزمبيق','+258'],['مدغشقر','+261'],['ناميبيا','+264'],['بوتسوانا','+267'],['السلفادور','+503'],['غواتيمالا','+502'],['هندوراس','+504'],['نيكاراغوا','+505'],['الإكوادور','+593'],['غيانا','+592'],['سورينام','+597'],
     ['ألبانيا','+355'],['أندورا','+376'],['البوسنة والهرسك','+387'],['الجبل الأسود','+382'],['مقدونيا الشمالية','+389'],['مولدوفا','+373'],['بيلاروس','+375'],['ليختنشتاين','+423'],['موناكو','+377'],['سان مارينو','+378'],['جزر فارو','+298'],['جرينلاند','+299'],['جبل طارق','+350'],['كوسوفو','+383'],
@@ -11129,41 +11133,209 @@ Emp.buildAddForm = function () {
     ['بوتان','+975'],['بروناي','+673'],['تيمور الشرقية','+670'],['كوريا الشمالية','+850'],['ماكاو','+853'],['سوريا','+963'],['إسرائيل','+972'],
     ['فيجي','+679'],['بابوا غينيا الجديدة','+675'],['ساموا','+685'],['تونغا','+676'],['فانواتو','+678'],['جزر سليمان','+677'],['كيريباتي','+686'],['ولايات ميكرونيسيا المتحدة','+691'],['جزر مارشال','+692'],['بالاو','+680'],['ناورو','+674'],['توفالو','+688'],['جزر كوك','+682'],['نيوي','+683'],['كاليدونيا الجديدة','+687'],['بولينيزيا الفرنسية','+689']
   ];
-  const codeSel=$('ecCountryCode'); codeSel.innerHTML=countryCodes.map(([n,c])=>'<option value="'+esc(c)+'"'+(c==='+20'?' selected':'')+'>'+esc(n)+' ('+esc(c)+')</option>').join('');
+
+  const codeSel = $('ecCountryCode');
+  codeSel.innerHTML = countryCodes.map(([n,c]) =>
+    '<option value="' + esc(c) + '"' + (c === '+20' ? ' selected' : '') + '>' +
+    esc(n) + ' (' + esc(c) + ')</option>'
+  ).join('');
+
   Emp.ed = EL.appEditor($('ecApps'), [], true);
-  const ph=$('ecPhone'), wa=$('ecWhatsApp'), hint=$('ecHint'), foreignBox=$('ecInternationalWrap'), intl=$('ecInternationalPhone');
-  const paint=()=>{const v=ph.value,ok=EGY.test(v);hint.style.color=!v?'':ok?'var(--green-t)':'var(--red-t)';hint.textContent=!v?'11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015':ok?'رقم صحيح ✓':v.length+' من 11 رقم'+(v.length>=3&&!/^(010|011|012|015)/.test(v)?' · لازم يبدأ بـ 010 / 011 / 012 / 015':'');};
-  ph.addEventListener('input',()=>{ph.value=toEn(ph.value).replace(/[^0-9]/g,'').slice(0,11);paint();});
-  ph.addEventListener('paste',e=>{e.preventDefault();ph.value=toEn((e.clipboardData||window.clipboardData).getData('text')).replace(/[^0-9]/g,'').slice(0,11);paint();});
-  intl.addEventListener('input',()=>{intl.value=toEn(intl.value).replace(/[^0-9]/g,'').slice(0,15);});
-  $('ecForeign').onchange=e=>{
-    const on=e.target.checked; ph.disabled=on; wa.disabled=on; intl.disabled=!on; foreignBox.style.display=on?'block':'none';
-    if(on){ph.value='';wa.value='';}else{intl.value='';}
+
+  const ph = $('ecPhone');
+  const wa = $('ecWhatsApp');
+  const hint = $('ecHint');
+  const foreignBox = $('ecInternationalWrap');
+  const intl = $('ecInternationalPhone');
+
+  // إضافة @ تلقائيًا ومنع حذفها
+  wa.value = '@';
+  wa.addEventListener('input', () => {
+    const username = wa.value.replace(/^@+/, '');
+    wa.value = '@' + username;
+  });
+
+  const paint = () => {
+    const v = ph.value;
+    const ok = EGY.test(v);
+    hint.style.color = !v ? '' : ok ? 'var(--green-t)' : 'var(--red-t)';
+    hint.textContent = !v
+      ? '11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015'
+      : ok
+        ? 'رقم صحيح ✓'
+        : v.length + ' من 11 رقم' + (v.length >= 3 && !/^(010|011|012|015)/.test(v)
+          ? ' · لازم يبدأ بـ 010 / 011 / 012 / 015'
+          : '');
+  };
+
+  ph.addEventListener('input', () => {
+    ph.value = toEn(ph.value).replace(/[^0-9]/g, '').slice(0, 11);
+    paint();
+  });
+
+  ph.addEventListener('paste', e => {
+    e.preventDefault();
+    ph.value = toEn((e.clipboardData || window.clipboardData).getData('text')).replace(/[^0-9]/g, '').slice(0, 11);
+    paint();
+  });
+
+  intl.addEventListener('input', () => {
+    intl.value = toEn(intl.value).replace(/[^0-9]/g, '').slice(0, 15);
+  });
+
+  $('ecForeign').onchange = e => {
+    const on = e.target.checked;
+    ph.disabled = on;
+    wa.disabled = on;
+    intl.disabled = !on;
+    foreignBox.style.display = on ? 'block' : 'none';
+
+    if (on) {
+      ph.value = '';
+      wa.value = '@';
+    } else {
+      intl.value = '';
+      wa.value = '@';
+    }
     paint();
   };
-  $('ecSave').onclick=e=>guard(e.currentTarget,async()=>{
-    const foreign=$('ecForeign').checked;
-    const localPhone=ph.value;
-    const whatsapp=(wa.value||'').trim().replace(/^@+/,'');
-    const intlDigits=toEn(intl.value).replace(/[^0-9]/g,'');
-    const phone=foreign?(codeSel.value.replace(/[^+0-9]/g,'')+intlDigits):localPhone;
-    const notes=$('ecNotes').value.trim();
-    if(foreign&&!intlDigits)throw new Error('اكتب رقم الهاتف الدولي بعد اختيار كود الدولة.');
-    if(foreign&&intlDigits.length<5)throw new Error('رقم الهاتف الدولي قصير جدًا.');
-    if(!foreign&&localPhone&&!EGY.test(localPhone))throw new Error('الرقم لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.');
-    if(!foreign&&!localPhone&&!whatsapp)throw new Error('اكتب رقم الهاتف أو اسم مستخدم واتساب على الأقل.');
-    const apps=Emp.ed.get(true); let id=null,merged=false;
-    if(!foreign&&(localPhone||whatsapp)){
-      let ex=null;
-      if(localPhone){const q1=await db.from('employee_customers').select('id,report_date,master_customer_id,notes').eq('employee_id',me()).eq('phone',localPhone).maybeSingle();if(q1.error)throw q1.error;ex=q1.data;}
-      if(!ex&&whatsapp){const q2=await db.from('employee_customers').select('id,report_date,master_customer_id,notes').eq('employee_id',me()).ilike('whatsapp_username',whatsapp).maybeSingle();if(q2.error)throw q2.error;ex=q2.data;}
-      if(ex){if(ex.report_date!==cairoToday()||ex.master_customer_id)throw new Error('هذا العميل مسجل عندك من قبل ولا يمكن تعديله الآن. أبلغ المدير لو في أبلكيشن جديد.');if(!confirm('هذا العميل مسجل عندك اليوم. هل تريد إضافة البيانات والأبلكيشنات الجديدة على نفس العميل؟'))return;id=ex.id;merged=true;const patch={};if(whatsapp)patch.whatsapp_username=whatsapp;if(localPhone)patch.phone=localPhone;if(notes)patch.notes=((ex.notes?ex.notes+'\n':'')+notes);if(Object.keys(patch).length){const u=await db.from('employee_customers').update(patch).eq('id',id);if(u.error)throw u.error;}}
+
+  $('ecSave').onclick = e => guard(e.currentTarget, async () => {
+    const foreign = $('ecForeign').checked;
+    const localPhone = ph.value;
+
+    // استخراج اسم المستخدم مع الاحتفاظ بعلامة @
+    const usernamePart = (wa.value || '').trim().replace(/^@+/, '').trim();
+    const whatsapp = usernamePart ? '@' + usernamePart : '';
+
+    const intlDigits = toEn(intl.value).replace(/[^0-9]/g, '');
+    const phone = foreign
+      ? codeSel.value.replace(/[^+0-9]/g, '') + intlDigits
+      : localPhone;
+
+    const notes = $('ecNotes').value.trim();
+
+    if (foreign && !intlDigits) throw new Error('اكتب رقم الهاتف الدولي بعد اختيار كود الدولة.');
+    if (foreign && intlDigits.length < 5) throw new Error('رقم الهاتف الدولي قصير جدًا.');
+    if (!foreign && localPhone && !EGY.test(localPhone)) throw new Error('الرقم لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.');
+    if (!foreign && !localPhone && !whatsapp) throw new Error('اكتب رقم الهاتف أو اسم مستخدم واتساب على الأقل.');
+
+    const apps = Emp.ed.get(true);
+    let id = null, merged = false;
+
+    if (!foreign && (localPhone || whatsapp)) {
+      let ex = null;
+
+      if (localPhone) {
+        const q1 = await db.from('employee_customers')
+          .select('id,report_date,master_customer_id,notes')
+          .eq('employee_id', me())
+          .eq('phone', localPhone)
+          .maybeSingle();
+
+        if (q1.error) throw q1.error;
+        ex = q1.data;
+      }
+
+      if (!ex && whatsapp) {
+        let q2 = await db.from('employee_customers')
+          .select('id,report_date,master_customer_id,notes')
+          .eq('employee_id', me())
+          .ilike('whatsapp_username', whatsapp)
+          .maybeSingle();
+
+        if (q2.error) throw q2.error;
+        ex = q2.data;
+
+        // التوافق مع العملاء المسجلين سابقًا بدون علامة @
+        if (!ex) {
+          q2 = await db.from('employee_customers')
+            .select('id,report_date,master_customer_id,notes')
+            .eq('employee_id', me())
+            .ilike('whatsapp_username', usernamePart)
+            .maybeSingle();
+
+          if (q2.error) throw q2.error;
+          ex = q2.data;
+        }
+      }
+
+      if (ex) {
+        if (ex.report_date !== cairoToday() || ex.master_customer_id) {
+          throw new Error('هذا العميل مسجل عندك من قبل ولا يمكن تعديله الآن. أبلغ المدير لو في أبلكيشن جديد.');
+        }
+
+        if (!confirm('هذا العميل مسجل عندك اليوم. هل تريد إضافة البيانات والأبلكيشنات الجديدة على نفس العميل؟')) return;
+
+        id = ex.id;
+        merged = true;
+
+        const patch = {};
+        if (whatsapp) patch.whatsapp_username = whatsapp;
+        if (localPhone) patch.phone = localPhone;
+        if (notes) patch.notes = ((ex.notes ? ex.notes + '\n' : '') + notes);
+
+        if (Object.keys(patch).length) {
+          const u = await db.from('employee_customers').update(patch).eq('id', id);
+          if (u.error) throw u.error;
+        }
+      }
     }
-    if(!id){const ins=await db.from('employee_customers').insert({employee_id:me(),phone:phone||null,whatsapp_username:foreign?null:(whatsapp||null),is_foreign:foreign,notes:notes||null}).select('id').single();if(ins.error)throw ins.error;id=ins.data.id;}
-    try{for(const a of apps){const ex=await db.from('employee_customer_apps').select('id').eq('customer_id',id).eq('application_type_id',a.type).maybeSingle();const r=ex.data?await db.from('employee_customer_apps').update({amount:a.amount}).eq('id',ex.data.id):await db.from('employee_customer_apps').insert({customer_id:id,application_type_id:a.type,amount:a.amount});if(r.error)throw r.error;}}
-    catch(err){if(!merged)await db.from('employee_customers').delete().eq('id',id);throw err;}
-    toast(merged?'تم تحديث العميل بالأبلكيشنات الجديدة.':'تم تسجيل العميل.', 'ok');
-    ph.value='';wa.value='';intl.value='';$('ecNotes').value='';$('ecForeign').checked=false;ph.disabled=false;wa.disabled=false;intl.disabled=true;foreignBox.style.display='none';codeSel.value='+20';Emp.ed=EL.appEditor($('ecApps'),[],true);paint();Emp.refreshToday();
+
+    if (!id) {
+      const ins = await db.from('employee_customers').insert({
+        employee_id: me(),
+        phone: phone || null,
+        whatsapp_username: foreign ? null : (whatsapp || null),
+        is_foreign: foreign,
+        notes: notes || null
+      }).select('id').single();
+
+      if (ins.error) throw ins.error;
+      id = ins.data.id;
+    }
+
+    try {
+      for (const a of apps) {
+        const ex = await db.from('employee_customer_apps')
+          .select('id')
+          .eq('customer_id', id)
+          .eq('application_type_id', a.type)
+          .maybeSingle();
+
+        if (ex.error) throw ex.error;
+
+        const r = ex.data
+          ? await db.from('employee_customer_apps').update({ amount: a.amount }).eq('id', ex.data.id)
+          : await db.from('employee_customer_apps').insert({
+              customer_id: id,
+              application_type_id: a.type,
+              amount: a.amount
+            });
+
+        if (r.error) throw r.error;
+      }
+    } catch (err) {
+      if (!merged) await db.from('employee_customers').delete().eq('id', id);
+      throw err;
+    }
+
+    toast(merged ? 'تم تحديث العميل بالأبلكيشنات الجديدة.' : 'تم تسجيل العميل.', 'ok');
+
+    ph.value = '';
+    wa.value = '@';
+    intl.value = '';
+    $('ecNotes').value = '';
+    $('ecForeign').checked = false;
+    ph.disabled = false;
+    wa.disabled = false;
+    intl.disabled = true;
+    foreignBox.style.display = 'none';
+    codeSel.value = '+20';
+
+    Emp.ed = EL.appEditor($('ecApps'), [], true);
+    paint();
+    Emp.refreshToday();
   });
 };
 
