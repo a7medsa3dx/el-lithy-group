@@ -9682,7 +9682,7 @@ async function loadManagerSmartMessageReplies(hostId = "managerSmartMessageRepli
   host.innerHTML = data.map(r => {
     const employee = profileMap.get(r.employee_id);
     const dateText = r.employee_replied_at ? new Date(r.employee_replied_at).toLocaleString('ar-EG-u-nu-latn',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-    return `<article style="padding:14px;margin:10px 0;background:#fff;border:1px solid #e0eaf0;border-radius:12px;box-shadow:0 4px 14px rgba(16,43,63,.04)"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong>${escapeDayOffText(employee?.full_name || 'موظف')}</strong><span class="pill ${r.manager_reply_seen ? 'p-gray':'p-amber'}">${r.manager_reply_seen ? 'تمت المراجعة':'رد جديد'}</span><span style="margin-inline-start:auto;color:#82919c;font-size:11px">${escapeDayOffText(dateText)}</span></div><p style="margin:8px 0;color:#607583;font-size:12px">${escapeDayOffText(r.message_title || 'رسالة الإدارة')}</p><div style="padding:11px;background:#f5f8fa;border-radius:9px;font-size:13px;line-height:1.8;white-space:pre-wrap">${escapeDayOffText(r.employee_reply || (r.employee_thanks ? 'شكراً ❤️' : ''))}</div>${r.manager_reply_seen ? '' : `<button type="button" data-reply-seen="${escapeDayOffText(r.id)}" style="margin-top:10px;padding:8px 14px;width:auto">تمت المراجعة</button>`}</article>`;
+    return `<article data-smart-delivery-card="${escapeDayOffText(r.id)}" style="padding:14px;margin:10px 0;background:#fff;border:1px solid #e0eaf0;border-radius:12px;box-shadow:0 4px 14px rgba(16,43,63,.04)"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong>${escapeDayOffText(employee?.full_name || 'موظف')}</strong><span class="pill ${r.manager_reply_seen ? 'p-gray':'p-amber'}">${r.manager_reply_seen ? 'تمت المراجعة':'رد جديد'}</span><span style="margin-inline-start:auto;color:#82919c;font-size:11px">${escapeDayOffText(dateText)}</span></div><p style="margin:8px 0;color:#607583;font-size:12px">${escapeDayOffText(r.message_title || 'رسالة الإدارة')}</p><div style="padding:11px;background:#f5f8fa;border-radius:9px;font-size:13px;line-height:1.8;white-space:pre-wrap">${escapeDayOffText(r.employee_reply || (r.employee_thanks ? 'شكراً ❤️' : ''))}</div>${r.manager_reply_seen ? '' : `<button type="button" data-reply-seen="${escapeDayOffText(r.id)}" style="margin-top:10px;padding:8px 14px;width:auto">تمت المراجعة</button>`}</article>`;
   }).join("");
   host.onclick = async ev => {
     const btn = ev.target.closest("[data-reply-seen]"); if (!btn) return;
@@ -10538,6 +10538,22 @@ async function openDailyReportsForEmployee(employeeId, reportId) {
     if (emp) { emp.value = employeeId; await loadReports(); }
   }
 }
+async function openSmartReply(deliveryId) {
+  A.activeNav = 'smart';
+  window.showSection('smartMessagesSection');
+  await loadSmartMessageEmployees();
+  await loadManagerSmartMessageReplies('managerSmartMessageReplies');
+  const cards = [...document.querySelectorAll('[data-smart-delivery-card]')];
+  const card = cards.find(el => el.dataset.smartDeliveryCard === deliveryId);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.style.outline = '3px solid var(--brand)';
+    card.style.outlineOffset = '3px';
+    card.style.transition = 'outline-color .3s ease';
+  } else {
+    showMessage('تم فتح صندوق الردود، لكن الرد المطلوب لم يعد ظاهرًا ضمن آخر 100 رد.');
+  }
+}
 function alertGo(key, refId) {
   if (key === 'reports') { openDailyReportsForEmployee('', refId); return; }
   const it = BUILTIN.find(b => b.key === key);
@@ -10609,7 +10625,7 @@ Owner.renderAlerts = async function () {
       const u = await db.from('employee_smart_message_deliveries').update({manager_reply_seen:true}).eq('id',id);
       if (u.error) { showMessage(u.error.message); return; }
       await Owner.refreshBell();
-      await openDailyReportsForEmployee(smart.dataset.smartEmployee);
+      await openSmartReply(id);
       return;
     }
     const alert = e.target.closest('[data-unified-alert]');
