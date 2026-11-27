@@ -10337,25 +10337,58 @@ async function afterLogin() {
   if (!context || !context.user || !context.profile) {
     const sessionResult = await db.auth.getSession();
     const user = sessionResult.data && sessionResult.data.session && sessionResult.data.session.user;
-    if (!user) return;
-    const profileResult = await db.from('profiles').select('id,full_name,employee_code,role,job_title,avatar_url').eq('id', user.id).single();
-    if (profileResult.error || !profileResult.data) throw profileResult.error || new Error('لم يتم العثور على بيانات الموظف.');
+    if (!user) throw new Error('انتهت جلسة الدخول. سجّل الدخول مرة أخرى.');
+    const profileResult = await db.from('profiles')
+      .select('id,full_name,employee_code,role,job_title,avatar_url')
+      .eq('id', user.id).single();
+    if (profileResult.error || !profileResult.data)
+      throw profileResult.error || new Error('لم يتم العثور على بيانات الموظف.');
     context = { user: user, profile: profileResult.data };
   }
+
   const user = context.user;
-  A.profile = context.profile; A.isOwner = context.profile.role === 'owner';
-  await window.ELTheme.loadForUser(user);
+  A.profile = context.profile;
+  A.isOwner = context.profile.role === 'owner';
   A.sqlOk = true;
-  await Promise.all([loadSettings(), A.isOwner ? loadEmployees() : Promise.resolve()]);
+
+  // أظهر الواجهة الأساسية فوراً؛ لا تجعل تحميل الإعدادات يحجب الشاشة والقائمة.
+  try { await window.ELTheme.loadForUser(user); }
+  catch (themeError) { console.warn('Theme initialization failed:', themeError); }
+
   if (A.isOwner) {
-    buildSidebar();
     document.body.dataset.mode = 'manager';
-    Owner.renderHome();
-    Owner.refreshBell();
-    clearInterval(A.bellTimer); A.bellTimer = setInterval(Owner.refreshBell, 60000);
+    buildSidebar();
+    clearInterval(A.bellTimer);
+    Owner.renderHome().catch(error => {
+      console.error('Owner home initialization failed:', error);
+      const host = $('homeWidgets');
+      if (host) host.innerHTML = '<div class="empty">تعذر تحميل ملخص الرئيسية. استخدم القائمة الجانبية للتنقل ثم أعد المحاولة.</div>';
+    });
+    Promise.resolve(Owner.refreshBell()).catch(error => console.warn('Alerts initialization failed:', error));
+    A.bellTimer = setInterval(() => {
+      Promise.resolve(Owner.refreshBell()).catch(error => console.warn('Alerts refresh failed:', error));
+    }, 60000);
   } else {
     clearInterval(A.bellTimer);
+    document.body.dataset.mode = 'employee';
     Emp.init();
+  }
+
+  // الإعدادات والبيانات المساندة تُحمّل بعد ظهور الواجهة، وبشكل مستقل.
+  const startupTasks = [loadSettings()];
+  if (A.isOwner) startupTasks.push(loadEmployees());
+  const results = await Promise.allSettled(startupTasks);
+  results.forEach((result, index) => {
+    if (result.status === 'rejected')
+      console.error('Post-login data initialization failed:', index, result.reason);
+  });
+
+  if (A.isOwner) {
+    buildSidebar();
+    Owner.renderHome().catch(error => console.error('Owner home refresh failed:', error));
+  } else {
+    Emp.buildNav();
+    Emp.paintHero();
   }
 }
 
