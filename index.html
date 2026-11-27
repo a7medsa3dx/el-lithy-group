@@ -10450,7 +10450,7 @@ Owner.renderHome = async function () {
 
   html += '<div class="grid g-auto">' +
     kpi('c-blue', 'trend', 'مبيعات الشهر', num(c.total_sales || 0) + ' <small>جنيه</small>', num(pct.toFixed(1)) + '% من هدف الشركة') +
-    kpi('c-violet', 'doc', 'تقارير اليوم', (A.campaign ? repSet.size : '—') + ' <small>' + (A.campaign ? 'من ' + E.length : '') + '</small>', A.campaign ? notSent.length + ' لم يرسلوا بعد' : 'لا توجد حملة مفتوحة') + '</div>'; 
+    kpi('c-violet', 'doc', 'تقارير اليوم', (A.campaign ? repSet.size : '—') + ' <small>' + (A.campaign ? 'من ' + reportEmployees.length : '') + '</small>', A.campaign ? notSent.length + ' لم يرسلوا بعد' : 'لا توجد حملة مفتوحة') + '</div>'; 
 
   html += '<div class="grid g-2" style="margin-top:16px">';
   // المبيعات
