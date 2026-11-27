@@ -2995,16 +2995,38 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
   <input id="salesMonth" type="month"
     style="width:100%;padding:13px;margin:10px 0 22px">
 
+  <h3 style="margin-top:28px">أداء الموظفين الشهري</h3>
+
+<div style="overflow-x:auto;background:white;border-radius:14px;border:1px solid #e5edf2">
+  <table id="monthlyEmployeePerformanceTable"
+  style="width:100%;border-collapse:collapse;min-width:1120px">
+    <thead>
+      <tr style="background:#102b3f;color:white">
+        <th style="padding:14px">الموظف</th>
+        <th style="padding:14px">إجمالي المبيعات</th>
+        <th style="padding:14px">مبيعات Plus</th>
+        <th style="padding:14px">مبيعات Triple Zero</th>
+        <th style="padding:14px">الهدف</th>
+        <th style="padding:14px">نسبة التحقيق</th>
+        <th style="padding:14px">العمولة</th>
+      </tr>
+    </thead>
+    <tbody id="monthlySalesBody">
+      <tr>
+        <td colspan="7" style="padding:15px;text-align:center">
+          جارٍ تحميل الأداء الشهري...
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px">
 
     <!-- هدف الشركة -->
     <div style="background:linear-gradient(145deg,#102b3f,#1c526b);padding:22px;border-radius:17px;color:white;box-shadow:0 7px 18px #102b3f20">
       <div style="font-size:14px;opacity:.85">🎯 هدف الشركة الشهري</div>
       <h2 id="companyMonthlyTarget" style="font-size:25px;margin:15px 0;color:white">0 جنيه</h2>
-      <button type="button" id="editCompanyTargetButton"
-        style="margin-top:8px;padding:10px;background:#ffffff;color:#102b3f;border:0;border-radius:9px;font-weight:bold">
-        تعديل هدف الشركة
-      </button>
     </div>
 
     <!-- المبيعات -->
@@ -3019,13 +3041,14 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
   <div style="font-size:14px;color:#648074">💳 إجمالي مبيعات Plus الشهرية</div>
   <h2 id="monthlyPlusTotal" style="font-size:25px;margin:15px 0;color:#3478c8">0 جنيه</h2>
   <div id="monthlyPlusCount" style="font-size:13px;color:#84949c">0 عملية</div>
+  <div id="monthlyPlusShare" style="font-size:13px;color:#3478c8;font-weight:bold;margin-top:6px">0% من إجمالي مبيعات الشركة</div>
 </div>
 
 <!-- إجمالي مبيعات Triple Zero الشهرية -->
 <div style="background:white;padding:22px;border-radius:17px;border:1px solid #dceee7;border-bottom:4px solid #20a675;box-shadow:0 7px 18px #102b3f0a">
   <div style="font-size:14px;color:#648074">💰 إجمالي مبيعات Triple Zero الشهرية</div>
   <h2 id="monthlyTripleTotal" style="font-size:25px;margin:15px 0;color:#16865f">0 جنيه</h2>
-  <div id="monthlyTripleCount" style="font-size:13px;color:#84949c">0 عملية</div>
+  <div id="monthlyTripleCount" style="font-size:13px;color:#16865f;font-weight:bold;margin-top:6px">0% من إجمالي مبيعات الشركة</div>
 </div>
 
     <!-- نسبة التحقيق -->
@@ -3055,31 +3078,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
     جارٍ مراجعة تطابق الأهداف...
   </div>
 
-  <h3 style="margin-top:28px">أداء الموظفين الشهري</h3>
 
-<div style="overflow-x:auto;background:white;border-radius:14px;border:1px solid #e5edf2">
-  <table id="monthlyEmployeePerformanceTable"
-  style="width:100%;border-collapse:collapse;min-width:1120px">
-    <thead>
-      <tr style="background:#102b3f;color:white">
-        <th style="padding:14px">الموظف</th>
-        <th style="padding:14px">إجمالي المبيعات</th>
-        <th style="padding:14px">مبيعات Plus</th>
-        <th style="padding:14px">مبيعات Triple Zero</th>
-        <th style="padding:14px">الهدف</th>
-        <th style="padding:14px">نسبة التحقيق</th>
-        <th style="padding:14px">العمولة</th>
-      </tr>
-    </thead>
-    <tbody id="monthlySalesBody">
-      <tr>
-        <td colspan="7" style="padding:15px;text-align:center">
-          جارٍ تحميل الأداء الشهري...
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
 </div>
 
 
@@ -3154,6 +3153,14 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
   <p style="margin:0 0 20px;color:#718096;font-size:13px;line-height:1.8">
     اختر الموظف وحدد هدفه الشهري. سيتم تطبيق التعديل على الشهر المحدد في لوحة المبيعات.
   </p>
+
+
+  <div style="margin:0 0 20px;padding:16px;background:#f1f7fa;border:1px solid #dce6ef;border-radius:12px">
+    <label for="companyTargetManagerAmount" style="display:block;font-weight:bold;margin-bottom:8px">هدف الشركة الشهري بالجنيه</label>
+    <input id="companyTargetManagerAmount" type="number" min="0.01" step="0.01" placeholder="أدخل هدف الشركة للشهر المحدد" style="width:100%;padding:13px;border:1px solid #dce4eb;border-radius:10px">
+    <button id="saveCompanyTargetManagerButton" type="button" style="width:100%;margin-top:10px;padding:12px;background:#183b52;color:white;border:0;border-radius:10px;font-weight:bold">حفظ هدف الشركة</button>
+    <p id="companyTargetManagerStatus" style="margin:8px 0 0;text-align:center;font-size:13px;line-height:1.7;color:#718096"></p>
+  </div>
 
  <div class="employee-target-fields-grid">
 
@@ -8129,59 +8136,7 @@ $("deleteSmartMessageButton").addEventListener("click", async () => {
 
 });
     
-    // تعديل الهدف الشهري للشركة
-$("editCompanyTargetButton").addEventListener("click", async () => {
-  const month = $("salesMonth").value;
-
-  if (!month) {
-    showMessage("اختر الشهر المطلوب أولاً.");
-    return;
-  }
-
-  const currentTarget = prompt(
-    "اكتب هدف الشركة الجديد بالجنيه:",
-    ""
-  );
-
-  if (currentTarget === null) return;
-
-  const targetAmount = Number(currentTarget.replace(/,/g, ""));
-
-  if (!Number.isFinite(targetAmount) || targetAmount <= 0) {
-    showMessage("من فضلك أدخل مبلغًا صحيحًا أكبر من صفر.");
-    return;
-  }
-
-  const button = $("editCompanyTargetButton");
-  button.disabled = true;
-  button.textContent = "جارٍ الحفظ...";
-
-  try {
-    const { error } = await db
-      .from("monthly_company_targets")
-      .upsert(
-        {
-          month_start: month + "-01",
-          target_amount: targetAmount
-        },
-        { onConflict: "month_start" }
-      );
-
-    if (error) throw error;
-
-    await loadMonthlySalesPerformance();
-    showMessage("تم تحديث هدف الشركة بنجاح.");
-
-  } catch (error) {
-    console.error("Company target update error:", error);
-    showMessage(error.message || "تعذر تحديث هدف الشركة.");
-  } finally {
-    button.disabled = false;
-    button.textContent = "تعديل هدف الشركة";
-  }
-});
-    
-// إضافة موظف جديد إلى قاعدة البيانات
+    // إضافة موظف جديد إلى قاعدة البيانات
 $("addEmployeeForm").addEventListener("submit", async event => {
   event.preventDefault();
 
@@ -8662,6 +8617,49 @@ const targetInput = $("employeeTargetManagerAmount");
 const targetStatus = $("employeeTargetManagerStatus");
 const targetSaveButton = $("saveEmployeeTargetManagerButton");
 
+// إعداد تعديل هدف الشركة من نفس صندوق إدارة الأهداف
+const companyTargetInput = $("companyTargetManagerAmount");
+const companyTargetSaveButton = $("saveCompanyTargetManagerButton");
+const companyTargetStatus = $("companyTargetManagerStatus");
+companyTargetInput.value = Number(company?.company_target || 0) > 0
+  ? Number(company.company_target)
+  : "";
+
+companyTargetSaveButton.onclick = async () => {
+  const selectedMonth = $("salesMonth").value;
+  const amount = Number(companyTargetInput.value);
+  if (!selectedMonth) {
+    companyTargetStatus.textContent = "اختر الشهر المطلوب أولاً.";
+    companyTargetStatus.style.color = "#c0392b";
+    return;
+  }
+  if (!Number.isFinite(amount) || amount <= 0) {
+    companyTargetStatus.textContent = "أدخل هدفًا صحيحًا أكبر من صفر.";
+    companyTargetStatus.style.color = "#c0392b";
+    return;
+  }
+  companyTargetSaveButton.disabled = true;
+  companyTargetSaveButton.textContent = "جارٍ الحفظ...";
+  try {
+    const { error } = await db.from("monthly_company_targets").upsert(
+      { month_start: selectedMonth + "-01", target_amount: amount },
+      { onConflict: "month_start" }
+    );
+    if (error) throw error;
+    await loadMonthlySalesPerformance();
+    companyTargetStatus.textContent = "تم تحديث هدف الشركة للشهر المحدد بنجاح.";
+    companyTargetStatus.style.color = "#16865f";
+    showMessage("تم تحديث هدف الشركة بنجاح.");
+  } catch (error) {
+    console.error("Company target update error:", error);
+    companyTargetStatus.textContent = error.message || "تعذر تحديث هدف الشركة.";
+    companyTargetStatus.style.color = "#c0392b";
+  } finally {
+    companyTargetSaveButton.disabled = false;
+    companyTargetSaveButton.textContent = "حفظ هدف الشركة";
+  }
+};
+
 // استبعاد أحمد حجازي وفق النظام السابق
 const eligibleEmployees = (employees || []).filter(
   employee => employee.employee_code !== "EMP002"
@@ -8837,6 +8835,18 @@ targetSaveButton.onclick = async () => {
     $("monthlyTripleTotal").textContent = formatMoney(monthlyTripleTotal);
     $("monthlyTripleCount").textContent =
       `${monthlyTripleCount.toLocaleString("ar-EG-u-nu-latn")} عملية`;
+
+    const companySalesForShare = (employees || []).reduce(
+      (sum, employee) => sum + Number(employee.total_sales || 0), 0
+    );
+    const plusShare = companySalesForShare > 0 ? monthlyPlusTotal / companySalesForShare * 100 : 0;
+    const tripleShare = companySalesForShare > 0 ? monthlyTripleTotal / companySalesForShare * 100 : 0;
+    $("monthlyPlusShare").textContent =
+      plusShare.toLocaleString("ar-EG-u-nu-latn", { maximumFractionDigits: 2 }) +
+      "% من إجمالي مبيعات الشركة";
+    $("monthlyTripleShare").textContent =
+      tripleShare.toLocaleString("ar-EG-u-nu-latn", { maximumFractionDigits: 2 }) +
+      "% من إجمالي مبيعات الشركة";
 
     if (company) {
       const reportCompanySales = (employees || []).reduce(
