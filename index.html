@@ -13571,6 +13571,83 @@ body[data-theme="dark"] #smartMessagesSection .smart-emoji-choice:hover{backgrou
   #employeesSection #addEmployeeForm{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
 
+
+/* Hard fix: keep employee creation fields in a single readable vertical flow */
+#employeesSection #addEmployeeForm{
+  display:flex!important;
+  flex-direction:column!important;
+  flex-wrap:nowrap!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:0!important;
+  width:100%!important;
+  min-width:0!important;
+  direction:rtl!important;
+  writing-mode:horizontal-tb!important;
+}
+#employeesSection #addEmployeeForm>label{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:12px 0 5px!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+  text-align:right!important;
+}
+#employeesSection #addEmployeeForm>input{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  margin:0!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  writing-mode:horizontal-tb!important;
+  direction:rtl!important;
+  text-align:right!important;
+  white-space:normal!important;
+}
+#employeesSection #addEmployeeForm>input[type=password]{
+  direction:ltr!important;
+  text-align:left!important;
+}
+#employeesSection #addEmployeeForm>button{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  margin:16px 0 0!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  writing-mode:horizontal-tb!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+}
+#employeesSection #addEmployeeForm *,
+#employeesSection #employeeAccountsManagerCard *,
+#employeesSection #empEditCard *{
+  writing-mode:horizontal-tb;
+  text-orientation:mixed;
+}
+#employeesSection #employeeAccountsManagerCard,
+#employeesSection #empEditCard,
+#employeesSection #employeeListContainer{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+
 </style>
 
 </body>
