@@ -11869,8 +11869,8 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
   const createOne = (n, existing) => {
     const id = escId(n), row = existing || {};
     const html = '<details class="card rp-with-customer" style="padding:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--card)">' +
-      '<summary style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;cursor:pointer;list-style:none;font-weight:800">' +
-      '<span>العميل ' + n + '</span><span class="pill p-amber" data-rw-status>استكمال البيانات</span></summary>' +
+      '<summary style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;cursor:pointer;list-style:none;font-weight:800">' +
+      '<span>العميل ' + n + '</span><span style="display:flex;align-items:center;gap:8px"><span class="pill p-amber" data-rw-status>استكمال البيانات</span><button type="button" data-rw-delete title="حذف العميل" aria-label="حذف العميل" style="border:0;border-radius:8px;background:#fee2e2;color:#b42318;font-weight:900;width:30px;height:30px;font-size:18px;line-height:1;cursor:pointer">×</button></span></summary>' +
       '<div style="padding:14px;border-top:1px solid var(--line);display:grid;gap:10px">' +
       '<div class="field"><label>رقم الهاتف</label><input data-rw-phone type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="01XXXXXXXXX أو +2010XXXXXXXX" dir="ltr" style="text-align:start"></div>' +
       '<div class="field"><label>اسم مستخدم واتساب</label><input data-rw-wa type="text" value="@" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
@@ -11927,13 +11927,24 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
     const state={card,read,updateStatus,existingId:row.id||null};
     updateStatus(); return state;
   };
-  function sync(count){
+  function sync(count, notify=true){
     count=Math.max(0,Math.min(100,Number(count)||0));
     while(states.length>count){const st=states.pop();st.card.remove();}
     while(states.length<count){const st=createOne(states.length+1,(initialRows||[])[states.length]||null);states.push(st);if(states.length===1)st.card.open=true;}
     states.forEach((st,i)=>{const title=st.card.querySelector('summary span:first-child');if(title)title.textContent='العميل '+(i+1);});
-    if(onChange)onChange();
+    if(notify&&onChange)onChange();
   }
+  host.addEventListener('click',e=>{
+    const del=e.target.closest('[data-rw-delete]');
+    if(!del)return;
+    e.preventDefault();e.stopPropagation();
+    const card=del.closest('.rp-with-customer');
+    const index=states.findIndex(st=>st.card===card);
+    if(index<0)return;
+    states.splice(index,1);card.remove();
+    states.forEach((st,i)=>{const title=st.card.querySelector('summary span:first-child');if(title)title.textContent='العميل '+(i+1);});
+    if(onChange)onChange();
+  });
   function validate(){
     if(states.some(st=>{try{st.read();return false;}catch(_){return true;}}))throw new Error('استكمل بيانات كل العملاء في قسم «معاهم» قبل إرسال التقرير.');
     const seen=new Set();
@@ -11957,7 +11968,12 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
     const stale=(initialRows||[]).filter(r=>r.id&&!savedIds.includes(r.id)).map(r=>r.id);
     if(stale.length){const d=await db.from('employee_customers').delete().in('id',stale);if(d.error)throw d.error;}
   }
-  sync(initialCount);
+  sync(initialCount,false);
+  const add=document.createElement('button');
+  add.type='button';add.className='btn sec';add.style.cssText='width:100%;margin-top:4px;padding:10px 12px;font-size:13px';
+  add.textContent='+ إضافة عميل';
+  add.addEventListener('click',()=>{sync(states.length+1);if(states.length){const last=states[states.length-1];last.card.open=true;last.card.scrollIntoView({behavior:'smooth',block:'nearest'});}});
+  host.appendChild(add);
   return {states,sync,validate,save,isValid:()=>{try{validate();return true;}catch(_){return false;}}};
 }
 
@@ -12016,7 +12032,7 @@ Emp.renderReport = async function () {
     const foundRows=oldCustomers.data||[];
     existingWithThemRows=foundRows;
   }
-  withCards=createReportWithThemCards($('rpWithCustomers'),val('rpWith'),me(),date,check,existingWithThemRows);
+  withCards=createReportWithThemCards($('rpWithCustomers'),val('rpWith'),me(),date,()=>{ if(withCards){ $('rpWith').value=String(withCards.states.length); } check(); },existingWithThemRows);
   ['rpTotal', 'rpInt', 'rpNo', 'rpNot'].forEach(id => $(id).addEventListener('input', e => { e.target.value = toEn(e.target.value).replace(/[^0-9]/g, ''); check(); }));
   $('rpWith').addEventListener('input', e => { e.target.value = toEn(e.target.value).replace(/[^0-9]/g, '').slice(0,3); withCards.sync(val('rpWith')); check(); });
   check();
