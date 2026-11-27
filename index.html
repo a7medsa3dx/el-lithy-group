@@ -10313,8 +10313,34 @@ window.showSection = function (id) {
 // ---------------- بعد تسجيل الدخول ----------------
 const origShowDashboard = window.showDashboard;
 window.showDashboard = async function () {
-  await origShowDashboard();
-  try { await afterLogin(); } catch (e) { console.error('afterLogin', e); }
+  let dashboardError = null;
+  // حاول تشغيل التهيئة القديمة، لكن لا تجعل فشل أي طلب فرعي يحجب الواجهة.
+  try {
+    await origShowDashboard();
+  } catch (e) {
+    dashboardError = e;
+    console.error('Legacy dashboard initialization:', e);
+  }
+
+  try {
+    await afterLogin();
+  } catch (e) {
+    console.error('afterLogin initialization:', e);
+    const owner = !!(A.profile && A.profile.role === 'owner');
+    document.body.dataset.mode = owner ? 'manager' : 'employee';
+    const targetId = owner ? 'dashboardSection' : 'employeeDashboardSection';
+    try { showSection(targetId); } catch (showError) { console.error('Dashboard reveal:', showError); }
+    const target = document.getElementById(targetId);
+    if (target) target.classList.remove('hidden');
+    showMessage('تم تسجيل الدخول، لكن تعذر تحميل بعض البيانات. حدّث الصفحة وحاول مرة أخرى.');
+  }
+
+  // تأكيد إظهار الواجهة المناسبة بعد التهيئة في حسابي المدير والموظف.
+  const isOwner = !!(A.profile && A.profile.role === 'owner');
+  document.body.dataset.mode = isOwner ? 'manager' : 'employee';
+  const section = document.getElementById(isOwner ? 'dashboardSection' : 'employeeDashboardSection');
+  if (section) section.classList.remove('hidden');
+  if (dashboardError && !A.profile) throw dashboardError;
 };
 async function afterLogin() {
   const u = await db.auth.getUser();
