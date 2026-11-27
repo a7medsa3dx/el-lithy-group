@@ -8841,8 +8841,10 @@ targetSaveButton.onclick = async () => {
     $("monthlyTripleCount").textContent =
       `${monthlyTripleCount.toLocaleString("ar-EG-u-nu-latn")} عملية`;
 
-    const companySalesForShare = (employees || []).reduce(
-      (sum, employee) => sum + Number(employee.total_sales || 0), 0
+    // استخدم إجمالي مبيعات الشركة من نفس مصدر بيانات لوحة الأداء
+    const companySalesForShare = Number(
+      company?.total_sales ??
+      (employees || []).reduce((sum, employee) => sum + Number(employee.total_sales || 0), 0)
     );
     const plusShare = companySalesForShare > 0 ? monthlyPlusTotal / companySalesForShare * 100 : 0;
     const tripleShare = companySalesForShare > 0 ? monthlyTripleTotal / companySalesForShare * 100 : 0;
@@ -8854,14 +8856,13 @@ targetSaveButton.onclick = async () => {
       "% من إجمالي مبيعات الشركة";
 
     if (company) {
-      const reportCompanySales = (employees || []).reduce(
-        (sum, employee) => sum + Number(employee.total_sales || 0), 0
-      );
+      const reportCompanySales = Number(company.total_sales || 0);
       const reportCompanyTarget = Number(company.company_target || 0);
-      const reportCompanyAchievement = reportCompanyTarget > 0
-        ? reportCompanySales / reportCompanyTarget * 100
-        : 0;
-      const reportCompanyRemaining = reportCompanyTarget - reportCompanySales;
+      // نسبة التحقيق والمتبقي يقدمهما الـ View وفق قواعد أهلية الهدف المعتمدة
+      const reportCompanyAchievement = Number(company.achievement_percentage || 0);
+      const reportCompanyRemaining = Number(
+        company.remaining_target ?? reportCompanyTarget
+      );
 
       $("companyMonthlyTarget").textContent =
         formatMoney(reportCompanyTarget);
@@ -8873,18 +8874,16 @@ targetSaveButton.onclick = async () => {
         reportCompanyAchievement.toLocaleString("ar-EG-u-nu-latn", { maximumFractionDigits: 2 }) + "%";
 
       const companyProgress = Math.max(
-  0,
-  Math.min(100, reportCompanyAchievement)
-);
+        0,
+        Math.min(100, reportCompanyAchievement)
+      );
 
-$("companyProgressBar").style.width = companyProgress + "%";
-      
-      const remaining = reportCompanyRemaining;
+      $("companyProgressBar").style.width = companyProgress + "%";
 
       $("companyRemainingTarget").textContent =
-        remaining >= 0
-          ? formatMoney(remaining)
-          : "تجاوز الهدف بـ " + formatMoney(Math.abs(remaining));
+        reportCompanyRemaining >= 0
+          ? formatMoney(reportCompanyRemaining)
+          : "تجاوز الهدف بـ " + formatMoney(Math.abs(reportCompanyRemaining));
     } else {
       $("companyMonthlyTarget").textContent = "غير محدد";
       $("companyMonthlySales").textContent = formatMoney(0);
