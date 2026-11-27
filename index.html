@@ -6882,7 +6882,7 @@ showMessage("تم تسجيل الدخول بنجاح.");
 
     if (sessionError) throw sessionError;
 
-    await showDashboard();
+    await window.showDashboard();
 
   } catch (error) {
     showMessage(error.message || "حدث خطأ أثناء تسجيل الدخول.");
@@ -10315,11 +10315,13 @@ const origShowDashboard = window.showDashboard;
 window.showDashboard = async function () {
   let dashboardError = null;
   // حاول تشغيل التهيئة القديمة، لكن لا تجعل فشل أي طلب فرعي يحجب الواجهة.
-  try {
-    await origShowDashboard();
-  } catch (e) {
-    dashboardError = e;
-    console.error('Legacy dashboard initialization:', e);
+  if (typeof origShowDashboard === 'function') {
+    try {
+      await origShowDashboard();
+    } catch (e) {
+      dashboardError = e;
+      console.error('Legacy dashboard initialization:', e);
+    }
   }
 
   try {
