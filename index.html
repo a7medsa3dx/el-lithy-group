@@ -10589,7 +10589,7 @@ Owner.renderAlerts = async function () {
       }
       const a = item.data, m = ALERT_META[a.kind] || ['bell','teal','تنبيه','home'];
       return '<article class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '" data-unified-alert="' + esc(a.id) + '" data-alert-kind="' + esc(a.kind || '') + '" data-report-ref="' + esc(a.ref_id || '') + '" style="cursor:pointer">' +
-        '<div class="alert-ico cico">' + icon(m[0],18) + '</div><div class="sp" style="font-size:13px;line-height:1.7"><b>' + m[2] + '</b><br><span class="muted">' + esc(a.message) + '</span><br><span class="small muted">' + fmtDT(a.created_at) + '</span><br><span class="small" style="color:var(--brand)">إدارة ' + esc(m[2]) + ' · اضغط لفتح</span></div></article>';
+        '<div class="alert-ico cico">' + icon(m[0],18) + '</div><div class="sp" style="font-size:13px;line-height:1.7"><b>' + m[2] + '</b><br><span class="muted">' + esc(a.message) + '</span><br><span class="small muted">' + fmtDT(a.created_at) + '</span><br><span class="small" style="color:var(--brand)">إدارة ' + esc(m[2]) + '</span><button type="button" class="mini" data-open-alert-now style="margin-top:8px;color:var(--brand)">افتح الآن</button></div></article>';
     }).join('') : '<div class="empty">لا توجد تنبيهات حاليًا.</div>';
     Owner.refreshBell();
   };
