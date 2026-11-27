@@ -2987,11 +2987,11 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 
 
  <!-- ملخص الأداء الشهري -->
-<div style="margin-top:28px;padding:22px;background:#f7fafc;border:1px solid #e5edf2;border-radius:20px;box-shadow:0 8px 25px #102b3f0b">
+<div class="sales-performance-panel" style="margin-top:28px;padding:22px;background:#f7fafc;border:1px solid #e5edf2;border-radius:20px;box-shadow:0 8px 25px #102b3f0b">
 
   <div class="monthly-performance-heading" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px">
     <h3 style="margin:0;font-size:23px">الأداء والمبيعات الشهرية</h3>
-    <div class="monthly-performance-month" style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#edf3f6;border:1px solid #dce6ec;border-radius:10px">
+    <div class="monthly-performance-month" aria-label="تحديد شهر الأداء" style="display:flex;align-items:center;gap:6px;padding:3px 7px;background:#edf3f6;border:1px solid #dce6ec;border-radius:9px">
       <label for="salesMonth" style="font-size:12px;font-weight:600;color:#627887;white-space:nowrap">الشهر</label>
       <input id="salesMonth" type="month"
         aria-label="اختيار شهر الأداء والمبيعات"
@@ -11440,7 +11440,7 @@ Owner.renderMonthlyReport = async function () {
   const sec=$('monthlyReportSection'); await loadEmployees();
   const now=cairoToday(), month=now.slice(0,7);
   sec.innerHTML=pageHead('التقرير الشهري الشامل','الحضور والانصراف والتأخير والاستراحات والمبيعات والتارجت — للمدير فقط.')+
-    '<div class="card"><div class="form-grid">'+field('الشهر','<input type="month" id="mrMonth" value="'+month+'">')+field('الموظف','<select id="mrEmp">'+empOptions('',true)+'</select>')+'</div><div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn" id="mrLoad">عرض التقرير</button><button class="btn sec" id="mrExcel">تصدير Excel</button><button class="btn sec" id="mrPdf">طباعة / حفظ PDF</button></div></div><div id="mrResult" style="margin-top:16px"></div>';
+    '<div class="card monthly-report-controls"><div class="monthly-report-filters">'+field('الشهر','<input type="month" id="mrMonth" value="'+month+'">')+field('الموظف','<select id="mrEmp">'+empOptions('',true)+'</select>')+'</div><div class="monthly-report-actions"><button class="btn" id="mrLoad">عرض التقرير</button><button class="btn sec" id="mrExcel">تصدير Excel</button><button class="btn sec" id="mrPdf">طباعة / حفظ PDF</button></div></div><div id="mrResult" class="monthly-report-results" style="margin-top:16px"></div>';
   $('mrLoad').onclick=e=>guard(e.currentTarget,loadMonthlyReport); $('mrExcel').onclick=()=>{if(!Owner.monthlyRows)return toast('اعرض التقرير أولاً.','err');const rows=Owner.monthlyRows, daily=Owner.monthlyAttendanceRows||[];const escX=v=>String(v??'').replace(/[&<>]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[x]));const tableX=a=>'<table dir="rtl">'+a.map((r,i)=>'<tr>'+r.map(c=>'<'+(i?'td':'th')+'>'+escX(c)+'</'+(i?'td':'th')+'>').join('')+'</tr>').join('')+'</table>';const html='<html><meta charset="utf-8"><h2>ملخص الموظفين</h2>'+tableX(rows)+'<h2>تفاصيل الحضور والانصراف</h2>'+tableX(daily)+'</html>';const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='EL-LITHY-monthly-report.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}; $('mrPdf').onclick=()=>{if(!Owner.monthlyPrint)return toast('اعرض التقرير أولاً.','err');const w=window.open('','_blank');if(!w)return toast('اسمح بالنوافذ المنبثقة لحفظ PDF.','err');w.document.write(Owner.monthlyPrint);w.document.close();w.focus();w.print();};
   await loadMonthlyReport();
 };
@@ -13665,6 +13665,115 @@ body[data-theme="dark"] #smartMessagesSection .smart-emoji-choice:hover{backgrou
   max-width:100%!important;
 }
 
+</style>
+
+
+<style id="el-lithy-responsive-theme-polish">
+/* Shared light/dark tokens for the sales and monthly-report screens */
+#salesManagementSection{
+ --sp-card:#fff;--sp-soft:#f5f8fb;--sp-line:#dce6ed;--sp-ink:#183247;
+ --sp-muted:#657b8b;--sp-input:#fff;--sp-head:#edf3f6;
+ color:var(--sp-ink);
+}
+body[data-theme="dark"] #salesManagementSection{
+ --sp-card:#172635;--sp-soft:#1d3040;--sp-line:#3a5062;--sp-ink:#f1f6fa;
+ --sp-muted:#bdcbd5;--sp-input:#142331;--sp-head:#243b4b;
+}
+#salesManagementSection .sales-performance-panel,
+#salesManagementSection #employeeTargetManagementPanel,
+#salesManagementSection>div[style*="margin-top:20px"]{
+ background:var(--sp-card)!important;color:var(--sp-ink)!important;border-color:var(--sp-line)!important;
+}
+#salesManagementSection .sales-performance-panel h3,
+#salesManagementSection #employeeTargetManagementPanel h3,
+#salesManagementSection .sales-performance-panel label,
+#salesManagementSection #employeeTargetManagementPanel label{color:var(--sp-ink)!important}
+#salesManagementSection .monthly-performance-heading{gap:8px!important;margin-bottom:14px!important}
+#salesManagementSection .monthly-performance-heading h3{font-size:clamp(17px,2vw,21px)!important}
+#salesManagementSection .monthly-performance-month{
+ flex:0 0 auto;gap:5px!important;padding:2px 6px!important;
+ background:var(--sp-head)!important;border-color:var(--sp-line)!important;border-radius:8px!important;
+}
+#salesManagementSection .monthly-performance-month label{
+ margin:0!important;color:var(--sp-muted)!important;font-size:11px!important;font-weight:700!important;
+}
+#salesManagementSection #salesMonth{
+ width:112px!important;max-width:34vw!important;min-height:30px!important;
+ padding:3px 4px!important;margin:0!important;background:transparent!important;
+ color:var(--sp-ink)!important;border:0!important;box-shadow:none!important;font-size:12px!important;
+}
+#salesManagementSection .sales-performance-panel>div[style*="overflow-x:auto"]{
+ background:var(--sp-card)!important;border-color:var(--sp-line)!important;
+}
+#salesManagementSection #monthlyEmployeePerformanceTable{color:var(--sp-ink)!important}
+#salesManagementSection #monthlyEmployeePerformanceTable td{
+ background:var(--sp-card)!important;color:var(--sp-ink)!important;border-color:var(--sp-line)!important;
+}
+#salesManagementSection .sales-performance-panel>div[style*="display:grid"]>div:not(:first-child){
+ background:var(--sp-card)!important;border-color:var(--sp-line)!important;
+}
+#salesManagementSection #employeeTargetManagementPanel>div[style*="background:#f1f7fa"]{
+ background:var(--sp-soft)!important;border-color:var(--sp-line)!important;
+}
+#salesManagementSection #employeeTargetManagementPanel p{color:var(--sp-muted)!important}
+#salesManagementSection #addSaleForm{
+ background:var(--sp-soft)!important;border-color:var(--sp-line)!important;color:var(--sp-ink)!important;
+}
+#salesManagementSection #addSaleForm h3{color:var(--sp-ink)!important}
+#salesManagementSection input,#salesManagementSection select{
+ background:var(--sp-input)!important;color:var(--sp-ink)!important;border-color:var(--sp-line)!important;
+}
+#salesManagementSection input::placeholder{color:var(--sp-muted)!important}
+#monthlyReportSection{--mr-card:var(--card);--mr-soft:var(--bg);--mr-line:var(--line);--mr-ink:var(--ink);--mr-muted:var(--muted)}
+#monthlyReportSection .monthly-report-controls{
+ padding:18px!important;border:1px solid var(--mr-line)!important;border-radius:17px!important;
+ background:var(--mr-card)!important;color:var(--mr-ink)!important;box-shadow:var(--shadow)!important;
+}
+#monthlyReportSection .monthly-report-filters{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end;
+}
+#monthlyReportSection .monthly-report-filters .field{min-width:0;margin:0}
+#monthlyReportSection .monthly-report-filters label{color:var(--mr-muted)!important;font-weight:750}
+#monthlyReportSection .monthly-report-filters input,
+#monthlyReportSection .monthly-report-filters select{
+ width:100%;min-width:0;min-height:44px;background:var(--mr-soft)!important;
+ color:var(--mr-ink)!important;border:1px solid var(--mr-line)!important;border-radius:11px!important;
+}
+#monthlyReportSection .monthly-report-actions{
+ display:flex;flex-wrap:wrap;gap:9px;margin-top:14px;
+}
+#monthlyReportSection .monthly-report-actions .btn{flex:1 1 145px;min-height:43px;margin:0}
+#monthlyReportSection .monthly-report-results .card{
+ background:var(--mr-card)!important;color:var(--mr-ink)!important;
+ border:1px solid var(--mr-line)!important;border-radius:16px!important;
+ box-shadow:var(--shadow)!important;padding:16px!important;
+}
+#monthlyReportSection .monthly-report-results .stat{
+ min-width:0;border:1px solid var(--mr-line)!important;border-radius:13px!important;
+ background:var(--mr-soft)!important;color:var(--mr-ink)!important;padding:14px!important;
+}
+#monthlyReportSection .monthly-report-results .stat .n{overflow-wrap:anywhere}
+#monthlyReportSection .monthly-report-results .card>div{max-width:100%}
+#monthlyReportSection .monthly-report-results .card[style*="overflow:auto"]{overflow-x:auto!important}
+#monthlyReportSection .monthly-report-results table{width:100%;border-collapse:separate;border-spacing:0}
+#monthlyReportSection .monthly-report-results th{
+ position:sticky;top:0;background:var(--sp-head,#edf3f6)!important;color:var(--mr-ink)!important;
+ border-color:var(--mr-line)!important;white-space:nowrap;
+}
+#monthlyReportSection .monthly-report-results td{
+ background:var(--mr-card)!important;color:var(--mr-ink)!important;
+ border-color:var(--mr-line)!important;white-space:nowrap;
+}
+body[data-theme="dark"] #monthlyReportSection .monthly-report-results th{background:#29485c!important;color:#f4f8fb!important}
+@media(max-width:640px){
+ #salesManagementSection .sales-performance-panel{padding:14px!important}
+ #salesManagementSection .monthly-performance-heading{align-items:center!important}
+ #salesManagementSection #salesMonth{width:105px!important}
+ #monthlyReportSection .monthly-report-controls{padding:13px!important}
+ #monthlyReportSection .monthly-report-filters{grid-template-columns:1fr;gap:8px}
+ #monthlyReportSection .monthly-report-actions .btn{flex:1 1 100%}
+ #monthlyReportSection .monthly-report-results .stat{padding:11px!important}
+}
 </style>
 
 </body>
