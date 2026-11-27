@@ -9961,7 +9961,7 @@ console.log("RESTORED USER:", {
   error: checkError?.message || null
 });
       
-      await showDashboard();
+      await window.showDashboard();
   } catch (error) {
   console.error("SHOW DASHBOARD ERROR:", error);
 
@@ -10311,6 +10311,8 @@ window.showSection = function (id) {
 })();
 
 // ---------------- بعد تسجيل الدخول ----------------
+// الدالة الأصلية معرفة داخل IIFE؛ يجب تصديرها صراحةً قبل تغليفها واستدعائها من نموذج الدخول.
+window.showDashboard = showDashboard;
 const origShowDashboard = window.showDashboard;
 window.showDashboard = async function () {
   let dashboardError = null;
