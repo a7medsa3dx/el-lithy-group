@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "el-lithy-group-v5";
+const CACHE_NAME = "el-lithy-group-v6";
 
 const FILES_TO_CACHE = [
   "/",
@@ -44,7 +44,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: "no-store" })
       .then((response) => {
         if (response && response.ok) {
           const copy = response.clone();
