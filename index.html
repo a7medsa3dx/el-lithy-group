@@ -5,6 +5,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#102b3f">
+  <script>
+  // Restore the saved account theme before first paint to prevent a light-to-dark flash.
+  (function () {
+    try {
+      var savedUser = null;
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (!key || !/^sb-.+-auth-token$/.test(key)) continue;
+        try { var auth = JSON.parse(localStorage.getItem(key) || '{}'); if (auth && auth.user && auth.user.id) { savedUser = auth.user; break; } } catch (_) {}
+      }
+      var theme = savedUser && savedUser.user_metadata && savedUser.user_metadata.el_lithy_theme;
+      if (!['light', 'dark', 'system'].includes(theme) && savedUser && savedUser.id) theme = localStorage.getItem('el_lithy_theme_' + savedUser.id);
+      if (['light', 'dark', 'system'].includes(theme)) {
+        var actual = theme === 'system' ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
+        document.documentElement.dataset.elTheme = actual;
+        document.documentElement.style.colorScheme = actual;
+        window.__EL_INITIAL_THEME = theme;
+      }
+    } catch (error) { console.warn('Early theme restore skipped:', error); }
+  })();
+  </script>
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <title>EL-LITHY GROUP</title>
@@ -2347,7 +2368,7 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
 @media(hover:none){.admin-card:hover{transform:none}}
 </style>
 </head>
-<body data-mode="auth">
+<body data-mode="auth"><script>if (window.__EL_INITIAL_THEME) document.body.dataset.theme = document.documentElement.dataset.elTheme;</script>
   <aside id="mgrSidebar" aria-label="القائمة الرئيسية"></aside>
   <div id="mgrScrim"></div>
   <main class="container">
@@ -6811,12 +6832,9 @@ async function loadEmployeeEmploymentTerms(profile) {
 
     
     async function showDashboard() {
-      const { data: userData, error: userError } =
-        await db.auth.getUser();
-
-      if (userError || !userData.user) {
-        throw new Error("تعذر التحقق من حساب المستخدم.");
-      }
+      const { data: sessionData, error: sessionError } = await db.auth.getSession();
+      const sessionUser = sessionData && sessionData.session && sessionData.session.user;
+      if (sessionError || !sessionUser) throw new Error("تعذر التحقق من حساب المستخدم.");
 
       const { data: profile, error } = await db
         .from("profiles")
@@ -6827,6 +6845,7 @@ async function loadEmployeeEmploymentTerms(profile) {
       if (error || !profile) {
         throw new Error("لم يتم العثور على بيانات الموظف.");
       }
+      window.__EL_LOGIN_CONTEXT = { user: sessionUser, profile: profile };
 
     $("employeeName").textContent = profile.full_name;
 $("employeeCode").textContent = profile.employee_code;
@@ -6834,11 +6853,8 @@ $("employeeRole").textContent = profile.job_title || "غير محدد";
 
 if (profile.role === "owner") {
   showSection("dashboardSection");
-
-  await loadAttendanceReport();
-
-  await initializeDayOffSection();
-  await loadEmployeeList();
+  Promise.allSettled([loadAttendanceReport(), initializeDayOffSection(), loadEmployeeList()])
+    .then(results => results.forEach((result, index) => { if (result.status === "rejected") console.error("Owner startup panel failed:", index, result.reason); }));
 
 } else {
   $("staffName").textContent = profile.full_name;
@@ -6850,14 +6866,11 @@ if (profile.role === "owner") {
   $("attendanceStatus").textContent = "";
   $("attendanceLocationStatus").textContent = "";
 
- await loadEmployeeSalesDashboard(profile);
-
-// استعادة رسائل الحضور والراحة والانصراف
-await loadEmployeeAttendanceSmartMessages(profile);
-
-// بدء متابعة تحقيق التارجت أثناء العمل
-// تم إيقاف استدعاء دالة المتابعة غير الموجودة مؤقتًا
-await loadEmployeeEmploymentTerms(profile);
+ Promise.allSettled([
+   loadEmployeeSalesDashboard(profile),
+   loadEmployeeAttendanceSmartMessages(profile),
+   loadEmployeeEmploymentTerms(profile)
+ ]).then(results => results.forEach((result, index) => { if (result.status === "rejected") console.error("Employee startup panel failed:", index, result.reason); }));
 }
       
 showMessage("تم تسجيل الدخول بنجاح.");
@@ -9964,15 +9977,6 @@ console.log("EMPLOYEE SESSION:", {
 
   if (data.session) {
     try {
-      const { data: checkUser, error: checkError } =
-  await db.auth.getUser();
-
-console.log("RESTORED USER:", {
-  exists: !!checkUser.user,
-  id: checkUser.user?.id,
-  error: checkError?.message || null
-});
-      
       await showDashboard();
   } catch (error) {
   console.error("SHOW DASHBOARD ERROR:", error);
@@ -10329,15 +10333,21 @@ window.showDashboard = async function () {
   try { await afterLogin(); } catch (e) { console.error('afterLogin', e); }
 };
 async function afterLogin() {
-  const u = await db.auth.getUser();
-  if (!u.data || !u.data.user) return;
-  const p = await db.from('profiles').select('id,full_name,employee_code,role,job_title,avatar_url').eq('id', u.data.user.id).single();
-  A.profile = p.data; A.isOwner = !!p.data && p.data.role === 'owner';
-  await window.ELTheme.loadForUser(u.data.user);
+  let context = window.__EL_LOGIN_CONTEXT;
+  if (!context || !context.user || !context.profile) {
+    const sessionResult = await db.auth.getSession();
+    const user = sessionResult.data && sessionResult.data.session && sessionResult.data.session.user;
+    if (!user) return;
+    const profileResult = await db.from('profiles').select('id,full_name,employee_code,role,job_title,avatar_url').eq('id', user.id).single();
+    if (profileResult.error || !profileResult.data) throw profileResult.error || new Error('لم يتم العثور على بيانات الموظف.');
+    context = { user: user, profile: profileResult.data };
+  }
+  const user = context.user;
+  A.profile = context.profile; A.isOwner = context.profile.role === 'owner';
+  await window.ELTheme.loadForUser(user);
   A.sqlOk = true;
-  await loadSettings();
+  await Promise.all([loadSettings(), A.isOwner ? loadEmployees() : Promise.resolve()]);
   if (A.isOwner) {
-    await loadEmployees();
     buildSidebar();
     document.body.dataset.mode = 'manager';
     Owner.renderHome();
