@@ -10468,7 +10468,7 @@ Owner.renderHome = async function () {
   html += '<div class="grid g-auto">' +
     kpi('c-blue', 'trend', 'مبيعات الشهر', num(c.total_sales || 0) + ' <small>جنيه</small>', num(pct.toFixed(1)) + '% من هدف الشركة') + '</div>'; 
 
-  html += '<div class="grid g-2" style="margin-top:16px;gap:18px">';
+  html += '<div class="grid g-2" style="margin-top:16px;column-gap:24px !important;row-gap:18px !important;padding:0 3px;box-sizing:border-box">';
   // المبيعات
   html += '<div class="card"><div class="row" style="margin-bottom:6px"><h3 style="margin:0" class="sp">مبيعات الموظفين مقابل الهدف</h3><span class="muted small">' + today.slice(0, 7) + '</span></div>' +
     '<div class="row" style="gap:8px;margin-bottom:12px"><span class="pill p-blue">Plus: ' + num(plus) + '</span><span class="pill p-violet">Triple Zero: ' + num(triple) + '</span>' +
