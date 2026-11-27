@@ -10703,7 +10703,7 @@ async function loadReports() {
       '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:11px">' +
         counts(x).map(c => '<div style="min-width:0;text-align:center;background:var(--bg,rgba(120,140,160,.10));border-radius:9px;padding:7px 3px"><div style="font-size:11px;line-height:1.35;color:var(--muted)">' + c[0] + '</div><b style="display:block;font-size:17px;color:' + c[2] + ';margin-top:2px">' + num(c[1]) + '</b></div>').join('') +
       '</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px"><span class="small muted">إجمالي الرسائل: ' + num(x.total_messages) + (x.edit_count ? ' · معدّل' : '') + '</span><span class="small" style="color:var(--brand);font-weight:700">عرض التقرير ←</span></div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px"><span class="small muted">إجمالي الرسائل: ' + num(x.total_messages) + (x.edit_count ? ' · معدّل' : '') + '</span><span class="small" style="color:var(--brand);font-weight:700">فتح التقرير ←</span></div>' +
     '</button>'
   ).join('') + '</div>';
 }
@@ -10714,9 +10714,9 @@ async function renderReportDetail(reportId) {
   const reportResult = await safe(db.from('daily_reports').select('*').eq('id', reportId).maybeSingle());
   if (reportResult.error) { result.innerHTML = sqlWarn; return; }
   const report = reportResult.data;
-  if (!report) { result.innerHTML = '<div class="empty">التقرير المطلوب غير موجود أو لم تعد لديك صلاحية عرضه.</div><button class="btn sec" data-back-reports>رجوع إلى التقارير</button>'; return; }
+  if (!report) { result.innerHTML = '<div class="empty">التقرير المطلوب غير موجود أو لم تعد لديك صلاحية عرضه.</div><button class="btn sec" data-back-reports>إغلاق التقرير ×</button>'; return; }
   const customerResult = await safe(db.from('employee_customers').select('id,phone,whatsapp_username,is_foreign,notes,employee_customer_apps(amount,application_type_id)').eq('employee_id', report.employee_id).eq('report_date', report.report_date).order('created_at'));
-  if (customerResult.error) { result.innerHTML = sqlWarn + '<button class="btn sec" data-back-reports>رجوع إلى التقارير</button>'; return; }
+  if (customerResult.error) { result.innerHTML = sqlWarn + '<button class="btn sec" data-back-reports>إغلاق التقرير ×</button>'; return; }
   const customers = customerResult.data || [];
   const statItems = [
     ['مهتم', report.interested, 'var(--green-t)'],
@@ -10726,7 +10726,7 @@ async function renderReportDetail(reportId) {
   ];
   result.innerHTML =
     '<div class="card" style="padding:14px;min-width:0">' +
-      '<button type="button" class="btn sec" data-back-reports style="margin-bottom:14px">← رجوع إلى قائمة التقارير</button>' +
+      '<button type="button" class="btn sec" data-back-reports style="margin-bottom:14px">إغلاق التقرير ×</button>' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap"><div style="min-width:0"><div class="small muted">تقرير وارد من</div><h3 style="margin:3px 0">' + esc(empName(report.employee_id)) + '</h3><div class="small muted">' + esc(report.campaign_title_snapshot || 'حملة غير محددة') + '</div></div><span class="pill p-blue">' + fmtDate(report.report_date) + '</span></div>' +
       '<div style="margin-top:14px;padding:10px 12px;border-radius:11px;background:var(--bg,rgba(120,140,160,.10));display:flex;justify-content:space-between;gap:8px"><span class="muted">إجمالي الرسائل</span><b>' + num(report.total_messages) + '</b></div>' +
       '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px">' +
