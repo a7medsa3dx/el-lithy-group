@@ -11966,7 +11966,7 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
       else{const ins=await db.from('employee_customers').insert(payload).select('id').single();if(ins.error)throw ins.error;customerId=ins.data.id;}
       savedIds.push(customerId);
       const del=await db.from('employee_customer_apps').delete().eq('customer_id',customerId);if(del.error)throw del.error;
-      if(d.apps.length){const insApps=await db.from('employee_customer_apps').insert(d.apps.map(a=>({customer_id:customerId,application_type_id:a.type,amount:a.amount})));if(insApps.error)throw insApps.error;}
+      const uniqueApps=[...new Map(d.apps.map(a=>[a.type,a])).values()];if(uniqueApps.length){const insApps=await db.from('employee_customer_apps').upsert(uniqueApps.map(a=>({customer_id:customerId,application_type_id:a.type,amount:a.amount})),{onConflict:'customer_id,application_type_id'});if(insApps.error)throw insApps.error;}
     }
     const stale=(initialRows||[]).filter(r=>r.id&&!savedIds.includes(r.id)).map(r=>r.id);
     if(stale.length){const d=await db.from('employee_customers').delete().in('id',stale);if(d.error)throw d.error;}
