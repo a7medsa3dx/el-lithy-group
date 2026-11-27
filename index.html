@@ -10649,8 +10649,7 @@ async function loadReports() {
   if (!rows.length) html += '<div class="empty">لا توجد تقارير في هذه الفترة.</div>';
   else {
     html += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>الموظف</th><th>الرسائل</th><th>' + esc(lab('cat.interested')) + '</th><th>' + esc(lab('cat.noreply')) + '</th><th>' + esc(lab('cat.notinterested')) + '</th><th>' + esc(lab('cat.withthem')) + '</th><th>ملاحظات</th><th></th></tr></thead><tbody>' +
-      rows.map(x => '<tr><td>' + fmtDate(x.report_date) + (x.edit_count ? '<br><span class="pill p-blue" title="آخر تعديل ' + fmtDT(x.last_edited_at) + '">معدّل</span>' : '') + '</td><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + num(x.total_messages) + '</td><td>' + num(x.interested) + '</td><td>' + num(x.no_reply) + '</td><td>' + num(x.not_interested) + '</td><td>' + num(x.with_them || 0) + '</td><td class="small">' + esc(x.notes || '') + '</td>' +
-        '<td><button class="mini" data-cust="' + x.employee_id + '|' + x.report_date + '">العملاء</button></td></tr>').join('') + '</tbody></table></div>';
+      rows.map(x => { const classified = Number(x.interested || 0) + Number(x.no_reply || 0) + Number(x.not_interested || 0) + Number(x.with_them || 0); const diff = Number(x.total_messages || 0) - classified; const audit = diff === 0 ? '<span class="pill p-green">مطابق ✓</span>' : '<span class="pill p-red">فرق ' + (diff > 0 ? '+' : '') + diff + '</span>'; return '<tr><td>' + fmtDate(x.report_date) + (x.edit_count ? '<br><span class="pill p-blue" title="آخر تعديل ' + fmtDT(x.last_edited_at) + '">معدّل</span>' : '') + '</td><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + num(x.total_messages) + '<br>' + audit + '</td><td>' + num(x.interested) + '</td><td>' + num(x.no_reply) + '</td><td>' + num(x.not_interested) + '</td><td>' + num(x.with_them || 0) + '</td><td class="small">' + esc(x.notes || '') + '</td><td><button class="mini" data-cust="' + x.employee_id + '|' + x.report_date + '">العملاء</button></td></tr>'; }).join('') + '</tbody></table></div>';
   }
   $('rpResult').innerHTML = html;
   $('rpResult').onclick = async e => {
@@ -11799,6 +11798,15 @@ Emp.renderTeam = async function () {
 };
 
 
+// تطبيع أرقام مصر عند اللصق: +20 / 0020 / 20 إلى الصيغة المحلية 01XXXXXXXXX
+function normalizeEgyptPhoneInput(raw) {
+  let digits = toEn(String(raw || '')).replace(/[^0-9]/g, '');
+  if (digits.startsWith('0020')) digits = digits.slice(4);
+  else if (digits.startsWith('20') && digits.length >= 12) digits = digits.slice(2);
+  if (digits.length === 10 && /^(10|11|12|15)/.test(digits)) digits = '0' + digits;
+  return digits.slice(0, 11);
+}
+
 /* بطاقات عملاء «معاهم» — تستخدم نفس محرر الأبلكيشنات وحقول تسجيل العميل */
 function createReportWithThemCards(host, initialCount, employeeId, reportDate, onChange, initialRows) {
   const countryCodes = [
@@ -11817,7 +11825,7 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
       '<summary style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;cursor:pointer;list-style:none;font-weight:800">' +
       '<span>العميل ' + n + '</span><span class="pill p-amber" data-rw-status>استكمال البيانات</span></summary>' +
       '<div style="padding:14px;border-top:1px solid var(--line);display:grid;gap:10px">' +
-      '<div class="field"><label>رقم الهاتف</label><input data-rw-phone type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"></div>' +
+      '<div class="field"><label>رقم الهاتف</label><input data-rw-phone type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="01XXXXXXXXX أو +2010XXXXXXXX" dir="ltr" style="text-align:start"></div>' +
       '<div class="field"><label>اسم مستخدم واتساب</label><input data-rw-wa type="text" value="@" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
       '<label class="row" style="gap:8px;margin:0;font-weight:700"><input data-rw-foreign type="checkbox" style="width:20px;height:20px"> رقم غير مصري</label>' +
       '<div class="field" data-rw-intl-wrap style="display:none"><label>رقم العميل الدولي</label><div class="row" style="gap:8px;align-items:stretch"><select data-rw-code dir="ltr" style="max-width:46%;min-width:145px"></select><input data-rw-intl type="tel" inputmode="tel" autocomplete="tel-national" placeholder="رقم الهاتف" dir="ltr" style="text-align:start;flex:1;min-width:0"></div><span class="hint">اختر كود الدولة ثم اكتب الرقم بدون كود الدولة.</span></div>' +
@@ -11841,7 +11849,8 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
       else intl.value=full.replace(/[^0-9]/g,'');
     } else { intl.disabled=true; }
     wa.addEventListener('input',()=>{wa.value='@'+wa.value.replace(/^@+/,'');updateStatus();});
-    phone.addEventListener('input',()=>{phone.value=toEn(phone.value).replace(/[^0-9]/g,'').slice(0,11);updateStatus();});
+    phone.addEventListener('input',()=>{phone.value=normalizeEgyptPhoneInput(phone.value);updateStatus();});
+    phone.addEventListener('paste',e=>{e.preventDefault();phone.value=normalizeEgyptPhoneInput((e.clipboardData||window.clipboardData).getData('text'));updateStatus();});
     intl.addEventListener('input',()=>{intl.value=toEn(intl.value).replace(/[^0-9]/g,'').slice(0,15);updateStatus();});
     notes.addEventListener('input',updateStatus);
     appsHost.addEventListener('input',updateStatus); appsHost.addEventListener('change',updateStatus); appsHost.addEventListener('click',()=>setTimeout(updateStatus,0));
@@ -11995,7 +12004,7 @@ Emp.buildAddForm = function () {
   if (!host) return;
 
   host.innerHTML = '<h3 style="margin:0 0 12px;font-size:18px">تسجيل عميل جديد</h3><div class="stack">' +
-    '<div class="field"><label for="ecPhone">رقم الهاتف</label><input id="ecPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint"></span></div>' +
+    '<div class="field"><label for="ecPhone">رقم الهاتف</label><input id="ecPhone" type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="01XXXXXXXXX أو +2010XXXXXXXX" dir="ltr" style="text-align:start"><span class="hint" id="ecHint"></span></div>' +
     '<div class="field"><label for="ecWhatsApp">اسم مستخدم واتساب</label><input id="ecWhatsApp" type="text" value="@" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
     '<label class="row" style="gap:8px;margin:0;font-weight:700"><input type="checkbox" id="ecForeign" style="width:20px;height:20px"> رقم غير مصري</label>' +
     '<div class="field" id="ecInternationalWrap" style="display:none"><label for="ecCountryCode">رقم العميل الدولي</label><div class="row" style="gap:8px;align-items:stretch"><select id="ecCountryCode" dir="ltr" style="max-width:46%;min-width:145px"></select><input id="ecInternationalPhone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="رقم الهاتف" dir="ltr" style="text-align:start;flex:1;min-width:0"></div><span class="hint">اختر كود الدولة ثم اكتب الرقم بدون كود الدولة.</span></div>' +
@@ -12047,13 +12056,13 @@ Emp.buildAddForm = function () {
   };
 
   ph.addEventListener('input', () => {
-    ph.value = toEn(ph.value).replace(/[^0-9]/g, '').slice(0, 11);
+    ph.value = normalizeEgyptPhoneInput(ph.value);
     paint();
   });
 
   ph.addEventListener('paste', e => {
     e.preventDefault();
-    ph.value = toEn((e.clipboardData || window.clipboardData).getData('text')).replace(/[^0-9]/g, '').slice(0, 11);
+    ph.value = normalizeEgyptPhoneInput((e.clipboardData || window.clipboardData).getData('text'));
     paint();
   });
 
