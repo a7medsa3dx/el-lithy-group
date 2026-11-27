@@ -2989,13 +2989,17 @@ body[data-mode="employee"]:not([data-preview="1"]) #empNav{display:grid}
  <!-- ملخص الأداء الشهري -->
 <div style="margin-top:28px;padding:22px;background:#f7fafc;border:1px solid #e5edf2;border-radius:20px;box-shadow:0 8px 25px #102b3f0b">
 
-  <h3 style="margin-top:0;font-size:23px">الأداء والمبيعات الشهرية</h3>
+  <div class="monthly-performance-heading" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px">
+    <h3 style="margin:0;font-size:23px">الأداء والمبيعات الشهرية</h3>
+    <div class="monthly-performance-month" style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#edf3f6;border:1px solid #dce6ec;border-radius:10px">
+      <label for="salesMonth" style="font-size:12px;font-weight:600;color:#627887;white-space:nowrap">الشهر</label>
+      <input id="salesMonth" type="month"
+        aria-label="اختيار شهر الأداء والمبيعات"
+        style="width:145px;max-width:42vw;padding:6px 8px;margin:0;border:0;background:transparent;color:#29485b;font-size:13px;outline:none">
+    </div>
+  </div>
 
-  <label for="salesMonth"><strong>اختر الشهر</strong></label>
-  <input id="salesMonth" type="month"
-    style="width:100%;padding:13px;margin:10px 0 22px">
-
-  <h3 style="margin-top:28px">أداء الموظفين الشهري</h3>
+  <h3 style="margin-top:12px">أداء الموظفين الشهري</h3>
 
 <div style="overflow-x:auto;background:white;border-radius:14px;border:1px solid #e5edf2">
   <table id="monthlyEmployeePerformanceTable"
