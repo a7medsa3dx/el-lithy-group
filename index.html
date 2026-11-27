@@ -10524,7 +10524,25 @@ function alertItem(a, compact) {
   return '<div class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '"><div class="alert-ico cico">' + icon(m[0], 18) + '</div><div class="sp" style="font-size:13px;line-height:1.7"><b>' + m[2] + '</b><br><span class="muted">' + esc(a.message) + '</span><br><span class="small muted">' + fmtDT(a.created_at) + '</span></div>' +
     (compact ? '' : '<div class="stack" style="gap:6px"><button class="mini" data-alert-go="' + m[3] + '">فتح</button>' + (a.is_read ? '' : '<button class="mini" data-read="' + a.id + '">تمت القراءة</button>') + '</div>') + '</div>';
 }
-function alertGo(key, refId) { if (key === 'reports' && refId) { A.activeNav = 'reports'; openOwner('reportsSection', 'reports', () => Owner.renderReports(refId)); return; } const it = BUILTIN.find(b => b.key === key); if (it) { if (key === 'customers') Owner.cTab = 'inbox'; it.go(); } }
+async function openDailyReportsForEmployee(employeeId, reportId) {
+  let targetId = reportId || '';
+  if (!targetId && employeeId) {
+    const latest = await safe(db.from('daily_reports').select('id').eq('employee_id', employeeId).order('report_date', { ascending: false }).order('created_at', { ascending: false }).limit(1).maybeSingle());
+    if (!latest.error && latest.data) targetId = latest.data.id;
+  }
+  openOwner('reportsSection', 'reports', () => Owner.renderReports(targetId || undefined));
+  if (!targetId && employeeId) {
+    setTimeout(() => {
+      const emp = $('rpEmp');
+      if (emp) { emp.value = employeeId; loadReports(); }
+    }, 0);
+  }
+}
+function alertGo(key, refId) {
+  if (key === 'reports') { openDailyReportsForEmployee('', refId); return; }
+  const it = BUILTIN.find(b => b.key === key);
+  if (it) { if (key === 'customers') Owner.cTab = 'inbox'; it.go(); }
+}
 Owner.refreshBell = async function () {
   const [alertsCount, repliesCount] = await Promise.all([
     safe(db.from('manager_alerts').select('id', { count: 'exact', head: true }).eq('is_read', false)),
@@ -10564,10 +10582,10 @@ Owner.renderAlerts = async function () {
         const r = item.data, employee = profileMap.get(r.employee_id) || 'موظف';
         const body = r.employee_reply || (r.employee_thanks ? 'شكراً ❤️' : '');
         const when = r.employee_replied_at ? fmtDT(r.employee_replied_at) : '—';
-        return '<button type="button" data-unified-smart-reply="' + esc(r.id) + '" style="width:100%;text-align:start;background:var(--card);color:inherit;border:1px solid var(--line);border-radius:13px;padding:13px;cursor:pointer">' +
+        return '<article data-unified-smart-reply="' + esc(r.id) + '" data-smart-employee="' + esc(r.employee_id || '') + '" style="width:100%;text-align:start;background:var(--card);color:inherit;border:1px solid var(--line);border-radius:13px;padding:13px">' +
           '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>رد على رسالة ذكية</b><span class="small muted">' + esc(when) + '</span></div>' +
           '<div class="small" style="margin-top:5px">' + esc(employee) + ' · ' + esc(r.message_title || 'رسالة الإدارة') + '</div>' +
-          '<div style="margin-top:7px;line-height:1.7">' + esc(body) + '</div><div class="small" style="margin-top:6px;color:var(--brand)">إدارة الرسائل الذكية · اضغط لفتح</div></button>';
+          '<div style="margin-top:7px;line-height:1.7">' + esc(body) + '</div><button type="button" class="mini" data-open-smart-report style="margin-top:8px;color:var(--brand)">افتح الآن</button></article>';
       }
       const a = item.data, m = ALERT_META[a.kind] || ['bell','teal','تنبيه','home'];
       return '<article class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '" data-unified-alert="' + esc(a.id) + '" data-alert-kind="' + esc(a.kind || '') + '" data-report-ref="' + esc(a.ref_id || '') + '" style="cursor:pointer">' +
@@ -10591,7 +10609,7 @@ Owner.renderAlerts = async function () {
       const u = await db.from('employee_smart_message_deliveries').update({manager_reply_seen:true}).eq('id',id);
       if (u.error) { showMessage(u.error.message); return; }
       await Owner.refreshBell();
-      proxy('openSmartMessagesButton','smart');
+      await openDailyReportsForEmployee(smart.dataset.smartEmployee);
       return;
     }
     const alert = e.target.closest('[data-unified-alert]');
