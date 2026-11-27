@@ -6813,6 +6813,11 @@ async function loadEmployeeEmploymentTerms(profile) {
         throw new Error("لم يتم العثور على بيانات الموظف.");
       }
 
+      // بدّل وضع التطبيق فور التحقق من الدور؛ لا تنتظر تحميل كل بيانات اللوحة.
+      // هذا يمنع بقاء واجهة الدخول ظاهرة بعد نجاح المصادقة.
+      document.body.dataset.mode = profile.role === "owner" ? "manager" : "employee";
+      showSection(profile.role === "owner" ? "dashboardSection" : "employeeDashboardSection");
+
     $("employeeName").textContent = profile.full_name;
 $("employeeCode").textContent = profile.employee_code;
 $("employeeRole").textContent = profile.job_title || "غير محدد";
@@ -10316,6 +10321,9 @@ async function afterLogin() {
   if (!u.data || !u.data.user) return;
   const p = await db.from('profiles').select('id,full_name,employee_code,role,job_title,avatar_url').eq('id', u.data.user.id).single();
   A.profile = p.data; A.isOwner = !!p.data && p.data.role === 'owner';
+  if (!p.data) throw new Error('لم يتم العثور على ملف الحساب.');
+  // تأكيد وضع الواجهة مبكرًا حتى لو تأخر تحميل الإعدادات أو بيانات اللوحة.
+  document.body.dataset.mode = A.isOwner ? 'manager' : 'employee';
   await window.ELTheme.loadForUser(u.data.user);
   A.sqlOk = true;
   await loadSettings();
