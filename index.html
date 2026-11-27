@@ -10339,7 +10339,7 @@ const bell = $('mgrBell'); if (bell) bell.addEventListener('click', () => { cons
 const topLogout = $('mgrLogoutTop'); if (topLogout) topLogout.addEventListener('click', () => $('logoutButton').click());
 
 window.EL = { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, fmtDT, EGY, IC, ICON_NAMES, COLORS, icon, LABELS, lab, applyLabels,
-  errMsg, toast, guard, safe, modal, csv, typeName, typeOptions, appChip, pageHead, sqlWarn, loadSettings, loadTypes, loadEmployees, sortStaff, empName, filterReportEmployees, campaignStatsWithoutExcludedEmployee,
+  errMsg, toast, guard, safe, modal, csv, typeName, typeOptions, appChip, pageHead, sqlWarn, loadSettings, loadTypes, loadEmployees, sortStaff, empName, filterReportEmployees, excludedReportEmployeeId, campaignStatsWithoutExcludedEmployee,
   buildSidebar, paintActive, navItems, BUILTIN, afterLogin };
 })();
 
@@ -10349,7 +10349,7 @@ window.EL = { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, 
 (function () {
 'use strict';
 const { A, $, q, qa, esc, num, money, cairoToday, toEn, fmtDate, fmtTime, fmtDT, EGY, ICON_NAMES, COLORS, icon, lab, errMsg, toast, guard, safe, modal, csv,
-  typeName, typeOptions, appChip, pageHead, sqlWarn, loadTypes, loadEmployees, sortStaff, empName, filterReportEmployees, campaignStatsWithoutExcludedEmployee, buildSidebar, paintActive, navItems, LABELS, applyLabels, BUILTIN } = EL;
+  typeName, typeOptions, appChip, pageHead, sqlWarn, loadTypes, loadEmployees, sortStaff, empName, filterReportEmployees, excludedReportEmployeeId, campaignStatsWithoutExcludedEmployee, buildSidebar, paintActive, navItems, LABELS, applyLabels, BUILTIN } = EL;
 const Owner = window.Owner = { cTab: 'inbox', mType: '', mSel: new Set(), mQuery: '', master: [], inbox: [], iSel: new Set() };
 
 const tabsHtml = (tabs, cur, attr) => '<div class="tabs" role="tablist">' + tabs.map(t => '<button type="button" class="tab-btn' + (t[0] === cur ? ' on' : '') + '" ' + attr + '="' + t[0] + '">' + esc(t[1]) + '</button>').join('') + '</div>';
@@ -10482,7 +10482,7 @@ Owner.renderHome = async function () {
   html += '<div class="grid g-2" style="margin-top:16px"><div class="card"><div class="row" style="margin-bottom:12px"><h3 style="margin:0" class="sp">آخر التنبيهات</h3>' + ((unread.count || 0) ? '<span class="pill p-red">' + unread.count + ' جديد</span>' : '') + '</div><div class="stack" style="gap:10px;max-height:360px;overflow-y:auto;overscroll-behavior:contain;padding-inline-end:5px">';
   const al = alerts.data || [];
   if (!al.length) html += '<div class="empty">لا توجد تنبيهات.</div>';
-  al.forEach(a => { const meta=ALERT_META[a.kind]||['bell','teal','تنبيه','alerts']; html += '<div data-alert-go="'+meta[3]+'" style="cursor:pointer">'+alertItem(a,true)+'</div>'; });
+  al.forEach(a => { const meta=ALERT_META[a.kind]||['bell','teal','تنبيه','alerts']; html += '<div data-alert-go="'+meta[3]+'" data-alert-ref="'+esc(a.ref_id || '')+'" style="cursor:pointer">'+alertItem(a,true)+'</div>'; });
   html += '</div></div><div class="card"><h3>' + (A.campaign ? 'لم يرسلوا تقرير اليوم' : 'اختصارات') + '</h3>';
   if (A.campaign) html += notSent.length ? '<div class="chips">' + notSent.map(e => '<span class="pill p-amber">' + esc(e.full_name) + '</span>').join('') + '</div>' : '<div class="empty">كل الموظفين أرسلوا تقاريرهم.</div>';
   else html += '<div class="muted">افتح حملة جديدة من إدارة الحملات ليبدأ الموظفون بإرسال التقارير.</div>';
@@ -10495,7 +10495,7 @@ Owner.renderHome = async function () {
   const rf = $('homeRefresh'); if (rf) rf.onclick = () => Owner.renderHome();
   const oc = $('homeOpenCamp'); if (oc) oc.onclick = () => (BUILTIN.find(b => b.key === 'campaigns')).go();
   qa('[data-cs]', box).forEach(b => b.onclick = () => { const it = navItems().find(x => x.key === 'cs:' + b.dataset.cs); if (it) it.go(); });
-  qa('[data-alert-go]', box).forEach(b => b.onclick = () => alertGo(b.dataset.alertGo));
+  qa('[data-alert-go]', box).forEach(b => b.onclick = () => alertGo(b.dataset.alertGo, b.dataset.alertRef));
 };
 
 // حارس أخطاء لوحة المدير: يمنع بقاء عبارة التحميل عند حدوث خطأ برمجي غير متوقع.
@@ -10524,7 +10524,7 @@ function alertItem(a, compact) {
   return '<div class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '"><div class="alert-ico cico">' + icon(m[0], 18) + '</div><div class="sp" style="font-size:13px;line-height:1.7"><b>' + m[2] + '</b><br><span class="muted">' + esc(a.message) + '</span><br><span class="small muted">' + fmtDT(a.created_at) + '</span></div>' +
     (compact ? '' : '<div class="stack" style="gap:6px"><button class="mini" data-alert-go="' + m[3] + '">فتح</button>' + (a.is_read ? '' : '<button class="mini" data-read="' + a.id + '">تمت القراءة</button>') + '</div>') + '</div>';
 }
-function alertGo(key) { const it = BUILTIN.find(b => b.key === key); if (it) { if (key === 'customers') Owner.cTab = 'inbox'; it.go(); } }
+function alertGo(key, refId) { if (key === 'reports' && refId) { A.activeNav = 'reports'; openOwner('reportsSection', 'reports', () => Owner.renderReports(refId)); return; } const it = BUILTIN.find(b => b.key === key); if (it) { if (key === 'customers') Owner.cTab = 'inbox'; it.go(); } }
 Owner.refreshBell = async function () {
   const [alertsCount, repliesCount] = await Promise.all([
     safe(db.from('manager_alerts').select('id', { count: 'exact', head: true }).eq('is_read', false)),
@@ -10570,7 +10570,7 @@ Owner.renderAlerts = async function () {
           '<div style="margin-top:7px;line-height:1.7">' + esc(body) + '</div><div class="small" style="margin-top:6px;color:var(--brand)">إدارة الرسائل الذكية · اضغط لفتح</div></button>';
       }
       const a = item.data, m = ALERT_META[a.kind] || ['bell','teal','تنبيه','home'];
-      return '<article class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '" data-unified-alert="' + esc(a.id) + '" style="cursor:pointer">' +
+      return '<article class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '" data-unified-alert="' + esc(a.id) + '" data-report-ref="' + esc(a.ref_id || '') + '" style="cursor:pointer">' +
         '<div class="alert-ico cico">' + icon(m[0],18) + '</div><div class="sp" style="font-size:13px;line-height:1.7"><b>' + m[2] + '</b><br><span class="muted">' + esc(a.message) + '</span><br><span class="small muted">' + fmtDT(a.created_at) + '</span><br><span class="small" style="color:var(--brand)">إدارة ' + esc(m[2]) + ' · اضغط لفتح</span></div></article>';
     }).join('') : '<div class="empty">لا توجد تنبيهات حاليًا.</div>';
     Owner.refreshBell();
@@ -10603,7 +10603,7 @@ Owner.renderAlerts = async function () {
       await Owner.refreshBell();
       if (item) {
         const meta = ALERT_META[item.kind] || [];
-        if (meta[3]) alertGo(meta[3]);
+        if (meta[3]) alertGo(meta[3], alert.dataset.reportRef);
       }
     }
   };
@@ -10613,32 +10613,33 @@ Owner.renderAlerts = async function () {
 // =====================================================================
 // التقارير اليومية
 // =====================================================================
-Owner.renderReports = async function () {
+Owner.renderReports = async function (focusReportId) {
   const sec = $('reportsSection');
   const camps = await safe(db.from('ad_campaigns').select('id,title,status,starts_on,ends_on').order('created_at', { ascending: false }));
   if (camps.error) { sec.innerHTML = pageHead(lab('nav.reports')) + sqlWarn; return; }
   await loadEmployees();
-  const today = cairoToday();
-  const from = A.campaign ? A.campaign.starts_on : new Date(Date.now() - 13 * 864e5).toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
-  sec.innerHTML = pageHead(lab('nav.reports'), 'اختر موظفاً لتشوف تقاريره يوماً بيوم بالأرقام والعملاء.', '<button class="btn sec" id="rpExport">' + icon('download', 18) + 'تصدير Excel</button>') +
-    '<div class="card"><div class="form-grid">' +
+  sec.innerHTML = pageHead(lab('nav.reports'), 'كل التقارير ظاهرة تلقائياً من الأحدث إلى الأقدم. يمكنك استخدام الفلاتر عند الحاجة.', '<button class="btn sec" id="rpExport">' + icon('download', 18) + 'تصدير Excel</button>') +
+    '<details class="card" id="rpFilters" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700">اختيارات التصفية (اختياري)</summary><div class="form-grid" style="margin-top:14px">' +
     field('الحملة', '<select id="rpCamp"><option value="">كل الحملات</option>' + (camps.data || []).map(c => '<option value="' + c.id + '">' + esc(c.title) + (c.status === 'open' ? ' (مفتوحة)' : '') + '</option>').join('') + '</select>') +
     field('الموظف', '<select id="rpEmp">' + reportEmpOptions('', true) + '</select>') +
-    field('من تاريخ', '<input type="date" id="rpFrom" value="' + from + '">') +
-    field('إلى تاريخ', '<input type="date" id="rpTo" value="' + today + '">') + '</div>' +
-    '<div class="row" style="margin-top:14px"><button class="btn" id="rpLoad">عرض التقارير</button></div></div><div id="rpResult" style="margin-top:16px"></div>';
+    field('من تاريخ', '<input type="date" id="rpFrom">') +
+    field('إلى تاريخ', '<input type="date" id="rpTo">') + '</div>' +
+    '<div class="row" style="margin-top:14px"><button class="btn" id="rpLoad">تطبيق الفلاتر</button><button class="btn sec" id="rpClear">مسح الفلاتر</button></div></details><div id="rpFocus" style="margin-bottom:14px"></div><div id="rpResult" style="margin-top:16px"><div class="empty">جارٍ تحميل التقارير...</div></div>';
   $('rpLoad').onclick = e => guard(e.currentTarget, loadReports);
-  $('rpExport').onclick = () => { if (!Owner.rpRows) return toast('اعرض التقارير أولاً.', 'err'); csv('daily-reports', [['التاريخ', 'الحملة وقت إرسال التقرير', 'الموظف', 'إجمالي الرسائل', lab('cat.interested'), lab('cat.noreply'), lab('cat.notinterested'), lab('cat.withthem'), 'ملاحظات']].concat(Owner.rpRows.map(r => [r.report_date, r.campaign_title_snapshot || '—', empName(r.employee_id), r.total_messages, r.interested, r.no_reply, r.not_interested, r.with_them || 0, r.notes || '']))); };
-  await loadReports();
+  $('rpClear').onclick = () => { ['rpCamp','rpEmp','rpFrom','rpTo'].forEach(id => $(id).value = ''); loadReports(); };
+  $('rpExport').onclick = () => { if (!Owner.rpRows) return toast('التقارير لم تُحمّل بعد.', 'err'); csv('daily-reports', [['التاريخ', 'الحملة وقت إرسال التقرير', 'الموظف', 'إجمالي الرسائل', lab('cat.interested'), lab('cat.noreply'), lab('cat.notinterested'), lab('cat.withthem'), 'ملاحظات']].concat(Owner.rpRows.map(r => [r.report_date, r.campaign_title_snapshot || '—', empName(r.employee_id), r.total_messages, r.interested, r.no_reply, r.not_interested, r.with_them || 0, r.notes || '']))); };
+  await loadReports(focusReportId);
 };
-async function loadReports() {
-  let qy = db.from('daily_reports').select('*').order('report_date', { ascending: false }).limit(800);
+async function loadReports(focusReportId) {
+  let qy = db.from('daily_reports').select('*').order('report_date', { ascending: false }).order('created_at', { ascending: false }).limit(800);
   const camp = $('rpCamp').value, emp = $('rpEmp').value, f = $('rpFrom').value, t = $('rpTo').value;
   const excludedId = excludedReportEmployeeId();
   if (excludedId) qy = qy.neq('employee_id', excludedId);
   if (camp) qy = qy.eq('campaign_id', camp); if (emp) qy = qy.eq('employee_id', emp); if (f) qy = qy.gte('report_date', f); if (t) qy = qy.lte('report_date', t);
   const r = await qy; if (r.error) throw r.error;
   const rows = (r.data || []).filter(x => x.employee_id !== excludedId); Owner.rpRows = rows;
+  const focus = focusReportId ? rows.find(x => x.id === focusReportId) : null;
+  $('rpFocus').innerHTML = focus ? '<div class="card" style="border:2px solid var(--brand)"><div class="row" style="justify-content:space-between"><h3 style="margin:0">التقرير المطلوب من الإشعار</h3><span class="pill p-green">' + fmtDate(focus.report_date) + '</span></div><p><b>' + esc(empName(focus.employee_id)) + '</b> · ' + esc(focus.campaign_title_snapshot || '—') + '</p><div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><div class="stat">إجمالي الرسائل: <b>' + num(focus.total_messages) + '</b></div><div class="stat">مهتم: <b>' + num(focus.interested) + '</b></div><div class="stat">لم يرد: <b>' + num(focus.no_reply) + '</b></div><div class="stat">غير مهتم: <b>' + num(focus.not_interested) + '</b></div><div class="stat">معاهم: <b>' + num(focus.with_them || 0) + '</b></div></div><p class="small muted">' + esc(focus.notes || '') + '</p></div>' : (focusReportId ? '<div class="empty">التقرير المرتبط بالإشعار غير موجود ضمن التقارير المتاحة.</div>' : '');
   const sum = k => rows.reduce((s, x) => s + Number(x[k] || 0), 0);
   let html = '<div class="grid g-auto" style="margin-bottom:16px">' +
     '<div class="stat" style="background:#fff;border:1px solid var(--line)"><div class="t muted">إجمالي الرسائل</div><div class="n">' + num(sum('total_messages')) + '</div></div>' +
