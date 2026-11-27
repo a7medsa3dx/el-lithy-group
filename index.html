@@ -10385,12 +10385,14 @@ function appEditor(host, initial, activeOnly) {
     '<input type="text" inputmode="decimal" aria-label="المبلغ بالجنيه" placeholder="المبلغ" value="' + esc(r.amount) + '" dir="ltr" style="text-align:start">' +
     '<button type="button" class="mini danger ae-del" aria-label="حذف الأبلكيشن">' + icon('x', 14) + '</button></div>';
   host.innerHTML = '<div class="stack ae-list" style="gap:8px">' + rows.map(rowHtml).join('') + '</div><button type="button" class="btn sec ae-add" style="margin-top:8px !important">' + icon('plus', 16) + 'أبلكيشن آخر لنفس العميل</button>';
-  host.addEventListener('click', e => {
+  // Use replaceable delegated handlers: this editor is rebuilt on the same host
+  // after saving, so addEventListener would accumulate handlers and duplicate rows.
+  host.onclick = e => {
     if (e.target.closest('.ae-add')) { q('.ae-list', host).insertAdjacentHTML('beforeend', rowHtml({})); }
     const d = e.target.closest('.ae-del');
     if (d) { const all = qa('.ae-row', host); if (all.length > 1) d.closest('.ae-row').remove(); else { q('select', all[0]).value = ''; q('input', all[0]).value = ''; } }
-  });
-  host.addEventListener('input', e => { if (e.target.matches('.ae-row input')) e.target.value = toEn(e.target.value).replace(/[^0-9.]/g, ''); });
+  };
+  host.oninput = e => { if (e.target.matches('.ae-row input')) e.target.value = toEn(e.target.value).replace(/[^0-9.]/g, ''); };
   return {
     get(required) {
       const out = [], seen = new Set();
