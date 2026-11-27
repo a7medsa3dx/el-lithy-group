@@ -10466,8 +10466,7 @@ Owner.renderHome = async function () {
     '<div class="home-attendance-table-wrap"><table class="home-attendance-table"><thead><tr><th>الموظف</th><th>الحضور</th><th>بداية الاستراحة</th><th>نهاية الاستراحة</th><th>الانصراف</th><th>الحالة الحالية</th></tr></thead><tbody>' + (attendanceRows || '<tr><td colspan="6">لا يوجد موظفون مسجلون.</td></tr>') + '</tbody></table></div></section>';
 
   html += '<div class="grid g-auto">' +
-    kpi('c-blue', 'trend', 'مبيعات الشهر', num(c.total_sales || 0) + ' <small>جنيه</small>', num(pct.toFixed(1)) + '% من هدف الشركة') +
-    kpi('c-violet', 'doc', 'تقارير اليوم', (A.campaign ? repSet.size : '—') + ' <small>' + (A.campaign ? 'من ' + reportEmployees.length : '') + '</small>', A.campaign ? notSent.length + ' لم يرسلوا بعد' : 'لا توجد حملة مفتوحة') + '</div>'; 
+    kpi('c-blue', 'trend', 'مبيعات الشهر', num(c.total_sales || 0) + ' <small>جنيه</small>', num(pct.toFixed(1)) + '% من هدف الشركة') + '</div>'; 
 
   html += '<div class="grid g-2" style="margin-top:16px">';
   // المبيعات
@@ -10500,9 +10499,14 @@ Owner.renderHome = async function () {
   const al = alerts.data || [];
   if (!al.length) html += '<div class="empty">لا توجد تنبيهات.</div>';
   al.forEach(a => { const meta=ALERT_META[a.kind]||['bell','teal','تنبيه','alerts']; html += '<div data-alert-go="'+meta[3]+'" data-alert-ref="'+esc(a.ref_id || '')+'" style="cursor:pointer">'+alertItem(a,true)+'</div>'; });
-  html += '</div></div><div class="card"><h3>' + (A.campaign ? 'لم يرسلوا تقرير اليوم' : 'اختصارات') + '</h3>';
-  if (A.campaign) html += notSent.length ? '<div class="chips">' + notSent.map(e => '<span class="pill p-amber">' + esc(e.full_name) + '</span>').join('') + '</div>' : '<div class="empty">كل الموظفين أرسلوا تقاريرهم.</div>';
-  else html += '<div class="muted">افتح حملة جديدة من إدارة الحملات ليبدأ الموظفون بإرسال التقارير.</div>';
+  html += '</div></div><div class="card"><h3>' + (A.campaign ? 'متابعة التقارير اليومية' : 'متابعة التقارير اليومية') + '</h3>';
+  if (A.campaign) {
+    const sentEmployees = reportEmployees.filter(e => repSet.has(e.id));
+    html += '<div class="small muted" style="margin-bottom:10px">تم الإرسال (' + sentEmployees.length + ')</div>';
+    html += sentEmployees.length ? '<div class="chips" style="margin-bottom:16px">' + sentEmployees.map(e => '<span class="pill p-green">' + esc(e.full_name) + '</span>').join('') + '</div>' : '<div class="empty" style="margin-bottom:16px">لم يرسل أي موظف التقرير حتى الآن.</div>';
+    html += '<div class="small muted" style="margin-bottom:10px">لم يتم الإرسال (' + notSent.length + ')</div>';
+    html += notSent.length ? '<div class="chips">' + notSent.map(e => '<span class="pill p-amber">' + esc(e.full_name) + '</span>').join('') + '</div>' : '<div class="empty">كل الموظفين أرسلوا تقاريرهم.</div>';
+  } else html += '<div class="empty">لا توجد حملة مفتوحة حاليًا.</div>';
   const cust = A.customSections.filter(s => s.active);
   if (cust.length) {
     html += '<h3 style="margin-top:18px">إداراتي المخصصة</h3><div class="tile-grid">' + cust.map(s => '<button type="button" class="tile ' + (s.tile_size || 'md') + ' c-' + esc(s.color) + '" data-cs="' + s.id + '"><div class="cico">' + icon(s.icon, 22) + '</div><b>' + esc(s.title) + '</b>' + (s.description ? '<span class="muted small">' + esc(s.description) + '</span>' : '') + '</button>').join('') + '</div>';
