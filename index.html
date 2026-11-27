@@ -1452,20 +1452,21 @@
 /* ===== Mobile employee cards: monthly sales performance only ===== */
 @media (max-width: 600px) {
   #monthlyEmployeePerformanceTable {
+    display: block;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
-    display: block;
     table-layout: auto;
     border-collapse: separate !important;
     border-spacing: 0;
     background: transparent;
     overflow: visible;
+    direction: rtl;
+    white-space: normal;
+    box-sizing: border-box;
   }
 
-  #monthlyEmployeePerformanceTable thead {
-    display: none;
-  }
+  #monthlyEmployeePerformanceTable thead { display: none; }
 
   #monthlyEmployeePerformanceTable tbody {
     display: grid;
@@ -1478,17 +1479,15 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0 12px;
+    min-width: 0;
     padding: 12px 14px;
-    background: #ffffff !important;
+    background: #fff !important;
     border: 1px solid #e1eaf0;
     border-radius: 15px;
     box-shadow: 0 4px 14px rgba(16,43,63,.07);
-    min-width: 0;
   }
 
-  #monthlyEmployeePerformanceTable tbody tr:hover {
-    background: #ffffff !important;
-  }
+  #monthlyEmployeePerformanceTable tbody tr:hover { background: #fff !important; }
 
   #monthlyEmployeePerformanceTable tbody td {
     display: flex;
@@ -1498,12 +1497,15 @@
     gap: 4px;
     width: auto !important;
     min-width: 0;
+    min-height: 48px;
     padding: 10px 2px !important;
     border-bottom: 1px solid #edf1f5;
     text-align: right !important;
     font-size: 12px;
-    line-height: 1.6;
+    line-height: 1.7;
     overflow-wrap: anywhere;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   #monthlyEmployeePerformanceTable tbody td::before {
@@ -1516,7 +1518,7 @@
 
   #monthlyEmployeePerformanceTable tbody td:nth-child(1) {
     grid-column: 1 / -1;
-    align-items: flex-start;
+    min-height: 0;
     padding: 7px 2px 12px !important;
     margin-bottom: 3px;
     color: #102b3f;
@@ -1524,12 +1526,10 @@
     font-weight: 800;
     border-bottom: 2px solid #dce8ee;
   }
-
   #monthlyEmployeePerformanceTable tbody td:nth-child(1)::before {
     content: "الموظف";
     color: #176477;
   }
-
   #monthlyEmployeePerformanceTable tbody td:nth-child(2)::before { content: "إجمالي المبيعات"; }
   #monthlyEmployeePerformanceTable tbody td:nth-child(3)::before { content: "مبيعات Plus"; }
   #monthlyEmployeePerformanceTable tbody td:nth-child(4)::before { content: "مبيعات Triple Zero"; }
@@ -1541,16 +1541,34 @@
   #monthlyEmployeePerformanceTable tbody td:nth-child(7) {
     color: #176477;
     font-weight: 800;
+    font-size: 13px;
+  }
+
+  #monthlyEmployeePerformanceTable tbody td:nth-child(3),
+  #monthlyEmployeePerformanceTable tbody td:nth-child(4) { font-size: 11px; }
+
+  #monthlyEmployeePerformanceTable tbody td:nth-child(4),
+  #monthlyEmployeePerformanceTable tbody td:nth-child(6),
+  #monthlyEmployeePerformanceTable tbody td:nth-child(7) {
+    grid-column: 1 / -1;
   }
 
   #monthlyEmployeePerformanceTable tbody td:nth-child(6) {
-    grid-column: 1 / -1;
-    border-bottom: 1px solid #edf1f5;
+    padding-bottom: 12px !important;
   }
 
   #monthlyEmployeePerformanceTable tbody td:nth-child(6) > div:last-child {
     width: 100%;
-    max-width: 100%;
+    min-width: 0 !important;
+    height: 8px !important;
+    overflow: hidden;
+    border-radius: 20px;
+  }
+
+  #monthlyEmployeePerformanceTable tbody td:nth-child(6) > div:last-child > div {
+    height: 100% !important;
+    min-width: 0 !important;
+    border-radius: 20px;
   }
 
   #monthlyEmployeePerformanceTable tbody tr:has(td[colspan]) {
@@ -1561,181 +1579,12 @@
   #monthlyEmployeePerformanceTable tbody td[colspan] {
     display: block;
     width: 100% !important;
+    min-height: 0;
     border: 0;
     text-align: center !important;
   }
 
-  #monthlyEmployeePerformanceTable tbody td[colspan]::before {
-    content: none;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:last-child {
-    border-bottom: 0;
-  }
-
-  #monthlyEmployeePerformanceTable,
-  #monthlyEmployeePerformanceTable * {
-    box-sizing: border-box;
-  }
-
-  #monthlyEmployeePerformanceTable {
-    white-space: normal;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(6) > div {
-    min-width: 0 !important;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(6) > div:last-child > div {
-    min-width: 0 !important;
-  }
-
-  #monthlyEmployeePerformanceTable {
-    direction: rtl;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td {
-    overflow: hidden;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(3),
-  #monthlyEmployeePerformanceTable tbody td:nth-child(4) {
-    font-size: 11px;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(3),
-  #monthlyEmployeePerformanceTable tbody td:nth-child(4) {
-    line-height: 1.7;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(6) > div:first-child {
-    margin-bottom: 2px !important;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(6) > div:last-child {
-    height: 8px !important;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(6) > div:last-child > div {
-    height: 100% !important;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(1) {
-    width: 100% !important;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td[colspan] {
-    grid-column: 1 / -1;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(5) {
-    color: #334155;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(6) {
-    padding-bottom: 12px !important;
-  }
-
-  #monthlyEmployeePerformanceTable tbody td:nth-child(7) {
-    color: #16865f;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td {
-    min-height: 48px;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(1) {
-    min-height: auto;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td[colspan] {
-    min-height: auto;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(6) > div:last-child {
-    overflow: hidden;
-    border-radius: 20px;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(6) > div:last-child > div {
-    border-radius: 20px;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(2),
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(7) {
-    font-size: 13px;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(4) {
-    grid-column: 1 / -1;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(4)::before {
-    margin-bottom: 1px;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(6) {
-    grid-column: 1 / -1;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(7) {
-    grid-column: 1 / -1;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(7) {
-    border-top: 0;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(7)::before {
-    color: #16865f;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(2)::before,
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(3)::before,
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(4)::before,
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(5)::before,
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(6)::before,
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(7)::before {
-    letter-spacing: 0;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(4) {
-    border-bottom: 1px solid #edf1f5;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(7) {
-    padding-top: 11px !important;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(7)::after {
-    content: "";
-    display: block;
-    width: 100%;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td[colspan] {
-    color: #526b7b;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td[colspan]::before {
-    display: none;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(6) > div:first-child {
-    font-variant-numeric: tabular-nums;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(2),
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(3),
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(5) {
-    grid-column: span 1;
-  }
-
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(4),
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(6),
-  #monthlyEmployeePerformanceTable tbody tr td:nth-child(7) {
-    grid-column: 1 / -1;
-  }
+  #monthlyEmployeePerformanceTable tbody td[colspan]::before { content: none; }
 }
     /* ===== Employee Target Fields Alignment ===== */
 
