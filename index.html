@@ -10530,12 +10530,12 @@ async function openDailyReportsForEmployee(employeeId, reportId) {
     const latest = await safe(db.from('daily_reports').select('id').eq('employee_id', employeeId).order('report_date', { ascending: false }).order('created_at', { ascending: false }).limit(1).maybeSingle());
     if (!latest.error && latest.data) targetId = latest.data.id;
   }
-  openOwner('reportsSection', 'reports', () => Owner.renderReports(targetId || undefined));
+  A.activeNav = 'reports';
+  window.showSection('reportsSection');
+  await Owner.renderReports(targetId || undefined);
   if (!targetId && employeeId) {
-    setTimeout(() => {
-      const emp = $('rpEmp');
-      if (emp) { emp.value = employeeId; loadReports(); }
-    }, 0);
+    const emp = $('rpEmp');
+    if (emp) { emp.value = employeeId; await loadReports(); }
   }
 }
 function alertGo(key, refId) {
