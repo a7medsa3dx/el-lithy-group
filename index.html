@@ -11865,12 +11865,13 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
     ['فيجي','+679'],['بابوا غينيا الجديدة','+675'],['ساموا','+685'],['تونغا','+676'],['فانواتو','+678'],['جزر سليمان','+677'],['كيريباتي','+686'],['ولايات ميكرونيسيا المتحدة','+691'],['جزر مارشال','+692'],['بالاو','+680'],['ناورو','+674'],['توفالو','+688'],['جزر كوك','+682'],['نيوي','+683'],['كاليدونيا الجديدة','+687'],['بولينيزيا الفرنسية','+689']
   ];
   const states = [];
+  let add = null;
   const escId = n => 'rpWithCustomer' + n;
   const createOne = (n, existing) => {
     const id = escId(n), row = existing || {};
     const html = '<details class="card rp-with-customer" style="padding:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--card)">' +
       '<summary style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;cursor:pointer;list-style:none;font-weight:800">' +
-      '<span>العميل ' + n + '</span><span style="display:flex;align-items:center;gap:8px"><span class="pill p-amber" data-rw-status>استكمال البيانات</span><button type="button" data-rw-delete title="حذف العميل" aria-label="حذف العميل" style="border:0;border-radius:8px;background:#fee2e2;color:#b42318;font-weight:900;width:30px;height:30px;font-size:18px;line-height:1;cursor:pointer">×</button></span></summary>' +
+      '<span>العميل ' + n + '</span><span style="display:flex;align-items:center;gap:8px"><span class="pill p-amber" data-rw-status>استكمال البيانات</span><button type="button" data-rw-delete title="حذف العميل" aria-label="حذف العميل" style="appearance:none;display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;box-sizing:border-box;width:32px;height:32px;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--muted);font-family:inherit;font-size:16px;font-weight:700;line-height:1;text-align:center;vertical-align:middle;cursor:pointer">×</button></span></summary>' +
       '<div style="padding:14px;border-top:1px solid var(--line);display:grid;gap:10px">' +
       '<div class="field"><label>رقم الهاتف</label><input data-rw-phone type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="01XXXXXXXXX أو +2010XXXXXXXX" dir="ltr" style="text-align:start"></div>' +
       '<div class="field"><label>اسم مستخدم واتساب</label><input data-rw-wa type="text" value="@" autocomplete="off" placeholder="@username" dir="ltr" style="text-align:start"></div>' +
@@ -11879,7 +11880,9 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
       '<div class="field"><label>الأبلكيشنات</label><div data-rw-apps></div></div>' +
       '<div class="field"><label>ملاحظات</label><textarea data-rw-notes placeholder="ملاحظات عن العميل"></textarea></div></div></details>';
     host.insertAdjacentHTML('beforeend', html);
-    const card=host.lastElementChild, phone=card.querySelector('[data-rw-phone]'), wa=card.querySelector('[data-rw-wa]');
+    const card=host.lastElementChild;
+    if(add)host.insertBefore(card,add);
+    const phone=card.querySelector('[data-rw-phone]'), wa=card.querySelector('[data-rw-wa]');
     const foreign=card.querySelector('[data-rw-foreign]'), wrap=card.querySelector('[data-rw-intl-wrap]');
     const code=card.querySelector('[data-rw-code]'), intl=card.querySelector('[data-rw-intl]'), notes=card.querySelector('[data-rw-notes]');
     const appsHost=card.querySelector('[data-rw-apps]'), status=card.querySelector('[data-rw-status]');
@@ -11968,12 +11971,12 @@ function createReportWithThemCards(host, initialCount, employeeId, reportDate, o
     const stale=(initialRows||[]).filter(r=>r.id&&!savedIds.includes(r.id)).map(r=>r.id);
     if(stale.length){const d=await db.from('employee_customers').delete().in('id',stale);if(d.error)throw d.error;}
   }
-  sync(initialCount,false);
-  const add=document.createElement('button');
-  add.type='button';add.className='btn sec';add.style.cssText='width:100%;margin-top:4px;padding:10px 12px;font-size:13px';
+  add=document.createElement('button');
+  add.type='button';add.className='btn sec';add.style.cssText='width:100%;margin-top:10px;padding:10px 12px;font-size:13px';
   add.textContent='+ إضافة عميل';
   add.addEventListener('click',()=>{sync(states.length+1);if(states.length){const last=states[states.length-1];last.card.open=true;last.card.scrollIntoView({behavior:'smooth',block:'nearest'});}});
   host.appendChild(add);
+  sync(initialCount,false);
   return {states,sync,validate,save,isValid:()=>{try{validate();return true;}catch(_){return false;}}};
 }
 
