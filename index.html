@@ -6839,7 +6839,7 @@ async function loadEmployeeEmploymentTerms(profile) {
       const { data: profile, error } = await db
         .from("profiles")
         .select("id, full_name, employee_code, role, job_title")
-        .eq("id", userData.user.id)
+        .eq("id", sessionUser.id)
         .single();
 
       if (error || !profile) {
