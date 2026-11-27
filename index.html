@@ -10570,7 +10570,7 @@ Owner.renderAlerts = async function () {
           '<div style="margin-top:7px;line-height:1.7">' + esc(body) + '</div><div class="small" style="margin-top:6px;color:var(--brand)">إدارة الرسائل الذكية · اضغط لفتح</div></button>';
       }
       const a = item.data, m = ALERT_META[a.kind] || ['bell','teal','تنبيه','home'];
-      return '<article class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '" data-unified-alert="' + esc(a.id) + '" data-report-ref="' + esc(a.ref_id || '') + '" style="cursor:pointer">' +
+      return '<article class="alert-item c-' + m[1] + (a.is_read ? '' : ' unread') + '" data-unified-alert="' + esc(a.id) + '" data-alert-kind="' + esc(a.kind || '') + '" data-report-ref="' + esc(a.ref_id || '') + '" style="cursor:pointer">' +
         '<div class="alert-ico cico">' + icon(m[0],18) + '</div><div class="sp" style="font-size:13px;line-height:1.7"><b>' + m[2] + '</b><br><span class="muted">' + esc(a.message) + '</span><br><span class="small muted">' + fmtDT(a.created_at) + '</span><br><span class="small" style="color:var(--brand)">إدارة ' + esc(m[2]) + ' · اضغط لفتح</span></div></article>';
     }).join('') : '<div class="empty">لا توجد تنبيهات حاليًا.</div>';
     Owner.refreshBell();
@@ -10597,14 +10597,11 @@ Owner.renderAlerts = async function () {
     const alert = e.target.closest('[data-unified-alert]');
     if (alert) {
       const id = alert.dataset.unifiedAlert;
-      const u = await db.from('manager_alerts').update({is_read:true}).eq('id',id);
-      if (u.error) { showMessage(u.error.message); return; }
-      const item = (await safe(db.from('manager_alerts').select('kind').eq('id',id).maybeSingle())).data;
+      // قراءة التنبيه محاولة جانبية؛ لا تمنع فتح التقرير حتى لو كان مقروءًا بالفعل.
+      await safe(db.from('manager_alerts').update({is_read:true}).eq('id', id));
       await Owner.refreshBell();
-      if (item) {
-        const meta = ALERT_META[item.kind] || [];
-        if (meta[3]) alertGo(meta[3], alert.dataset.reportRef);
-      }
+      const meta = ALERT_META[alert.dataset.alertKind] || [];
+      if (meta[3]) alertGo(meta[3], alert.dataset.reportRef);
     }
   };
   await load();
@@ -10618,53 +10615,101 @@ Owner.renderReports = async function (focusReportId) {
   const camps = await safe(db.from('ad_campaigns').select('id,title,status,starts_on,ends_on').order('created_at', { ascending: false }));
   if (camps.error) { sec.innerHTML = pageHead(lab('nav.reports')) + sqlWarn; return; }
   await loadEmployees();
-  sec.innerHTML = pageHead(lab('nav.reports'), 'كل التقارير ظاهرة تلقائياً من الأحدث إلى الأقدم. يمكنك استخدام الفلاتر عند الحاجة.', '<button class="btn sec" id="rpExport">' + icon('download', 18) + 'تصدير Excel</button>') +
+  sec.innerHTML = pageHead(lab('nav.reports'), 'تقارير الموظفين مرتبة من الأحدث إلى الأقدم. اضغط على أي تقرير لمراجعة تفاصيله والعملاء المسجلين فيه.', '<button class="btn sec" id="rpExport">' + icon('download', 18) + 'تصدير Excel</button>') +
     '<details class="card" id="rpFilters" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700">اختيارات التصفية (اختياري)</summary><div class="form-grid" style="margin-top:14px">' +
     field('الحملة', '<select id="rpCamp"><option value="">كل الحملات</option>' + (camps.data || []).map(c => '<option value="' + c.id + '">' + esc(c.title) + (c.status === 'open' ? ' (مفتوحة)' : '') + '</option>').join('') + '</select>') +
     field('الموظف', '<select id="rpEmp">' + reportEmpOptions('', true) + '</select>') +
     field('من تاريخ', '<input type="date" id="rpFrom">') +
     field('إلى تاريخ', '<input type="date" id="rpTo">') + '</div>' +
-    '<div class="row" style="margin-top:14px"><button class="btn" id="rpLoad">تطبيق الفلاتر</button><button class="btn sec" id="rpClear">مسح الفلاتر</button></div></details><div id="rpFocus" style="margin-bottom:14px"></div><div id="rpResult" style="margin-top:16px"><div class="empty">جارٍ تحميل التقارير...</div></div>';
+    '<div class="row" style="margin-top:14px"><button class="btn" id="rpLoad">تطبيق الفلاتر</button><button class="btn sec" id="rpClear">مسح الفلاتر</button></div></details>' +
+    '<div id="rpResult" style="margin-top:16px"><div class="empty">جارٍ تحميل التقارير...</div></div>';
   $('rpLoad').onclick = e => guard(e.currentTarget, loadReports);
   $('rpClear').onclick = () => { ['rpCamp','rpEmp','rpFrom','rpTo'].forEach(id => $(id).value = ''); loadReports(); };
   $('rpExport').onclick = () => { if (!Owner.rpRows) return toast('التقارير لم تُحمّل بعد.', 'err'); csv('daily-reports', [['التاريخ', 'الحملة وقت إرسال التقرير', 'الموظف', 'إجمالي الرسائل', lab('cat.interested'), lab('cat.noreply'), lab('cat.notinterested'), lab('cat.withthem'), 'ملاحظات']].concat(Owner.rpRows.map(r => [r.report_date, r.campaign_title_snapshot || '—', empName(r.employee_id), r.total_messages, r.interested, r.no_reply, r.not_interested, r.with_them || 0, r.notes || '']))); };
-  await loadReports(focusReportId);
+  $('rpResult').onclick = async e => {
+    const open = e.target.closest('[data-open-report]');
+    if (open) { await renderReportDetail(open.dataset.openReport); return; }
+    const back = e.target.closest('[data-back-reports]');
+    if (back) { await loadReports(); return; }
+  };
+  await loadReports();
+  if (focusReportId) await renderReportDetail(focusReportId);
 };
-async function loadReports(focusReportId) {
+
+async function loadReports() {
   let qy = db.from('daily_reports').select('*').order('report_date', { ascending: false }).order('created_at', { ascending: false }).limit(800);
   const camp = $('rpCamp').value, emp = $('rpEmp').value, f = $('rpFrom').value, t = $('rpTo').value;
   const excludedId = excludedReportEmployeeId();
   if (excludedId) qy = qy.neq('employee_id', excludedId);
-  if (camp) qy = qy.eq('campaign_id', camp); if (emp) qy = qy.eq('employee_id', emp); if (f) qy = qy.gte('report_date', f); if (t) qy = qy.lte('report_date', t);
-  const r = await qy; if (r.error) throw r.error;
-  const rows = (r.data || []).filter(x => x.employee_id !== excludedId); Owner.rpRows = rows;
-  const focus = focusReportId ? rows.find(x => x.id === focusReportId) : null;
-  $('rpFocus').innerHTML = focus ? '<div class="card" style="border:2px solid var(--brand)"><div class="row" style="justify-content:space-between"><h3 style="margin:0">التقرير المطلوب من الإشعار</h3><span class="pill p-green">' + fmtDate(focus.report_date) + '</span></div><p><b>' + esc(empName(focus.employee_id)) + '</b> · ' + esc(focus.campaign_title_snapshot || '—') + '</p><div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><div class="stat">إجمالي الرسائل: <b>' + num(focus.total_messages) + '</b></div><div class="stat">مهتم: <b>' + num(focus.interested) + '</b></div><div class="stat">لم يرد: <b>' + num(focus.no_reply) + '</b></div><div class="stat">غير مهتم: <b>' + num(focus.not_interested) + '</b></div><div class="stat">معاهم: <b>' + num(focus.with_them || 0) + '</b></div></div><p class="small muted">' + esc(focus.notes || '') + '</p></div>' : (focusReportId ? '<div class="empty">التقرير المرتبط بالإشعار غير موجود ضمن التقارير المتاحة.</div>' : '');
-  const sum = k => rows.reduce((s, x) => s + Number(x[k] || 0), 0);
-  let html = '<div class="grid g-auto" style="margin-bottom:16px">' +
-    '<div class="stat" style="background:#fff;border:1px solid var(--line)"><div class="t muted">إجمالي الرسائل</div><div class="n">' + num(sum('total_messages')) + '</div></div>' +
-    '<div class="stat" style="background:var(--green-l)"><div class="t" style="color:var(--green-t)">' + esc(lab('cat.interested')) + '</div><div class="n" style="color:var(--green-t)">' + num(sum('interested')) + '</div></div>' +
-    '<div class="stat" style="background:var(--gray-l)"><div class="t" style="color:var(--gray-t)">' + esc(lab('cat.noreply')) + '</div><div class="n" style="color:var(--gray-t)">' + num(sum('no_reply')) + '</div></div>' +
-    '<div class="stat" style="background:var(--red-l)"><div class="t" style="color:var(--red-t)">' + esc(lab('cat.notinterested')) + '</div><div class="n" style="color:var(--red-t)">' + num(sum('not_interested')) + '</div></div>' +
-    '<div class="stat" style="background:var(--blue-l)"><div class="t" style="color:var(--blue-t)">' + esc(lab('cat.withthem')) + '</div><div class="n" style="color:var(--blue-t)">' + num(sum('with_them')) + '</div></div></div>';
-  if (!rows.length) html += '<div class="empty">لا توجد تقارير في هذه الفترة.</div>';
-  else {
-    html += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>الموظف</th><th>الرسائل</th><th>' + esc(lab('cat.interested')) + '</th><th>' + esc(lab('cat.noreply')) + '</th><th>' + esc(lab('cat.notinterested')) + '</th><th>' + esc(lab('cat.withthem')) + '</th><th>ملاحظات</th><th></th></tr></thead><tbody>' +
-      rows.map(x => '<tr><td>' + fmtDate(x.report_date) + (x.edit_count ? '<br><span class="pill p-blue" title="آخر تعديل ' + fmtDT(x.last_edited_at) + '">معدّل</span>' : '') + '</td><td><b>' + esc(empName(x.employee_id)) + '</b></td><td>' + num(x.total_messages) + '</td><td>' + num(x.interested) + '</td><td>' + num(x.no_reply) + '</td><td>' + num(x.not_interested) + '</td><td>' + num(x.with_them || 0) + '</td><td class="small">' + esc(x.notes || '') + '</td>' +
-        '<td><button class="mini" data-cust="' + x.employee_id + '|' + x.report_date + '">العملاء</button></td></tr>').join('') + '</tbody></table></div>';
+  if (camp) qy = qy.eq('campaign_id', camp);
+  if (emp) qy = qy.eq('employee_id', emp);
+  if (f) qy = qy.gte('report_date', f);
+  if (t) qy = qy.lte('report_date', t);
+  const r = await qy;
+  if (r.error) throw r.error;
+  const rows = (r.data || []).filter(x => x.employee_id !== excludedId);
+  Owner.rpRows = rows;
+  const counts = (x) => [
+    ['مهتم', x.interested, 'var(--green-t)'],
+    ['لم يرد', x.no_reply, 'var(--gray-t)'],
+    ['غير مهتم', x.not_interested, 'var(--red-t)'],
+    ['معاهم', x.with_them || 0, 'var(--blue-t)']
+  ];
+  const result = $('rpResult');
+  if (!rows.length) {
+    result.innerHTML = '<div class="empty">لا توجد تقارير مطابقة للفلاتر الحالية.</div>';
+    return;
   }
-  $('rpResult').innerHTML = html;
-  $('rpResult').onclick = async e => {
-    const b = e.target.closest('[data-cust]'); if (!b) return;
-    const [emp, date] = b.dataset.cust.split('|'); const tr = b.closest('tr');
-    if (tr.nextElementSibling && tr.nextElementSibling.classList.contains('cust-row')) { tr.nextElementSibling.remove(); return; }
-    const c = await safe(db.from('employee_customers').select('id,phone,whatsapp_username,is_foreign,notes,employee_customer_apps(amount,application_type_id)').eq('employee_id', emp).eq('report_date', date).order('created_at'));
-    const list = c.data || [];
-    const inner = list.length ? '<div class="stack" style="gap:8px">' + list.map(cu => '<div class="row" style="gap:10px"><b dir="ltr">' + (cu.phone ? esc(cu.phone) : (cu.whatsapp_username ? '@'+esc(cu.whatsapp_username) : 'رقم غير مصري')) + '</b>' + (cu.employee_customer_apps || []).map(a => appChip(typeName(a.application_type_id), a.amount)).join('') + (cu.notes ? '<span class="muted small">' + esc(cu.notes) + '</span>' : '') + '</div>').join('') + '</div>' : '<span class="muted">لم يسجّل عملاء في هذا اليوم.</span>';
-    tr.insertAdjacentHTML('afterend', '<tr class="cust-row"><td colspan="8" style="background:#F8FBFD">' + inner + '</td></tr>');
-  };
+  result.innerHTML = '<div class="stack" style="gap:10px">' + rows.map(x =>
+    '<button type="button" data-open-report="' + esc(x.id) + '" style="display:block;width:100%;min-width:0;text-align:start;background:var(--card);color:inherit;border:1px solid var(--line);border-radius:15px;padding:12px 14px;cursor:pointer">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">' +
+        '<div style="min-width:0"><b style="font-size:15px">' + esc(empName(x.employee_id)) + '</b><div class="small muted" style="margin-top:3px">' + esc(x.campaign_title_snapshot || 'حملة غير محددة') + '</div></div>' +
+        '<span class="small muted" style="white-space:nowrap">' + fmtDate(x.report_date) + '</span>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:11px">' +
+        counts(x).map(c => '<div style="min-width:0;text-align:center;background:var(--bg,rgba(120,140,160,.10));border-radius:9px;padding:7px 3px"><div style="font-size:11px;line-height:1.35;color:var(--muted)">' + c[0] + '</div><b style="display:block;font-size:17px;color:' + c[2] + ';margin-top:2px">' + num(c[1]) + '</b></div>').join('') +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px"><span class="small muted">إجمالي الرسائل: ' + num(x.total_messages) + (x.edit_count ? ' · معدّل' : '') + '</span><span class="small" style="color:var(--brand);font-weight:700">عرض التقرير ←</span></div>' +
+    '</button>'
+  ).join('') + '</div>';
 }
 
+async function renderReportDetail(reportId) {
+  const result = $('rpResult');
+  result.innerHTML = '<div class="empty">جارٍ فتح التقرير...</div>';
+  const reportResult = await safe(db.from('daily_reports').select('*').eq('id', reportId).maybeSingle());
+  if (reportResult.error) { result.innerHTML = sqlWarn; return; }
+  const report = reportResult.data;
+  if (!report) { result.innerHTML = '<div class="empty">التقرير المطلوب غير موجود أو لم تعد لديك صلاحية عرضه.</div><button class="btn sec" data-back-reports>رجوع إلى التقارير</button>'; return; }
+  const customerResult = await safe(db.from('employee_customers').select('id,phone,whatsapp_username,is_foreign,notes,employee_customer_apps(amount,application_type_id)').eq('employee_id', report.employee_id).eq('report_date', report.report_date).order('created_at'));
+  if (customerResult.error) { result.innerHTML = sqlWarn + '<button class="btn sec" data-back-reports>رجوع إلى التقارير</button>'; return; }
+  const customers = customerResult.data || [];
+  const statItems = [
+    ['مهتم', report.interested, 'var(--green-t)'],
+    ['لم يرد', report.no_reply, 'var(--gray-t)'],
+    ['غير مهتم', report.not_interested, 'var(--red-t)'],
+    ['معاهم', report.with_them || 0, 'var(--blue-t)']
+  ];
+  result.innerHTML =
+    '<div class="card" style="padding:14px;min-width:0">' +
+      '<button type="button" class="btn sec" data-back-reports style="margin-bottom:14px">← رجوع إلى قائمة التقارير</button>' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap"><div style="min-width:0"><div class="small muted">تقرير وارد من</div><h3 style="margin:3px 0">' + esc(empName(report.employee_id)) + '</h3><div class="small muted">' + esc(report.campaign_title_snapshot || 'حملة غير محددة') + '</div></div><span class="pill p-blue">' + fmtDate(report.report_date) + '</span></div>' +
+      '<div style="margin-top:14px;padding:10px 12px;border-radius:11px;background:var(--bg,rgba(120,140,160,.10));display:flex;justify-content:space-between;gap:8px"><span class="muted">إجمالي الرسائل</span><b>' + num(report.total_messages) + '</b></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px">' +
+        statItems.map(c => '<div style="min-width:0;border:1px solid var(--line);border-radius:11px;padding:10px"><div class="small muted">' + c[0] + '</div><b style="display:block;font-size:21px;color:' + c[2] + ';margin-top:2px">' + num(c[1]) + '</b></div>').join('') +
+      '</div>' +
+      (report.notes ? '<div style="margin-top:12px"><div class="small muted" style="margin-bottom:5px">ملاحظات التقرير</div><div style="padding:10px;border:1px solid var(--line);border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere">' + esc(report.notes) + '</div></div>' : '') +
+    '</div>' +
+    '<div class="card" style="margin-top:12px;padding:14px;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><h3 style="margin:0">العملاء المسجلون في التقرير</h3><span class="pill">' + customers.length + ' عميل</span></div>' +
+      (customers.length ? '<div class="stack" style="gap:9px">' + customers.map((cu,i) =>
+        '<div style="min-width:0;border:1px solid var(--line);border-radius:12px;padding:11px">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>عميل ' + (i+1) + '</b><b dir="ltr" style="overflow-wrap:anywhere">' + (cu.phone ? esc(cu.phone) : (cu.whatsapp_username ? '@'+esc(cu.whatsapp_username) : 'رقم غير مصري')) + '</b></div>' +
+          ((cu.employee_customer_apps || []).length ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' + cu.employee_customer_apps.map(a => '<span class="pill">' + esc(typeName(a.application_type_id)) + ' · ' + num(a.amount) + '</span>').join('') + '</div>' : '') +
+          (cu.notes ? '<div class="small muted" style="margin-top:7px;white-space:pre-wrap;overflow-wrap:anywhere">' + esc(cu.notes) + '</div>' : '') +
+        '</div>'
+      ).join('') + '</div>' : '<div class="empty">لا يوجد عملاء مسجلون في هذا التقرير.</div>') +
+    '</div>';
+}
 
 // =====================================================================
 // إدارة تأجيل وإعفاء تقارير الإعلانات (للمدير فقط)
