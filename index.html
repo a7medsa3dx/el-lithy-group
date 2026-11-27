@@ -13497,6 +13497,80 @@ body[data-theme="dark"] #smartMessagesSection #smartMessageEmojiPicker{backgroun
 body[data-theme="dark"] #smartMessagesSection #smartMessageEmojiPicker>div:first-child{color:#bdcbd5!important}
 body[data-theme="dark"] #smartMessagesSection .smart-emoji-choice:hover{background:#294355!important}
 
+
+/* Final typography and responsive layout pass for Employee Management */
+#employeesSection{
+  direction:rtl!important;
+  text-align:start!important;
+  font-family:Tahoma,"Segoe UI",Arial,sans-serif!important;
+  line-height:1.75!important;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#employeesSection h2{line-height:1.4!important;letter-spacing:0!important}
+#employeesSection h3,#employeesSection h4{
+  font-family:inherit!important;
+  line-height:1.55!important;
+  letter-spacing:0!important;
+}
+#employeesSection p,#employeesSection label,
+#employeesSection #selectedEmployeeDetails,
+#employeesSection #employeeAccountsManagerCard{
+  font-family:inherit!important;
+  line-height:1.8!important;
+  overflow-wrap:anywhere;
+}
+#employeesSection input:not([type=checkbox]):not([type=radio]),
+#employeesSection select,#employeesSection textarea{
+  font-family:inherit!important;
+  font-size:16px!important;
+  line-height:1.5!important;
+  text-align:right;
+  direction:rtl;
+  min-width:0!important;
+}
+#employeesSection input[type=password],
+#employeesSection input[dir=ltr]{direction:ltr;text-align:left}
+#employeesSection button{
+  font-family:inherit!important;
+  font-size:14px!important;
+  line-height:1.55!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere;
+  padding:10px 13px!important;
+}
+#employeesSection #selectedEmployeeDetails strong{line-height:1.6!important}
+#employeesSection #employeeListContainer{min-width:0;max-width:100%}
+#employeesSection #employeeListContainer table{max-width:100%;font-family:inherit!important}
+#employeesSection #employeeListContainer th,
+#employeesSection #employeeListContainer td{
+  font-family:inherit!important;
+  font-size:14px!important;
+  line-height:1.65!important;
+  vertical-align:middle;
+  overflow-wrap:anywhere;
+}
+@media(max-width:760px){
+  #employeesSection{padding:14px!important}
+  #employeesSection>h2{font-size:23px!important}
+  #employeesSection h3{font-size:18px!important}
+  #employeesSection>.notice{font-size:13px!important;padding:12px!important}
+  #employeesSection>div[style*="margin-top:20px"]{padding:14px!important}
+  #employeesSection #employeeAccountsManagerCard{padding:14px!important}
+  #employeesSection #employeeAccountsManagerCard>div:last-child{grid-template-columns:minmax(0,1fr)!important}
+  #employeesSection #selectedEmployeeDetails{padding:13px!important}
+  #employeesSection #empEditCard{padding:14px!important}
+  #employeesSection #employeeListContainer{padding:10px!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  #employeesSection #employeeListContainer table{min-width:560px!important}
+  #employeesSection #employeeListContainer th,
+  #employeesSection #employeeListContainer td{padding:9px!important;font-size:13px!important}
+  #employeesSection #backToDashboardButton{width:100%!important}
+}
+@media(min-width:761px){
+  #employeesSection{max-width:1280px;margin-inline:auto}
+  #employeesSection #addEmployeeForm{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+
 </style>
 
 </body>
